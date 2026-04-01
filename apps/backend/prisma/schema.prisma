@@ -1,0 +1,101 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 회사
+model Company {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  workType      String   @default("FIXED")
+  workStartTime String   @default("09:00")
+  coreTimeStart String?
+  coreTimeEnd   String?
+  lunchMinutes  Int      @default(60)
+  createdAt     DateTime @default(now())
+
+  users       User[]
+  invitations Invitation[]
+}
+
+// 유저
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("USER") // OWNER / ADMIN / USER
+  companyId String
+  createdAt DateTime @default(now())
+
+  company         Company         @relation(fields: [companyId], references: [id])
+  workLogs        WorkLog[]
+  leaveRequests   LeaveRequest[]
+  attendanceFixes AttendanceFix[]
+}
+
+// 초대 토큰
+model Invitation {
+  id        String   @id @default(uuid())
+  token     String   @unique @default(uuid())
+  email     String // 초대할 이메일
+  companyId String
+  role      String   @default("USER")
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// 출퇴근
+model WorkLog {
+  id          String    @id @default(uuid())
+  userId      String
+  companyId   String
+  clockIn     DateTime
+  clockOut    DateTime?
+  workMinutes Int? // 퇴근 시 계산해서 저장
+  isLate      Boolean   @default(false)
+  isOvertime  Boolean   @default(false)
+  date        DateTime  @db.Date
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// 휴가 신청
+model LeaveRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  companyId String
+  type      String // ANNUAL(연차) / HALF(반차)
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  reason    String
+  status    String   @default("PENDING") // PENDING / APPROVED / REJECTED
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// 근태 수정 요청
+model AttendanceFix {
+  id                String    @id @default(uuid())
+  userId            String
+  companyId         String
+  targetDate        DateTime  @db.Date
+  reason            String
+  requestedClockIn  DateTime?
+  requestedClockOut DateTime?
+  status            String    @default("PENDING") // PENDING / APPROVED / REJECTED
+  createdAt         DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
