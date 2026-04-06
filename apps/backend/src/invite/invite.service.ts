@@ -13,6 +13,24 @@ export class InviteService {
 
   // 초대 링크 생성
   async createInvite(dto: { email: string; role: string; companyId: string }) {
+    // 이미 가입된 유저인지 확인
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existingUser) throw new BadRequestException('이미 가입된 이메일입니다');
+
+    // 이미 유효한 초대가 있는지 확인
+    const existingInvite = await this.prisma.invitation.findFirst({
+      where: {
+        email: dto.email,
+        companyId: dto.companyId,
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
+    });
+    if (existingInvite)
+      throw new BadRequestException('이미 초대 링크가 발송된 이메일입니다');
+
     // const token = uuidv4();
     const token = randomUUID();
     const expiresAt = new Date();
@@ -72,6 +90,12 @@ export class InviteService {
       throw new BadRequestException('이미 사용된 초대 링크입니다');
     if (invite.expiresAt < new Date())
       throw new BadRequestException('만료된 초대 링크입니다');
+
+    // 이미 가입된 유저 확인 추가
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: invite.email },
+    });
+    if (existingUser) throw new BadRequestException('이미 가입된 이메일입니다');
 
     const bcrypt = await import('bcrypt');
     const hashed = await bcrypt.hash(dto.password, 10);

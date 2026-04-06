@@ -2,6 +2,9 @@
 
 import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
+import WorkStatusCard from "./_components/WorkStatusCard";
+import AttendanceSummaryCard from "./_components/AttendanceSummaryCard";
+import LeaveStatusCard from "./_components/LeaveStatusCard";
 
 export default function Main() {
   const { user, isLoggedIn } = useUserStore();
@@ -20,6 +23,11 @@ export default function Main() {
             {user.name}님
           </h2>
           <span className="text-[20px] text-[#666]">안녕하세요!</span>
+        </div>
+        <div className="flex gap-[30px]">
+          <WorkStatusCard />
+          <AttendanceSummaryCard />
+          <LeaveStatusCard />
         </div>
 
         {/* OWNER에게만 보이는 초대 가이드 카드 */}

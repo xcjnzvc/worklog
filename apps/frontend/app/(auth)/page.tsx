@@ -37,24 +37,24 @@ export default function Home() {
     }
   }, [setValue]);
 
-  // const onSubmit = async (data: LoginForm) => {
-  //   await login(data);
-  //   router.push("/main");
-  // };
-
   const onSubmit = async (data: LoginForm) => {
     try {
       await login(data);
+
+      // 로그인 성공 후 체크박스 상태에 따라 저장/삭제
+      if (saveEmail) {
+        localStorage.setItem("savedEmail", data.email); // ✅ 이 줄이 없었음
+      } else {
+        localStorage.removeItem("savedEmail");
+      }
+
       router.push("/main");
     } catch (error) {
-      // 2. error가 AxiosError인지 확인(Type Guard)합니다.
       if (error instanceof AxiosError) {
-        // 이제 error.response가 자동완성되고 안전하게 접근 가능합니다!
         const message =
           error.response?.data?.message || "로그인에 실패했습니다.";
         alert(message);
       } else {
-        // axios 에러가 아닌 일반 에러일 경우
         console.error("알 수 없는 에러:", error);
         alert("알 수 없는 오류가 발생했습니다.");
       }

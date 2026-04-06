@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        {/* 1. 데이터를 다루는 Provider를 위쪽에 배치 */}
+        <ReactQueryProvider>{children}</ReactQueryProvider>
+
+        {/* 2. UI 알림 도구는 독립적으로 배치 (보통 하단) */}
         <Toaster
           position="top-center"
           toastOptions={{
