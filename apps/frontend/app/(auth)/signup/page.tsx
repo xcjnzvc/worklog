@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Input from "@/components/Input";
@@ -19,7 +19,8 @@ import { toast } from "react-hot-toast";
 import { Resolver } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 
-export default function Signup() {
+// 1. 기존 로직을 담당하는 내부 컴포넌트 (useSearchParams 사용 부분 포함)
+function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -33,18 +34,18 @@ export default function Signup() {
   } = useQuery({
     queryKey: ["verifyInvite", token],
     queryFn: () => verifyInviteAPI(token!),
-    enabled: isInvited, // 토큰이 있을 때만 실행
-    retry: false, // 검증 실패 시 반복 요청 방지
-    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
+    enabled: isInvited,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
   });
 
-  // 2. 검증 실패 시(잘못된 토큰, 만료 등) 리다이렉트 처리
+  // 2. 검증 실패 시 리다이렉트 처리
   useEffect(() => {
     if (isInvited && isError) {
       toast.error(
         "유효하지 않거나 만료된 초대 링크입니다. 정보를 다시 확인해주세요.",
       );
-      router.replace("/"); // 메인이나 로그인 페이지로 이동
+      router.replace("/");
     }
   }, [isInvited, isError, router]);
 
@@ -55,7 +56,7 @@ export default function Signup() {
     handleSubmit,
     formState: { errors, isValid },
     watch,
-    setValue, // 이메일 자동 입력을 위해 추가
+    setValue,
   } = useForm<SignupForm & InvitedSignupForm>({
     resolver: zodResolver(schema) as unknown as Resolver<
       SignupForm & InvitedSignupForm
@@ -63,7 +64,7 @@ export default function Signup() {
     mode: "onTouched",
   });
 
-  // 3. 백엔드에서 이메일 정보를 넘겨준다면 가입 폼에 미리 넣어주기
+  // 3. 백엔드 데이터 자동 입력
   useEffect(() => {
     if (inviteData?.email) {
       setValue("email", inviteData.email, { shouldValidate: true });
@@ -97,7 +98,6 @@ export default function Signup() {
     }
   };
 
-  // 4. 검증 중일 때 스피너나 메시지 표시
   if (isInvited && isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-medium text-[#666]">
@@ -132,7 +132,6 @@ export default function Signup() {
               error={errors.email?.message}
               success={!errors.email && watch("email")?.length > 0}
               {...register("email")}
-              // 초대받은 경우 이메일 수정 불가 처리 (선택사항)
               readOnly={isInvited && !!inviteData?.email}
             />
             <Input
@@ -196,5 +195,20 @@ export default function Signup() {
         </div>
       </form>
     </div>
+  );
+}
+
+// 2. 최종 export: Suspense로 감싸서 배포 에러 해결
+export default function Signup() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center font-medium text-[#666]">
+          페이지를 불러오고 있습니다...
+        </div>
+      }
+    >
+      <SignupContent />
+    </Suspense>
   );
 }

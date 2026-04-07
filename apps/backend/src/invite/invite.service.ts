@@ -6,13 +6,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 // import { v4 as uuidv4 } from 'uuid';
 import { randomUUID } from 'crypto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class InviteService {
   constructor(private prisma: PrismaService) {}
 
   // 초대 링크 생성
-  async createInvite(dto: { email: string; role: string; companyId: string }) {
+  async createInvite(dto: { email: string; role: Role; companyId: string }) {
     // 이미 가입된 유저인지 확인
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },

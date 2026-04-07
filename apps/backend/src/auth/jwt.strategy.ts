@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const passportJwt = require('passport-jwt') as typeof import('passport-jwt');
-const { ExtractJwt, Strategy } = passportJwt;
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
+// JWT 안 payload
 interface JwtPayload {
   sub: string;
+  email: string;
+  role: string;
+  companyId: string;
+}
+
+// 서버용 user
+export interface UserPayload {
+  userId: string;
   email: string;
   role: string;
   companyId: string;
@@ -20,10 +27,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload) {
-    // async 제거, any 대신 타입 지정
+  validate(payload: JwtPayload): UserPayload {
     return {
-      id: payload.sub,
+      userId: payload.sub,
       email: payload.email,
       role: payload.role,
       companyId: payload.companyId,

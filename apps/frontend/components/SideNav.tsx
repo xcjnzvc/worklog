@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useUserStore } from "@/store/useUserStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import UserProfileItem from "./UserProfileItem";
 
 export default function SideNav() {
   const pathname = usePathname();
@@ -106,7 +107,7 @@ export default function SideNav() {
           </div>
         )}
 
-        <button
+        {/* <button
           onClick={() => setPopupOpen((prev) => !prev)}
           className="w-full flex items-center gap-[12px] p-[12px] rounded-[12px] hover:bg-[#F5F7FF] transition-colors"
         >
@@ -121,6 +122,15 @@ export default function SideNav() {
               {user?.companyName}
             </span>
           </div>
+        </button> */}
+        <button
+          onClick={() => setPopupOpen((prev) => !prev)}
+          className="w-full rounded-[12px] p-[12px] hover:bg-[#F5F7FF] transition-colors focus:outline-none"
+        >
+          <UserProfileItem
+            name={user?.name ?? "사용자"}
+            description={user?.companyName ?? "회사 정보 없음"}
+          />
         </button>
       </div>
     </nav>

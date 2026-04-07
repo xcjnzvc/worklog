@@ -1,13 +1,37 @@
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+
+// ------------------------------------------------------
+// 1. Enum 정의 (상태값들을 안전하게 관리)
+// ------------------------------------------------------
+
+enum Role {
+  OWNER
+  ADMIN
+  USER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum LeaveType {
+  ANNUAL // 연차
+  HALF // 반차
+}
+
+// ------------------------------------------------------
+// 2. 모델 정의
+// ------------------------------------------------------
 
 // 회사
 model Company {
@@ -31,7 +55,7 @@ model User {
   password  String
   name      String
   phone     String?
-  role      String   @default("USER") // OWNER / ADMIN / USER
+  role      Role     @default(USER) // String -> Role(Enum)으로 변경
   companyId String
   createdAt DateTime @default(now())
 
@@ -45,9 +69,9 @@ model User {
 model Invitation {
   id        String   @id @default(uuid())
   token     String   @unique @default(uuid())
-  email     String // 초대할 이메일
+  email     String
   companyId String
-  role      String   @default("USER")
+  role      Role     @default(USER) // String -> Role(Enum)으로 변경
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -55,14 +79,14 @@ model Invitation {
   company Company @relation(fields: [companyId], references: [id])
 }
 
-// 출퇴근
+// 출퇴근 기록
 model WorkLog {
   id          String    @id @default(uuid())
   userId      String
   companyId   String
   clockIn     DateTime
   clockOut    DateTime?
-  workMinutes Int? // 퇴근 시 계산해서 저장
+  workMinutes Int?
   isLate      Boolean   @default(false)
   isOvertime  Boolean   @default(false)
   date        DateTime  @db.Date
@@ -73,30 +97,30 @@ model WorkLog {
 
 // 휴가 신청
 model LeaveRequest {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   userId    String
   companyId String
-  type      String // ANNUAL(연차) / HALF(반차)
-  startDate DateTime @db.Date
-  endDate   DateTime @db.Date
+  type      LeaveType     @default(ANNUAL) // String -> LeaveType(Enum)으로 변경
+  startDate DateTime      @db.Date
+  endDate   DateTime      @db.Date
   reason    String
-  status    String   @default("PENDING") // PENDING / APPROVED / REJECTED
-  createdAt DateTime @default(now())
+  status    RequestStatus @default(PENDING) // String -> RequestStatus(Enum)으로 변경
+  createdAt DateTime      @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }
 
 // 근태 수정 요청
 model AttendanceFix {
-  id                String    @id @default(uuid())
+  id                String        @id @default(uuid())
   userId            String
   companyId         String
-  targetDate        DateTime  @db.Date
+  targetDate        DateTime      @db.Date
   reason            String
   requestedClockIn  DateTime?
   requestedClockOut DateTime?
-  status            String    @default("PENDING") // PENDING / APPROVED / REJECTED
-  createdAt         DateTime  @default(now())
+  status            RequestStatus @default(PENDING) // String -> RequestStatus(Enum)으로 변경
+  createdAt         DateTime      @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }

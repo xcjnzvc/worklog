@@ -3,18 +3,21 @@ interface ButtonProps {
   width?: number;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  onClick?: () => void;
 }
 
 export default function Button({
   text,
   width,
   disabled,
-  type = "submit",
+  type = "button",
+  onClick,
 }: ButtonProps) {
   return (
     <button
       type={type}
       disabled={disabled}
+      onClick={onClick}
       style={width ? { width: `${width}px` } : undefined}
       className={`h-[48px] rounded-[12px] text-[18px] font-medium transition-colors
         ${!width ? "w-full" : ""}

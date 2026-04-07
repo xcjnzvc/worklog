@@ -63,7 +63,7 @@ export default function AttendanceSummaryCard() {
   const gridLines = [1, 2, 3, 4];
 
   return (
-    <div className="p-[30px] bg-white rounded-[32px] border border-gray-100 shadow-sm w-full max-w-[700px] flex flex-col gap-[30px] h-fit">
+    <div className="p-[30px] bg-white rounded-[32px] border border-gray-100 shadow-sm w-full  flex flex-col gap-[30px] h-fit">
       {/* [상단 영역] 요약 정보와 그래프 */}
       <div className="flex justify-between items-start gap-[40px]">
         {/* 왼쪽: 근무시간 요약 */}
