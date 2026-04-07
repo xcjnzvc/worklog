@@ -8,7 +8,12 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    origin: 'https://worklog-frontend.vercel.app', // 실제 버셀 주소
+    origin: [
+      'https://worklog-u92g.vercel.app',
+      'https://worklog-u92g-git-main-kangs-projects-34b81f95.vercel.app',
+      'https://worklog-u92g-dpnduxhtx-kangs-projects-34b81f95.vercel.app',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
