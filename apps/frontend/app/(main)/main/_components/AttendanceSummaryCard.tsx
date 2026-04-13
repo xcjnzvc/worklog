@@ -68,27 +68,27 @@ export default function AttendanceSummaryCard() {
       <div className="flex justify-between items-start gap-[40px]">
         {/* 왼쪽: 근무시간 요약 */}
         <div className="flex flex-col flex-shrink-0">
-          <h2 className="text-[22px] font-bold text-gray-950 mb-4">
+          <h2 className="font-bold text-[18px] text-gray-950 mb-4">
             근태 요약
           </h2>
-          <p className="text-[14px] font-semibold text-gray-700">
+          <p className="text-[14px] font-bold text-gray-700">
             이번주 총 근무시간
           </p>
-          <p className="text-[14px] text-gray-400 mb-8">
+          <p className="text-[16px] text-gray-400 mb-[20px]">
             {ATTENDANCE_MOCK_DATA.weeklySummary.period}
           </p>
 
           <div className="flex flex-col gap-2">
             {/* 시간 (h) */}
             <div className="flex items-baseline gap-1">
-              <span className="text-[48px] font-black text-black leading-none">
+              <span className="text-[44px] font-black text-black leading-none">
                 {ATTENDANCE_MOCK_DATA.weeklySummary.totalHours}
               </span>
               <span className="text-[24px] font-bold text-gray-400">h</span>
             </div>
             {/* 분 (m) */}
             <div className="flex items-baseline gap-1">
-              <span className="text-[48px] font-black text-black leading-none">
+              <span className="text-[44px] font-black text-black leading-none">
                 {ATTENDANCE_MOCK_DATA.weeklySummary.totalMinutes}
               </span>
               <span className="text-[24px] font-bold text-gray-400">m</span>

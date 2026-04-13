@@ -2,6 +2,7 @@
 
 import React from "react";
 import LeaveHistoryItem from "@/components/LeaveHistoryItem";
+import Button from "@/components/Button";
 
 export default function LeaveStatusCard() {
   // 목데이터
@@ -52,7 +53,7 @@ export default function LeaveStatusCard() {
 
       {/* 중간: 프로그레스 바 영역 */}
       <div className="mb-10">
-        <p className="text-[15px] font-medium text-gray-500 mb-4">
+        <p className="text-[15px] font-medium text-gray-500 mb-[12px]">
           전체 {LEAVE_MOCK_DATA.totalDays}일 중 {LEAVE_MOCK_DATA.usedDays}일을
           사용했습니다.
         </p>
@@ -73,7 +74,7 @@ export default function LeaveStatusCard() {
       </div>
 
       {/* 하단: 최근 신청 내역 리스트 (LeaveHistoryItem 재사용) */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mb-[20px]">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[18px] font-bold text-gray-900">
             최근 신청 내역
@@ -91,9 +92,7 @@ export default function LeaveStatusCard() {
       </div>
 
       {/* 버튼 */}
-      <button className="mt-8 w-full py-5 bg-[#0029C0] text-white rounded-[20px] text-[18px] font-bold hover:bg-[#0023A1] transition-all active:scale-[0.98]">
-        신청하기
-      </button>
+      <Button text="신청하기" />
     </div>
   );
 }

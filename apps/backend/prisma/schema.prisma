@@ -8,14 +8,18 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ------------------------------------------------------
-// 1. Enum 정의 (상태값들을 안전하게 관리)
-// ------------------------------------------------------
+// --- Enum 정의 ---
 
 enum Role {
   OWNER
   ADMIN
   USER
+}
+
+enum WorkType {
+  FIXED // 고정 출퇴근제
+  FLEXIBLE // 유연 근무제
+  REMOTE // 재택 근무
 }
 
 enum RequestStatus {
@@ -26,52 +30,84 @@ enum RequestStatus {
 
 enum LeaveType {
   ANNUAL // 연차
-  HALF // 반차
+  HALF_AM // 오전 반차
+  HALF_PM // 오후 반차
 }
 
-// ------------------------------------------------------
-// 2. 모델 정의
-// ------------------------------------------------------
+enum AttendanceStatus {
+  NORMAL // 정상 출퇴근
+  LATE // 지각 (출근만 늦음)
+  EARLY_LEAVE // 조기 퇴근 (퇴근만 빠름)
+  LATE_EARLY // 지각 + 조기 퇴근
+  INSUFFICIENT // [유연근무용] 총 시간 미달
+  MISSING_OUT // 퇴근 누락 (시스템 강제 종료)
+  ABSENT // 결근
+}
 
-// 회사
+// --- 모델 정의 ---
+
 model Company {
-  id            String   @id @default(uuid())
-  name          String   @unique
-  workType      String   @default("FIXED")
-  workStartTime String   @default("09:00")
-  coreTimeStart String?
-  coreTimeEnd   String?
-  lunchMinutes  Int      @default(60)
-  createdAt     DateTime @default(now())
-
-  users       User[]
-  invitations Invitation[]
-}
-
-// 유저
-model User {
   id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  phone     String?
-  role      Role     @default(USER) // String -> Role(Enum)으로 변경
-  companyId String
+  name      String   @unique
   createdAt DateTime @default(now())
 
-  company         Company         @relation(fields: [companyId], references: [id])
+  workPolicies WorkPolicy[]
+  users        User[]
+  invitations  Invitation[]
+}
+
+model WorkPolicy {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  workType  WorkType @default(FIXED)
+
+  workStartTime String @default("09:00")
+  workEndTime   String @default("18:00")
+  workMinutes   Int    @default(480) // 하루 기준 근무시간(분)
+
+  coreTimeStart String?
+  coreTimeEnd   String?
+
+  lunchMinutes   Int    @default(60)
+  lunchStartTime String @default("12:00")
+  lunchEndTime   String @default("13:00")
+
+  weeklyMustMinutes Int    @default(2400)
+  timezone          String @default("Asia/Seoul")
+
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  users   User[]
+}
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  password     String
+  name         String
+  phone        String?
+  role         Role    @default(USER)
+  companyId    String
+  workPolicyId String
+
+  createdAt DateTime @default(now())
+
+  company    Company    @relation(fields: [companyId], references: [id])
+  workPolicy WorkPolicy @relation(fields: [workPolicyId], references: [id])
+
   workLogs        WorkLog[]
   leaveRequests   LeaveRequest[]
   attendanceFixes AttendanceFix[]
 }
 
-// 초대 토큰
 model Invitation {
   id        String   @id @default(uuid())
   token     String   @unique @default(uuid())
   email     String
   companyId String
-  role      Role     @default(USER) // String -> Role(Enum)으로 변경
+  role      Role     @default(USER)
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -79,38 +115,37 @@ model Invitation {
   company Company @relation(fields: [companyId], references: [id])
 }
 
-// 출퇴근 기록
 model WorkLog {
-  id          String    @id @default(uuid())
+  id          String           @id @default(uuid())
   userId      String
   companyId   String
   clockIn     DateTime
   clockOut    DateTime?
   workMinutes Int?
-  isLate      Boolean   @default(false)
-  isOvertime  Boolean   @default(false)
-  date        DateTime  @db.Date
-  createdAt   DateTime  @default(now())
+  status      AttendanceStatus @default(NORMAL)
+  isOvertime  Boolean          @default(false)
+  date        DateTime         @db.Date
+  createdAt   DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
 }
 
-// 휴가 신청
 model LeaveRequest {
   id        String        @id @default(uuid())
   userId    String
   companyId String
-  type      LeaveType     @default(ANNUAL) // String -> LeaveType(Enum)으로 변경
+  type      LeaveType     @default(ANNUAL)
   startDate DateTime      @db.Date
   endDate   DateTime      @db.Date
   reason    String
-  status    RequestStatus @default(PENDING) // String -> RequestStatus(Enum)으로 변경
+  status    RequestStatus @default(PENDING)
   createdAt DateTime      @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }
 
-// 근태 수정 요청
 model AttendanceFix {
   id                String        @id @default(uuid())
   userId            String
@@ -119,7 +154,7 @@ model AttendanceFix {
   reason            String
   requestedClockIn  DateTime?
   requestedClockOut DateTime?
-  status            RequestStatus @default(PENDING) // String -> RequestStatus(Enum)으로 변경
+  status            RequestStatus @default(PENDING)
   createdAt         DateTime      @default(now())
 
   user User @relation(fields: [userId], references: [id])

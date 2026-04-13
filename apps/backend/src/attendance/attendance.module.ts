@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AttendanceController } from './attendance.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AttendanceService } from './attendance.service';
+import { AttendanceRepository } from './attendance.repository';
+import { AttendanceScheduler } from './attendance.scheduler';
+import { AttendanceController } from './attendance.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [ScheduleModule.forRoot(), PrismaModule],
   controllers: [AttendanceController],
-  providers: [AttendanceService],
+  providers: [AttendanceService, AttendanceRepository, AttendanceScheduler],
 })
 export class AttendanceModule {}
