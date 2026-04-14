@@ -120,7 +120,7 @@ export default function Invite() {
               )}
             </div>
 
-            <Button text="초대하기" disabled={!isValid} />
+            <Button text="초대하기" disabled={!isValid} type="submit" />
           </form>
         </div>
       )}

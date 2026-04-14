@@ -1,3 +1,9 @@
+import ComingSoon from "@/components/ComingSoon";
+
 export default function Vacation() {
-  return <div>휴가 페이지</div>;
+  return (
+    <div>
+      <ComingSoon />
+    </div>
+  );
 }

@@ -1,3 +1,9 @@
+import ComingSoon from "@/components/ComingSoon";
+
 export default function Project() {
-  return <div>프로젝트 페이지</div>;
+  return (
+    <div>
+      <ComingSoon />
+    </div>
+  );
 }

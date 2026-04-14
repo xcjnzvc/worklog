@@ -1,3 +1,9 @@
+import ComingSoon from "@/components/ComingSoon";
+
 export default function Attendance() {
-  return <div>근태 페이지</div>;
+  return (
+    <div>
+      <ComingSoon />
+    </div>
+  );
 }

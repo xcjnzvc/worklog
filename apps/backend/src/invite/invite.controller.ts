@@ -9,17 +9,14 @@ import { GetUser } from 'common/decorators/get-user.decorator';
 
 @ApiTags('Invite')
 @Controller('invite')
+@ApiBearerAuth('access-token')
 export class InviteController {
   constructor(private readonly inviteService: InviteService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  createInvite(
-    @Body() body: CreateInviteDto,
-    @GetUser() user: UserPayload, // RequestWithUser 대신 데코레이터 사용
-  ) {
-    // body.role은 이제 Role 타입이므로 서비스와 타입이 일치합니다.
+  createInvite(@Body() body: CreateInviteDto, @GetUser() user: UserPayload) {
     return this.inviteService.createInvite({
       email: body.email,
       role: body.role,

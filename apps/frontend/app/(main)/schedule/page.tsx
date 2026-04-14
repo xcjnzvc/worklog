@@ -1,3 +1,9 @@
+import ComingSoon from "@/components/ComingSoon";
+
 export default function Schedule() {
-  return <div>스케줄 페이지</div>;
+  return (
+    <div>
+      <ComingSoon />
+    </div>
+  );
 }
