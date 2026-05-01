@@ -1,0 +1,23 @@
+model LeaveRequest {
+    id        String        @id @default(uuid())
+    userId    String
+    companyId String
+    type      LeaveType     @default(ANNUAL)
+    startDate DateTime
+    endDate   DateTime
+    reason    String
+    status    RequestStatus @default(PENDING)
+    createdAt DateTime      @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+
+    // 승인자 관계
+    approverId String?
+    approver   User?   @relation("ApproverRelation", fields: [approverId], references: [id])
+}
+
+enum LeaveType {
+    ANNUAL // 연차
+    HALF_AM // 오전 반차
+    HALF_PM // 오후 반차
+}

@@ -1,0 +1,13 @@
+model AttendanceFix {
+    id                String        @id @default(uuid())
+    userId            String
+    companyId         String
+    targetDate        DateTime      @db.Date
+    reason            String
+    requestedClockIn  DateTime?
+    requestedClockOut DateTime?
+    status            RequestStatus @default(PENDING)
+    createdAt         DateTime      @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+}

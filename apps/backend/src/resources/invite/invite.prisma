@@ -1,0 +1,12 @@
+model Invitation {
+  id        String   @id @default(uuid())
+  token     String   @unique @default(uuid())
+  email     String
+  companyId String
+  role      Role     @default(USER)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+}

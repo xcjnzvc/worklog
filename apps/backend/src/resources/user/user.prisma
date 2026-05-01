@@ -1,0 +1,29 @@
+model User {
+    id           String  @id @default(uuid())
+    email        String  @unique
+    password     String
+    name         String
+    phone        String?
+    role         Role    @default(USER)
+    companyId    String
+    workPolicyId String
+    totalLeave   Int     @default(15)
+    usedLeave    Float   @default(0.0)
+
+    createdAt DateTime @default(now())
+
+    company         Company         @relation(fields: [companyId], references: [id])
+    workPolicy      WorkPolicy      @relation(fields: [workPolicyId], references: [id])
+    workLogs        WorkLog[]
+    leaveRequests   LeaveRequest[]
+    attendanceFixes AttendanceFix[]
+
+    // 승인한 휴가들 역참조
+    approvedLeaves LeaveRequest[] @relation("ApproverRelation")
+}
+
+enum Role {
+    OWNER
+    ADMIN
+    USER
+}
