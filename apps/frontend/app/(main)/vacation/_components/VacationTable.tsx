@@ -439,6 +439,7 @@
 //   );
 // }
 
+"use client";
 import React, { useState, useMemo } from "react";
 import { Calendar, Clock } from "lucide-react";
 import DatePicker from "react-datepicker";
@@ -448,15 +449,15 @@ import { parse, isWithinInterval } from "date-fns";
 import { VacationItem, VacationTableRow } from "@/types/vacation";
 
 /**
- * 1. 디자인이 반영된 테이블 컴포넌트
+ * 1. 하위 컴포넌트: VacationTable
+ * 타입을 명확히 규정하여 'any' 에러를 방지합니다.
  */
-const VacationTable = ({
-  data,
-  onItemClick,
-}: {
+interface VacationTableProps {
   data: VacationTableRow[];
   onItemClick: (item: VacationTableRow) => void;
-}) => {
+}
+
+const VacationTable = ({ data, onItemClick }: VacationTableProps) => {
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "APPROVED":
@@ -499,65 +500,58 @@ const VacationTable = ({
           </tr>
         </thead>
         <tbody className="divide-y divide-[#F4F7FE]">
-          {data.map((item, index) => {
-            const isHalfLeave = item.type !== "ANNUAL";
-            const iconColor = isHalfLeave ? "#F69722" : "#2357E5";
-            const typeBgColor = isHalfLeave ? "#FFF7ED" : "#DBEAFE";
-            const typeTextColor = isHalfLeave ? "#F69722" : "#2357E5";
-            const typeBorderColor = isHalfLeave ? "#FFE7D6" : "#BFDBFE";
-
-            return (
-              <tr
-                key={item.id}
-                onClick={() => onItemClick(item)}
-                className="hover:bg-[#F4F7FE]/50 cursor-pointer group transition-colors"
-              >
-                <td className="px-8 py-6 text-sm text-[#A3AED0] font-medium">
-                  {index + 1}
-                </td>
-                <td className="px-6 py-6 text-center">
-                  <span
-                    className="inline-flex items-center px-3 py-1 rounded-lg text-[12px] font-bold border"
-                    style={{
-                      backgroundColor: typeBgColor,
-                      color: typeTextColor,
-                      borderColor: typeBorderColor,
-                    }}
-                  >
-                    {item.type === "ANNUAL" ? "연차" : "반차"}
-                  </span>
-                </td>
-                <td className="px-6 py-6 text-sm font-bold text-[#1B254B] group-hover:text-[#4318FF]">
-                  {item.reason}
-                </td>
-                <td className="px-6 py-6 text-sm font-medium text-[#707EAE]">
-                  {item.formattedPeriod}
-                </td>
-                <td className="px-6 py-6 text-sm font-bold text-[#707EAE] flex items-center gap-2">
-                  {item.type === "ANNUAL" ? (
-                    <Calendar size={14} style={{ color: iconColor }} />
-                  ) : (
-                    <Clock size={14} style={{ color: iconColor }} />
-                  )}
-                  {item.durationText}
-                </td>
-                <td className="px-6 py-6 text-center">
-                  <span
-                    className={`inline-flex items-center px-4 py-1.5 rounded-full text-[12px] font-black border ${getStatusStyle(item.status)}`}
-                  >
-                    {item.status === "APPROVED"
-                      ? "승인 완료"
-                      : item.status === "PENDING"
-                        ? "승인 대기"
-                        : "반려됨"}
-                  </span>
-                </td>
-                <td className="px-8 py-6 text-sm text-center font-bold text-[#1B254B]">
-                  {item.approver || "-"}
-                </td>
-              </tr>
-            );
-          })}
+          {data.map((item, index) => (
+            <tr
+              key={item.id}
+              onClick={() => onItemClick(item)}
+              className="hover:bg-[#F4F7FE]/50 cursor-pointer group transition-colors"
+            >
+              <td className="px-8 py-6 text-sm text-[#A3AED0] font-medium">
+                {index + 1}
+              </td>
+              <td className="px-6 py-6 text-center">
+                <span
+                  className="inline-flex items-center px-3 py-1 rounded-lg text-[12px] font-bold border"
+                  style={{
+                    backgroundColor:
+                      item.type === "ANNUAL" ? "#DBEAFE" : "#FFF7ED",
+                    color: item.type === "ANNUAL" ? "#2357E5" : "#F69722",
+                    borderColor: item.type === "ANNUAL" ? "#BFDBFE" : "#FFE7D6",
+                  }}
+                >
+                  {item.type === "ANNUAL" ? "연차" : "반차"}
+                </span>
+              </td>
+              <td className="px-6 py-6 text-sm font-bold text-[#1B254B] group-hover:text-[#4318FF]">
+                {item.reason}
+              </td>
+              <td className="px-6 py-6 text-sm font-medium text-[#707EAE]">
+                {item.formattedPeriod}
+              </td>
+              <td className="px-6 py-6 text-sm font-bold text-[#707EAE] flex items-center gap-2">
+                {item.type === "ANNUAL" ? (
+                  <Calendar size={14} />
+                ) : (
+                  <Clock size={14} />
+                )}
+                {item.durationText}
+              </td>
+              <td className="px-6 py-6 text-center">
+                <span
+                  className={`inline-flex items-center px-4 py-1.5 rounded-full text-[12px] font-black border ${getStatusStyle(item.status)}`}
+                >
+                  {item.status === "APPROVED"
+                    ? "승인 완료"
+                    : item.status === "PENDING"
+                      ? "승인 대기"
+                      : "반려됨"}
+                </span>
+              </td>
+              <td className="px-8 py-6 text-sm text-center font-bold text-[#1B254B]">
+                {item.approver || "-"}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -565,7 +559,7 @@ const VacationTable = ({
 };
 
 /**
- * 2. 전체 대시보드 메인 컴포넌트
+ * 2. 메인 컴포넌트
  */
 export default function VacationDashboard() {
   const [activeTab, setActiveTab] = useState<"LIST" | "APPLY">("LIST");
@@ -603,11 +597,15 @@ export default function VacationDashboard() {
     },
   ];
 
-  const tableData: VacationTableRow[] = rawData.map((item) => ({
-    ...item,
-    formattedPeriod: `${item.startDate} ~ ${item.endDate}`,
-    durationText: item.type === "ANNUAL" ? "2일" : item.timeRange,
-  }));
+  const tableData: VacationTableRow[] = useMemo(
+    () =>
+      rawData.map((item) => ({
+        ...item,
+        formattedPeriod: `${item.startDate} ~ ${item.endDate}`,
+        durationText: item.type === "ANNUAL" ? "2일" : item.timeRange,
+      })),
+    [rawData],
+  );
 
   const filteredData = useMemo(() => {
     return tableData.filter((item) => {
@@ -635,10 +633,10 @@ export default function VacationDashboard() {
     <div className="w-full min-h-screen bg-[#F8F9FA] p-10">
       <div className="max-w-[1600px] mx-auto space-y-6">
         <div className="flex items-center gap-8 border-b border-[#E0E5F2]">
-          {["LIST", "APPLY"].map((tab) => (
+          {(["LIST", "APPLY"] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              onClick={() => setActiveTab(tab)}
               className={`relative pb-4 font-black transition-all duration-300 ${activeTab === tab ? "text-[24px] text-[#1B254B]" : "text-[18px] text-[#A3AED0]"}`}
             >
               {tab === "LIST" ? "휴가 목록" : "휴가 신청"}
@@ -650,136 +648,14 @@ export default function VacationDashboard() {
         </div>
 
         {activeTab === "LIST" ? (
-          <div className="space-y-6">
-            <div className="bg-white rounded-[14px] shadow-sm py-3 px-6 border border-[#E0E5F2]">
-              <div className="flex gap-3 items-center">
-                {/* 카테고리 & 상태 드롭다운 */}
-                {[
-                  {
-                    key: "category",
-                    label:
-                      filters.category === "ALL"
-                        ? "카테고리"
-                        : filters.category === "ANNUAL"
-                          ? "연차"
-                          : "반차",
-                    items: [
-                      { v: "ALL", n: "전체" },
-                      { v: "ANNUAL", n: "연차" },
-                      { v: "HALF", n: "반차" },
-                    ],
-                  },
-                  {
-                    key: "status",
-                    label:
-                      filters.status === "ALL"
-                        ? "상태"
-                        : filters.status === "APPROVED"
-                          ? "승인 완료"
-                          : filters.status === "PENDING"
-                            ? "승인 대기"
-                            : "반려됨",
-                    items: [
-                      { v: "ALL", n: "전체" },
-                      { v: "APPROVED", n: "승인 완료" },
-                      { v: "PENDING", n: "승인 대기" },
-                      { v: "REJECTED", n: "반려됨" },
-                    ],
-                  },
-                ].map((f) => (
-                  <div key={f.key} className="relative">
-                    <div
-                      onClick={() =>
-                        setDropdown(dropdown === f.key ? null : f.key)
-                      }
-                      className="h-12 flex items-center justify-between px-5 border border-[#E0E5F2] rounded-xl min-w-[130px] cursor-pointer hover:border-[#4318FF] transition-all"
-                    >
-                      <span className="text-[13px] font-medium text-[#1B254B]">
-                        {f.label}
-                      </span>
-                      <svg
-                        width="10"
-                        height="6"
-                        viewBox="0 0 12 8"
-                        fill="none"
-                        className="ml-2"
-                      >
-                        <path
-                          d="M1 1.5L6 6.5L11 1.5"
-                          stroke="#1B254B"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    {dropdown === f.key && (
-                      <div className="absolute top-14 w-full bg-white border border-[#E0E5F2] rounded-xl shadow-lg z-20 py-2">
-                        {f.items.map((opt) => (
-                          <div
-                            key={opt.v}
-                            className="px-5 py-2 text-[13px] hover:bg-[#F4F7FE] cursor-pointer"
-                            onClick={() => {
-                              setFilters({ ...filters, [f.key]: opt.v });
-                              setDropdown(null);
-                            }}
-                          >
-                            {opt.n}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* 날짜 범위 */}
-                <div className="h-12 flex items-center gap-2 px-5 border border-[#E0E5F2] rounded-xl hover:border-[#4318FF] transition-all">
-                  <DatePicker
-                    selected={filters.startDate}
-                    onChange={(d) => setFilters({ ...filters, startDate: d })}
-                    locale={ko}
-                    dateFormat="yyyy.MM.dd"
-                    placeholderText="연도. 월. 일."
-                    className="w-24 text-[13px] outline-none text-[#A3AED0]"
-                  />
-                  <Calendar size={14} className="text-[#1B254B]" />
-                  <span className="text-[#A3AED0]">~</span>
-                  <DatePicker
-                    selected={filters.endDate}
-                    onChange={(d) => setFilters({ ...filters, endDate: d })}
-                    locale={ko}
-                    dateFormat="yyyy.MM.dd"
-                    placeholderText="연도. 월. 일."
-                    className="w-24 text-[13px] outline-none text-[#A3AED0]"
-                  />
-                  <Calendar size={14} className="text-[#1B254B]" />
-                </div>
-
-                <input
-                  className="h-12 flex-1 bg-[#F4F7FE] rounded-xl px-5 text-[13px] outline-none" // flex-1은 그대로 유지 (남은 공간을 다 차지)
-                  placeholder="검색어를 입력하세요..."
-                  onChange={(e) =>
-                    setFilters({ ...filters, keyword: e.target.value })
-                  }
-                />
-                <button className="h-12 w-[140px] bg-[#0029C0] text-white rounded-xl text-[15px] font-bold">
-                  {/* w-[140px] 처럼 고정 넓이를 주면, 
-      나머지 공간을 input이 flex-1로 알아서 가져갑니다. */}
-                  조회
-                </button>
-              </div>
-            </div>
-            <div className="bg-white rounded-[14px] shadow-sm border border-[#F4F7FE] p-8">
-              <VacationTable
-                data={filteredData}
-                onItemClick={(item) => console.log(item)}
-              />
-            </div>
+          <div className="bg-white rounded-[14px] shadow-sm border border-[#F4F7FE] p-8">
+            <VacationTable
+              data={filteredData}
+              onItemClick={(item: VacationTableRow) => console.log(item)}
+            />
           </div>
         ) : (
-          <div className="bg-white rounded-[32px] shadow-sm border border-[#F4F7FE] p-8 text-center py-20 font-bold text-[#1B254B]">
-            신청 폼 영역
-          </div>
+          <div className="p-20 text-center font-bold">신청 폼 영역</div>
         )}
       </div>
     </div>

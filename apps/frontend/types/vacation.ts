@@ -33,6 +33,7 @@ export interface VacationItem {
   reason: string;
   createdAt: string;
   timeRange: string;
+  approver: string;
 }
 
 export interface VacationResponse {
