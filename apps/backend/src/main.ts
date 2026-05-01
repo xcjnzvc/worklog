@@ -11,12 +11,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'https://worklog-u92g.vercel.app',
-      'https://worklog-u92g-git-main-kangs-projects-34b81f95.vercel.app',
-      'https://worklog-u92g-dpnduxhtx-kangs-projects-34b81f95.vercel.app',
-    ],
+    // origin: [
+    //   'http://localhost:3000',
+    //   'https://worklog-u92g.vercel.app',
+    // ],
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -41,6 +40,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT || 8000);
+  // await app.listen(process.env.PORT || 8000);
+  await app.listen(8000, '0.0.0.0');
 }
 bootstrap();

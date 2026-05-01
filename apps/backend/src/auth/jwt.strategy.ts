@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PrismaService } from '../prisma/prisma.service';
 
-// JWT 안 payload
 interface JwtPayload {
   sub: string;
   email: string;
@@ -10,7 +10,6 @@ interface JwtPayload {
   companyId: string;
 }
 
-// 서버용 user
 export interface UserPayload {
   userId: string;
   email: string;
@@ -20,7 +19,7 @@ export interface UserPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -28,7 +27,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload): UserPayload {
+  async validate(payload: JwtPayload): Promise<UserPayload> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+
+    if (!user) throw new UnauthorizedException('존재하지 않는 유저입니다.');
+
     return {
       userId: payload.sub,
       email: payload.email,

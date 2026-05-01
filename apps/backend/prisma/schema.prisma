@@ -91,15 +91,19 @@ model User {
   role         Role    @default(USER)
   companyId    String
   workPolicyId String
+  totalLeave   Int     @default(15)
+  usedLeave    Float   @default(0.0)
 
   createdAt DateTime @default(now())
 
-  company    Company    @relation(fields: [companyId], references: [id])
-  workPolicy WorkPolicy @relation(fields: [workPolicyId], references: [id])
-
+  company         Company        @relation(fields: [companyId], references: [id])
+  workPolicy      WorkPolicy     @relation(fields: [workPolicyId], references: [id])
   workLogs        WorkLog[]
   leaveRequests   LeaveRequest[]
   attendanceFixes AttendanceFix[]
+  
+  // 승인한 휴가들 역참조
+  approvedLeaves  LeaveRequest[] @relation("ApproverRelation")
 }
 
 model Invitation {
@@ -137,13 +141,17 @@ model LeaveRequest {
   userId    String
   companyId String
   type      LeaveType     @default(ANNUAL)
-  startDate DateTime      @db.Date
-  endDate   DateTime      @db.Date
+  startDate DateTime
+  endDate   DateTime
   reason    String
   status    RequestStatus @default(PENDING)
   createdAt DateTime      @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user       User  @relation(fields: [userId], references: [id])
+  
+  // 승인자 관계
+  approverId String?
+  approver   User?   @relation("ApproverRelation", fields: [approverId], references: [id])
 }
 
 model AttendanceFix {

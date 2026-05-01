@@ -18,6 +18,7 @@ import { AxiosError } from "axios";
 import { toast } from "react-hot-toast";
 import { Resolver } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 // 1. 기존 로직을 담당하는 내부 컴포넌트 (useSearchParams 사용 부분 포함)
 function SignupContent() {
@@ -108,13 +109,15 @@ function SignupContent() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-[40px] py-20">
-      <Title
-        describe={
-          isInvited
-            ? "초대받은 회원가입 페이지입니다."
-            : "최고 관리자의 회원가입 페이지입니다."
-        }
-      />
+      <Link href="/">
+        <Title
+          describe={
+            isInvited
+              ? "초대받은 회원가입 페이지입니다."
+              : "최고 관리자의 회원가입 페이지입니다."
+          }
+        />
+      </Link>
 
       <form
         onSubmit={handleSubmit(onSubmit)}

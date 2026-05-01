@@ -3,33 +3,20 @@
 import React from "react";
 import LeaveHistoryItem from "@/components/LeaveHistoryItem";
 import Button from "@/components/Button";
+import { useQuery } from "@tanstack/react-query";
+import { getVacationAPI } from "@/api/vacation";
+import { VacationResponse, VacationItem } from "@/types/vacation";
 
 export default function LeaveStatusCard() {
-  // 목데이터
-  const LEAVE_MOCK_DATA = {
-    remainingDays: 7,
-    totalDays: 15,
-    usedDays: 8,
-    history: [
-      {
-        id: 1,
-        date: "2026년 02월 03일",
-        type: "하루 종일",
-        time: "Full-day",
-        status: "승인 대기" as const,
-      },
-      {
-        id: 2,
-        date: "2026년 02월 03일",
-        type: "반차",
-        time: "14:00 - 18:00",
-        status: "승인 완료" as const,
-      },
-    ],
-  };
+  const { data, isLoading, isError } = useQuery<VacationResponse>({
+    queryKey: ["vacations"],
+    queryFn: getVacationAPI,
+  });
 
-  const usedPercentage =
-    (LEAVE_MOCK_DATA.usedDays / LEAVE_MOCK_DATA.totalDays) * 100;
+  if (isLoading) return <div>로딩 중...</div>;
+  if (isError || !data) return <div>데이터를 불러올 수 없습니다.</div>;
+
+  const usedPercentage = (data.summary.used / data.summary.total) * 100;
 
   return (
     <div className="p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm max-w-[450px] w-full flex flex-col">
@@ -41,7 +28,7 @@ export default function LeaveStatusCard() {
           </h2>
           <div className="flex items-baseline gap-1">
             <span className="text-[40px] font-black text-black leading-none">
-              {LEAVE_MOCK_DATA.remainingDays}
+              {data.summary.remaining}
             </span>
             <span className="text-[18px] font-bold text-gray-400">일 남음</span>
           </div>
@@ -52,10 +39,9 @@ export default function LeaveStatusCard() {
       </div>
 
       {/* 중간: 프로그레스 바 영역 */}
-      <div className="mb-10">
+      <div className="mb-18">
         <p className="text-[15px] font-medium text-gray-500 mb-[12px]">
-          전체 {LEAVE_MOCK_DATA.totalDays}일 중 {LEAVE_MOCK_DATA.usedDays}일을
-          사용했습니다.
+          전체 {data.summary.total}일 중 {data.summary.used}일을 사용했습니다.
         </p>
         <div className="relative w-full h-3 bg-gray-100 rounded-full overflow-hidden">
           <div
@@ -64,12 +50,8 @@ export default function LeaveStatusCard() {
           />
         </div>
         <div className="flex justify-between mt-2 text-[13px] font-bold">
-          <span className="text-[#0029C0]">
-            사용 {LEAVE_MOCK_DATA.usedDays}
-          </span>
-          <span className="text-gray-400">
-            남음 {LEAVE_MOCK_DATA.remainingDays}
-          </span>
+          <span className="text-[#0029C0]">사용 {data.summary.used}</span>
+          <span className="text-gray-400">남음 {data.summary.remaining}</span>
         </div>
       </div>
 
@@ -85,8 +67,14 @@ export default function LeaveStatusCard() {
         </div>
 
         <div className="flex flex-col">
-          {LEAVE_MOCK_DATA.history.map((item) => (
-            <LeaveHistoryItem key={item.id} {...item} />
+          {data.data.map((item) => (
+            <LeaveHistoryItem
+              key={item.id}
+              startDate={item.startDate}
+              type={item.type}
+              timeRange={item.timeRange}
+              status={item.status}
+            />
           ))}
         </div>
       </div>

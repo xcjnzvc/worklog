@@ -15,3 +15,9 @@ export const recordAttendanceAPI = async (
   const res = await axiosInstance.post(endpoint); // 이제 body에 { action }을 담을 필요도 없겠네요!
   return res.data;
 };
+
+export const getWeeklyAttendanceAPI = async () => {
+  const res = await axiosInstance.get("/attendance/weekly");
+  console.log("weeklyapi", res);
+  return res.data;
+};

@@ -13,8 +13,10 @@ interface User {
 interface UserStore {
   user: User | null;
   isLoggedIn: boolean;
+  isLoading: boolean;
   setUser: (user: User) => void;
   clearUser: () => void;
+  setIsLoading: (loading: boolean) => void;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -22,8 +24,10 @@ export const useUserStore = create<UserStore>()(
     (set) => ({
       user: null,
       isLoggedIn: false,
-      setUser: (user) => set({ user, isLoggedIn: true }),
-      clearUser: () => set({ user: null, isLoggedIn: false }),
+      isLoading: true,
+      setUser: (user) => set({ user, isLoggedIn: true, isLoading: false }),
+      clearUser: () => set({ user: null, isLoggedIn: false, isLoading: false }),
+      setIsLoading: (loading) => set({ isLoading: loading }),
     }),
     { name: "user-storage" },
   ),

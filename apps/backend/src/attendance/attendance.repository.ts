@@ -106,21 +106,28 @@ export class AttendanceRepository {
     userId: string,
     today: Date,
   ): Promise<WorkLog | null> {
-    return this.prisma.workLog.findFirst({
-      where: { userId, date: today, clockOut: { not: null } },
+    const result = await this.prisma.workLog.findFirst({
+      where: {
+        userId,
+        date: today,
+        clockOut: { not: null },
+      },
       orderBy: { clockOut: 'desc' },
     });
+
+    return result;
   }
 
   /**
-   * 이번 주 월요일 이후 완료된 로그 전체 조회
+   * 이번 주 월요일 이후 로그 전체 조회
+   * ✅ workMinutes 조건 제거: 출근 중(clockOut: null)인 로그도 포함해야
+   *    오늘 출근 기록이 ABSENT로 잘못 표시되는 버그 방지
    */
   async findWeeklyLogs(userId: string, monday: Date): Promise<WorkLog[]> {
     return this.prisma.workLog.findMany({
       where: {
         userId,
         date: { gte: monday },
-        workMinutes: { not: null },
       },
     });
   }

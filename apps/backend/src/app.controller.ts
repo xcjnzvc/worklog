@@ -12,6 +12,7 @@ export class AppController {
 
   @Get('health')
   health() {
+    console.log('연결됨');
     return { status: 'ok' };
   }
 }

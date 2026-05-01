@@ -416,13 +416,11 @@ export class AttendanceService {
   constructor(private repo: AttendanceRepository) {}
 
   // ─────────────────────────────────────────
-  // 1. 실시간 근무 상태 조회 (오늘의 근태 현황)
+  // 1. 실시간 근무 상태 조회
   // ─────────────────────────────────────────
   async getLiveWorkMinutes(userId: string) {
     const now = new Date();
     const today = this.getTodayStart();
-    console.log('오늘의 시작점(KST 기준):', today.toISOString());
-
     const user = await this.repo.findUserWithPolicy(userId);
 
     const formatKST = (date: Date | null): string | null => {
@@ -442,8 +440,9 @@ export class AttendanceService {
         .replace('.', '');
     };
 
-    // 현재 근무 중인 로그 확인
     const activeLog = await this.repo.findOpenLog(userId);
+
+    // ✅ 출근 중일 때: DB의 실제 status(NORMAL/LATE)를 보냄
     if (activeLog) {
       const rawMin = Math.floor(
         (now.getTime() - activeLog.clockIn.getTime()) / 60000,
@@ -455,8 +454,9 @@ export class AttendanceService {
       );
 
       return {
-        status: 'WORKING',
+        status: activeLog.status,
         isClockedIn: true,
+        isClockedOut: false,
         workMinutes: Math.max(0, rawMin - lunch),
         clockIn: formatKST(activeLog.clockIn),
         clockOut: null,
@@ -465,7 +465,7 @@ export class AttendanceService {
       };
     }
 
-    // 오늘 이미 종료된(퇴근/결근) 로그 확인
+    // ✅ 퇴근 완료 시
     const finishedLog = await this.repo.findTodayFinishedLog(userId, today);
     if (finishedLog) {
       return {
@@ -480,7 +480,6 @@ export class AttendanceService {
       };
     }
 
-    // 아무 기록도 없는 상태 (출근 전)
     return {
       status: 'NOT_STARTED',
       isClockedIn: false,
@@ -508,7 +507,6 @@ export class AttendanceService {
       throw new BadRequestException('오늘은 연차 휴가일입니다.');
     }
 
-    // 어제 퇴근 안 한 로그 자동 마감 처리
     const forgotLog = await this.repo.findForgottenLog(userId, today);
     if (forgotLog) {
       const yesterdayEnd = new Date(forgotLog.date);
@@ -522,6 +520,7 @@ export class AttendanceService {
     const hasHalfAM = user.leaveRequests.some(
       (l) => l.type === LeaveType.HALF_AM,
     );
+
     const status = this.resolveClockInStatus(now, user.workPolicy, hasHalfAM);
 
     return this.repo.createClockIn({
@@ -539,6 +538,7 @@ export class AttendanceService {
   async clockOut(userId: string) {
     const now = new Date();
     const log = await this.repo.findOpenLog(userId);
+
     if (!log) throw new BadRequestException('출근 기록이 없습니다.');
 
     const policy = log.user.workPolicy;
@@ -559,7 +559,9 @@ export class AttendanceService {
     const workMinutes = Math.max(0, rawMin - lunch);
 
     const isShort = this.resolveIsShort(now, workMinutes, policy, isHalfLeave);
-    const wasLate = log.status !== AttendanceStatus.NORMAL;
+    const wasLate =
+      log.status === AttendanceStatus.LATE ||
+      log.status === AttendanceStatus.LATE_EARLY;
     const finalStatus = this.resolveFinalStatus(wasLate, isShort);
 
     return this.repo.updateClockOut(log.id, {
@@ -571,7 +573,7 @@ export class AttendanceService {
   }
 
   // ─────────────────────────────────────────
-  // 4. 주간 통계 및 그래프 데이터 조회
+  // 4. 주간 통계 조회
   // ─────────────────────────────────────────
   async getWeeklyStats(userId: string) {
     const now = new Date();
@@ -586,27 +588,58 @@ export class AttendanceService {
     );
     const logs = await this.repo.findWeeklyLogs(userId, monday);
 
+    // ✅ 출근 중인 로그(clockOut: null)의 실시간 workMinutes 계산
+    const activeLog = await this.repo.findOpenLog(userId);
+
     const policyMax = user.workPolicy?.workMinutes ?? 480;
     const counts = { normal: 0, late: 0, early: 0, absent: 0 };
+
+    const getKSTDateString = (date: Date) => {
+      return new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Asia/Seoul',
+      }).format(date);
+    };
+
+    const todayStr = getKSTDateString(now);
 
     const weekDays = ['월', '화', '수', '목', '금'];
     const dailyGraph = weekDays.map((dayName, index) => {
       const targetDate = new Date(monday);
       targetDate.setDate(monday.getDate() + index);
+      const targetDateStr = getKSTDateString(targetDate);
 
       const log = logs.find(
-        (l) => new Date(l.date).toDateString() === targetDate.toDateString(),
+        (l) => getKSTDateString(new Date(l.date)) === targetDateStr,
       );
 
       const hasHalfLeave = user.leaveRequests?.some((leave) => {
-        const leaveDate = new Date(leave.startDate).toDateString();
         return (
-          leaveDate === targetDate.toDateString() &&
+          getKSTDateString(new Date(leave.startDate)) === targetDateStr &&
           (leave.type === LeaveType.HALF_AM || leave.type === LeaveType.HALF_PM)
         );
       });
 
-      const actualMinutes = log?.workMinutes ?? 0;
+      // ✅ 출근 중인 로그면 실시간 workMinutes 계산, 아니면 DB 값 사용
+      let actualMinutes = log?.workMinutes ?? 0;
+      if (
+        log &&
+        log.clockOut === null &&
+        activeLog &&
+        activeLog.id === log.id
+      ) {
+        const rawMin = Math.floor(
+          (now.getTime() - activeLog.clockIn.getTime()) / 60000,
+        );
+        const lunch = this.calcLunchDeduction(
+          now,
+          activeLog.clockIn,
+          user.workPolicy,
+        );
+        actualMinutes = Math.max(0, rawMin - lunch);
+      }
 
       if (log) {
         if (log.status === 'NORMAL') counts.normal++;
@@ -614,7 +647,9 @@ export class AttendanceService {
         if (log.status === 'EARLY_LEAVE' || log.status === 'LATE_EARLY')
           counts.early++;
       } else {
-        if (!hasHalfLeave) counts.absent++;
+        if (targetDateStr < todayStr && !hasHalfLeave) {
+          counts.absent++;
+        }
       }
 
       const dailyTarget = hasHalfLeave ? policyMax / 2 : policyMax;
@@ -627,15 +662,24 @@ export class AttendanceService {
           dailyTarget > 0
             ? Math.min(Math.round((actualMinutes / dailyTarget) * 100), 125)
             : 0,
-        status: log?.status ?? (hasHalfLeave ? 'LEAVE' : 'ABSENT'),
+        status:
+          log?.status ??
+          (hasHalfLeave
+            ? 'LEAVE'
+            : targetDateStr > todayStr
+              ? 'NOT_STARTED'
+              : 'ABSENT'),
       };
     });
 
-    const totalMinutes = logs.reduce((sum, l) => sum + (l.workMinutes ?? 0), 0);
+    const totalMinutes = dailyGraph.reduce(
+      (sum, d) => sum + (d.actualMinutes ?? 0),
+      0,
+    );
 
     return {
       weeklySummary: {
-        period: `${monday.toLocaleDateString('ko-KR')} - ${now.toLocaleDateString('ko-KR')}`,
+        period: `${getKSTDateString(monday).replace(/-/g, '. ')} - ${getKSTDateString(now).replace(/-/g, '. ')}`,
         totalHours: Math.floor(totalMinutes / 60),
         totalMinutes: totalMinutes % 60,
       },
@@ -676,15 +720,29 @@ export class AttendanceService {
   // Private Helpers
   // ─────────────────────────────────────────
 
+  private getKSTMinutes(date: Date): number {
+    const kstStr = new Intl.DateTimeFormat('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Seoul',
+    }).format(date);
+
+    const [h, m] = kstStr.split(':').map(Number);
+    return h * 60 + m;
+  }
+
   private resolveClockInStatus(
     now: Date,
     policy: WorkPolicy,
     hasHalfAM: boolean,
   ): AttendanceStatus {
     if (hasHalfAM) return AttendanceStatus.NORMAL;
+
     const [h, m] = (policy.workStartTime ?? '09:00').split(':').map(Number);
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const startMinutes = h * 60 + m;
+    const nowMinutes = this.getKSTMinutes(now);
+
     return nowMinutes > startMinutes
       ? AttendanceStatus.LATE
       : AttendanceStatus.NORMAL;
@@ -697,14 +755,17 @@ export class AttendanceService {
     isHalfLeave: boolean,
   ): boolean {
     if (!policy) return false;
+
     if (policy.workType === WorkType.FIXED) {
       if (isHalfLeave) return workMinutes < 240;
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
       const [endH, endM] = (policy.workEndTime ?? '18:00')
         .split(':')
         .map(Number);
-      return nowMinutes < endH * 60 + endM;
+      const endMinutes = endH * 60 + endM;
+      const nowMinutes = this.getKSTMinutes(now);
+      return nowMinutes < endMinutes;
     }
+
     const dailyMust = isHalfLeave ? 240 : (policy.workMinutes ?? 480);
     return workMinutes < dailyMust;
   }
@@ -727,10 +788,12 @@ export class AttendanceService {
     if (!policy || !policy.lunchStartTime || !policy.lunchEndTime) return 0;
     const [sh, sm] = policy.lunchStartTime.split(':').map(Number);
     const [eh, em] = policy.lunchEndTime.split(':').map(Number);
+
     const lStart = new Date(now);
     lStart.setHours(sh, sm, 0, 0);
     const lEnd = new Date(now);
     lEnd.setHours(eh, em, 0, 0);
+
     if (now <= lStart || clockIn >= lEnd) return 0;
     const effectiveStart = clockIn > lStart ? clockIn : lStart;
     const effectiveEnd = now < lEnd ? now : lEnd;
@@ -740,21 +803,15 @@ export class AttendanceService {
     );
   }
 
-  /**
-   * 한국 시간(Asia/Seoul) 기준 오늘 00:00:00을 반환합니다.
-   */
   private getTodayStart(): Date {
     const now = new Date();
-    const kstDate = new Intl.DateTimeFormat('ko-KR', {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       timeZone: 'Asia/Seoul',
-    })
-      .format(now)
-      .replace(/\. /g, '-')
-      .replace('.', '');
-
+    });
+    const kstDate = formatter.format(now);
     return new Date(`${kstDate}T00:00:00.000Z`);
   }
 }
