@@ -152,7 +152,7 @@ export class InviteService {
     });
     if (existingUser) throw new BadRequestException('이미 가입된 이메일입니다');
 
-    const existingInvite = await this.prisma.invitation.findFirst({
+    const existingInvite = await this.prisma.invite.findFirst({
       where: {
         email: dto.email,
         companyId: dto.companyId,
@@ -167,7 +167,7 @@ export class InviteService {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    const invite = await this.prisma.invitation.create({
+    const invite = await this.prisma.invite.create({
       data: {
         token,
         email: dto.email,
@@ -186,7 +186,7 @@ export class InviteService {
 
   // 토큰 검증
   async verifyToken(token: string) {
-    const invite = await this.prisma.invitation.findUnique({
+    const invite = await this.prisma.invite.findUnique({
       where: { token },
       include: { company: true },
     });
@@ -212,7 +212,7 @@ export class InviteService {
     name: string;
     phone: string;
   }) {
-    const invite = await this.prisma.invitation.findUnique({
+    const invite = await this.prisma.invite.findUnique({
       where: { token: dto.token },
     });
 
@@ -257,7 +257,7 @@ export class InviteService {
     });
 
     // 토큰 사용 처리
-    await this.prisma.invitation.update({
+    await this.prisma.invite.update({
       where: { token: dto.token },
       data: { used: true },
     });

@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { AuthModule } from './core/auth/auth.module';
 import { InviteModule } from './resources/invite/invite.module';
-import { AttendanceModule } from './resources/attendance/attendance.module';
+import { WorkLogModule } from './resources/work-log/workLog.module';
 import { VacationModule } from './resources/vacation/vacation.module';
 
 @Module({
@@ -11,7 +11,7 @@ import { VacationModule } from './resources/vacation/vacation.module';
     PrismaModule,
     AuthModule,
     InviteModule,
-    AttendanceModule,
+    WorkLogModule,
     VacationModule,
   ],
   controllers: [AppController],

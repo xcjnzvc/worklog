@@ -24,7 +24,7 @@ export type WorkLogWithUser = WorkLog & {
 // ─────────────────────────────────────────────────────
 
 @Injectable()
-export class AttendanceRepository {
+export class WorkLogRepository {
   constructor(private prisma: PrismaService) {}
 
   /**

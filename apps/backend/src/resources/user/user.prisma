@@ -1,29 +1,33 @@
 model User {
-    id           String  @id @default(uuid())
-    email        String  @unique
-    password     String
-    name         String
-    phone        String?
-    role         Role    @default(USER)
-    companyId    String
-    workPolicyId String
-    totalLeave   Int     @default(15)
-    usedLeave    Float   @default(0.0)
+    id           String    @id @default(uuid()) // 기본 키
+    email        String    @unique @map("email") // 이메일
+    password     String    @map("password") // 비밀번호
+    name         String    @map("name") // 이름
+    phone        String?   @map("phone") // 전화번호
+    role         Role      @default(USER) @map("role") // 역할
+    companyId    String    @map("company_id") // 회사 아이디
+    workPolicyId String    @map("work_policy_id") // 근무 정책 아이디
+    totalLeave   Int       @default(15) @map("total_leave") // 총 휴가
+    usedLeave    Float     @default(0.0) @map("used_leave") // 사용한 휴가
+    createdAt    DateTime  @default(now()) @map("created_at") // 생성 시간
+    lastLoginAt  DateTime? @map("last_login_at") // 마지막 로그인 시간
 
-    createdAt DateTime @default(now())
-
-    company         Company         @relation(fields: [companyId], references: [id])
-    workPolicy      WorkPolicy      @relation(fields: [workPolicyId], references: [id])
-    workLogs        WorkLog[]
-    leaveRequests   LeaveRequest[]
-    attendanceFixes AttendanceFix[]
+    company          Company          @relation(fields: [companyId], references: [id]) // 회사
+    workPolicy       WorkPolicy       @relation(fields: [workPolicyId], references: [id]) // 근무 정책
+    workLogs         WorkLog[] // 근무 기록
+    leaveRequests    LeaveRequest[] // 휴가 요청
+    workLogHistories WorkLogHistory[] // 근무 기록 히스토리
 
     // 승인한 휴가들 역참조
-    approvedLeaves LeaveRequest[] @relation("ApproverRelation")
+    approvedLeaves LeaveRequest[] @relation("approver_relation") // 승인한 휴가들
 }
 
 enum Role {
-    OWNER
-    ADMIN
-    USER
+    OWNER @map("대표")
+    ADMIN @map("관리자")
+    USER  @map("직원")
+
+    SUPER_ADMIN @map("최고 관리자(강수정))")
+
+    @@map("role")
 }

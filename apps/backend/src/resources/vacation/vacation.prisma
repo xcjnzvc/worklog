@@ -1,23 +1,34 @@
 model LeaveRequest {
-    id        String        @id @default(uuid())
-    userId    String
-    companyId String
-    type      LeaveType     @default(ANNUAL)
-    startDate DateTime
-    endDate   DateTime
-    reason    String
-    status    RequestStatus @default(PENDING)
-    createdAt DateTime      @default(now())
+    id        String        @id @default(uuid()) // 기본 키
+    userId    String        @map("user_id") // 유저 아이디
+    companyId String        @map("company_id") // 회사 아이디
+    type      LeaveType     @default(ANNUAL) @map("type") // 휴가 유형
+    startDate DateTime      @map("start_date") // 시작 날짜
+    endDate   DateTime      @map("end_date") // 종료 날짜
+    reason    String        @map("reason") // 이유
+    status    RequestStatus @default(PENDING) @map("status") // 상태
+    createdAt DateTime      @default(now()) @map("created_at") // 생성 시간
+    updatedAt DateTime?     @updatedAt @map("updated_at") // 수정 시간
 
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id]) // 유저 관계
 
     // 승인자 관계
-    approverId String?
-    approver   User?   @relation("ApproverRelation", fields: [approverId], references: [id])
+    approverId String? @map("approver_id") // 승인자 아이디
+    approver   User?   @relation("approver_relation", fields: [approverId], references: [id]) // 승인자 관계
+
+    @@map("leave_request")
 }
 
 enum LeaveType {
     ANNUAL // 연차
     HALF_AM // 오전 반차
     HALF_PM // 오후 반차
+}
+
+enum RequestStatus {
+    PENDING  @map("승인 대기")
+    APPROVED @map("승인 완료")
+    REJECTED @map("반려")
+
+    @@map("request_status")
 }

@@ -110,7 +110,7 @@ export class AuthService {
     phone: string;
   }) {
     // 1. 회사명 중복 체크
-    const existing = await this.prisma.company.findUnique({
+    const existing = await this.prisma.company.findFirst({
       where: { name: dto.companyName },
     });
     if (existing) throw new BadRequestException('이미 존재하는 회사명입니다');

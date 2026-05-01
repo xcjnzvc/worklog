@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { AttendanceRepository } from './attendance.repository';
+import { WorkLogRepository } from './workLog.repository';
 import { RequestStatus, LeaveType } from '@prisma/client';
 
 @Injectable()
-export class AttendanceScheduler {
-  private readonly logger = new Logger(AttendanceScheduler.name);
+export class WorkLogScheduler {
+  private readonly logger = new Logger(WorkLogScheduler.name);
 
   constructor(
     private prisma: PrismaService,
-    private repo: AttendanceRepository,
+    private repo: WorkLogRepository,
   ) {}
 
   /**

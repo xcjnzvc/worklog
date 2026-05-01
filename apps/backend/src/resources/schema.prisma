@@ -16,22 +16,6 @@ enum WorkType {
   REMOTE // 재택 근무
 }
 
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum AttendanceStatus {
-  NORMAL // 정상 출퇴근
-  LATE // 지각 (출근만 늦음)
-  EARLY_LEAVE // 조기 퇴근 (퇴근만 빠름)
-  LATE_EARLY // 지각 + 조기 퇴근
-  INSUFFICIENT // [유연근무용] 총 시간 미달
-  MISSING_OUT // 퇴근 누락 (시스템 강제 종료)
-  ABSENT // 결근
-}
-
 // --- 모델 정의 ---
 
 model WorkPolicy {
@@ -58,21 +42,4 @@ model WorkPolicy {
 
   company Company @relation(fields: [companyId], references: [id])
   users   User[]
-}
-
-model WorkLog {
-  id          String           @id @default(uuid())
-  userId      String
-  companyId   String
-  clockIn     DateTime
-  clockOut    DateTime?
-  workMinutes Int?
-  status      AttendanceStatus @default(NORMAL)
-  isOvertime  Boolean          @default(false)
-  date        DateTime         @db.Date
-  createdAt   DateTime         @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@unique([userId, date])
 }

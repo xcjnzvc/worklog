@@ -1,9 +1,12 @@
 model Company {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
+  id        String    @id @default(uuid()) // 기본 키
+  name      String    @map("name") // 이름
+  createdAt DateTime  @default(now()) @map("created_at") // 생성 시간
+  updatedAt DateTime? @updatedAt @map("updated_at") // 수정 시간
 
-  workPolicies WorkPolicy[]
-  users        User[]
-  invitations  Invitation[]
+  workPolicies WorkPolicy[] // 근무 정책
+  users        User[] // 유저
+  invites      Invite[] // 초대
+
+  @@map("company")
 }

@@ -9,11 +9,11 @@
 //   LeaveType,
 //   WorkPolicy,
 // } from '@prisma/client';
-// import { AttendanceRepository } from './attendance.repository';
+// import { WorkLogRepository } from './workLog.repository';
 
 // @Injectable()
-// export class AttendanceService {
-//   constructor(private repo: AttendanceRepository) {}
+// export class WorkLogService {
+//   constructor(private repo: WorkLogRepository) {}
 
 //   // ─────────────────────────────────────────
 //   // 1. 실시간 근무 상태 조회
@@ -409,11 +409,11 @@ import {
   LeaveType,
   WorkPolicy,
 } from '@prisma/client';
-import { AttendanceRepository } from './attendance.repository';
+import { WorkLogRepository } from './workLog.repository';
 
 @Injectable()
-export class AttendanceService {
-  constructor(private repo: AttendanceRepository) {}
+export class WorkLogService {
+  constructor(private repo: WorkLogRepository) {}
 
   // ─────────────────────────────────────────
   // 1. 실시간 근무 상태 조회

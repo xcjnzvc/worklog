@@ -1,0 +1,46 @@
+// --- 근무 기록 ---
+model WorkLog {
+    id          String           @id @default(uuid()) // 기본 키
+    userId      String           @map("user_id") // 유저 아이디
+    companyId   String           @map("company_id") // 회사 아이디
+    clockIn     DateTime         @map("clock_in") // 출근 시간
+    clockOut    DateTime?        @map("clock_out") // 퇴근 시간
+    workMinutes Int?             @map("work_minutes") // 근무 시간
+    status      AttendanceStatus @default(NORMAL) @map("status") // 상태
+    isOvertime  Boolean          @default(false) @map("is_overtime") // 초과 근무 여부
+    date        DateTime         @map("date") @db.Date // 날짜
+    createdAt   DateTime         @default(now()) @map("created_at") // 생성 시간
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@unique([userId, date])
+    @@map("work_log")
+}
+
+// --- 근무 기록 히스토리 ---
+model WorkLogHistory {
+    id                String    @id @default(uuid()) // 기본 키
+    companyId         String    @map("company_id") // 회사 아이디
+    targetDate        DateTime  @map("target_date") @db.Date // 타겟 날짜
+    reason            String    @map("reason") // 이유
+    requestedClockIn  DateTime? @map("requested_clock_in") // 요청 출근 시간
+    requestedClockOut DateTime? @map("requested_clock_out") // 요청 퇴근 시간
+    createdAt         DateTime  @default(now()) @map("created_at") // 생성 시간
+
+    user   User   @relation(fields: [userId], references: [id]) // 유저 관계
+    userId String @map("user_id") // 유저 아이디
+
+    @@map("attendance_history") // 매핑 이름
+}
+
+enum AttendanceStatus {
+    NORMAL       @map("정상 출퇴근") // 정상 출퇴근
+    LATE         @map("지각 ") // 지각 (출근만 늦음)
+    EARLY_LEAVE  @map("조기 퇴근") // 조기 퇴근 (퇴근만 빠름)
+    LATE_EARLY   @map("지각, 조기 퇴근") // 지각 + 조기 퇴근
+    INSUFFICIENT @map("유연근무 총 시간 미달") // [유연근무용] 총 시간 미달
+    MISSING_OUT  @map("퇴근 누락") // 퇴근 누락 (시스템 강제 종료)
+    ABSENT       @map("결근") // 결근
+
+    @@map("attendance_status")
+}
