@@ -48,3 +48,18 @@ export interface VacationTableRow extends VacationItem {
   durationText: string;
   approver: string;
 }
+
+// types/vacation.ts (또는 적절한 위치)
+export interface VacationData {
+  id: string;
+  displayId: string;
+  type: "ANNUAL" | "HALF";
+  startDate: string;
+  endDate: string;
+  status: "APPROVED" | "PENDING" | "REJECTED";
+  reason: string;
+  durationText: string;
+  approver: string;
+  timeDetail: string | null;
+  formattedPeriod?: string; // 선택적 속성으로 추가
+}

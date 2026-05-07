@@ -2,7 +2,7 @@ model Invite {
   id        String   @id @default(uuid()) // 기본 키
   token     String   @unique @default(uuid()) // 토큰
   email     String   @map("email") // 이메일
-  companyId String   @map("company_id") // 회사 아이디
+  companyId String   @map("companyId") // 회사 아이디
   role      Role     @default(USER) @map("role") // 역할
   expiresAt DateTime @map("expires_at") // 만료 시간
   used      Boolean  @default(false) @map("used") // 사용 여부

@@ -442,7 +442,6 @@ export class WorkLogService {
 
     const activeLog = await this.repo.findOpenLog(userId);
 
-    // ✅ 출근 중일 때: DB의 실제 status(NORMAL/LATE)를 보냄
     if (activeLog) {
       const rawMin = Math.floor(
         (now.getTime() - activeLog.clockIn.getTime()) / 60000,
@@ -465,7 +464,6 @@ export class WorkLogService {
       };
     }
 
-    // ✅ 퇴근 완료 시
     const finishedLog = await this.repo.findTodayFinishedLog(userId, today);
     if (finishedLog) {
       return {
@@ -558,6 +556,7 @@ export class WorkLogService {
       : this.calcLunchDeduction(now, log.clockIn, policy);
     const workMinutes = Math.max(0, rawMin - lunch);
 
+    // ✅ 개선된 조퇴 판별 로직 적용
     const isShort = this.resolveIsShort(now, workMinutes, policy, isHalfLeave);
     const wasLate =
       log.status === AttendanceStatus.LATE ||
@@ -568,12 +567,12 @@ export class WorkLogService {
       clockOut: now,
       workMinutes,
       status: finalStatus,
-      isOvertime: workMinutes > 480,
+      isOvertime: workMinutes > (policy?.workMinutes ?? 480),
     });
   }
 
   // ─────────────────────────────────────────
-  // 4. 주간 통계 조회
+  // 4. 주간 통계 조회 (생략 가능하나 최신 상태 유지를 위해 포함)
   // ─────────────────────────────────────────
   async getWeeklyStats(userId: string) {
     const now = new Date();
@@ -587,8 +586,6 @@ export class WorkLogService {
       monday,
     );
     const logs = await this.repo.findWeeklyLogs(userId, monday);
-
-    // ✅ 출근 중인 로그(clockOut: null)의 실시간 workMinutes 계산
     const activeLog = await this.repo.findOpenLog(userId);
 
     const policyMax = user.workPolicy?.workMinutes ?? 480;
@@ -604,8 +601,8 @@ export class WorkLogService {
     };
 
     const todayStr = getKSTDateString(now);
-
     const weekDays = ['월', '화', '수', '목', '금'];
+
     const dailyGraph = weekDays.map((dayName, index) => {
       const targetDate = new Date(monday);
       targetDate.setDate(monday.getDate() + index);
@@ -622,7 +619,6 @@ export class WorkLogService {
         );
       });
 
-      // ✅ 출근 중인 로그면 실시간 workMinutes 계산, 아니면 DB 값 사용
       let actualMinutes = log?.workMinutes ?? 0;
       if (
         log &&
@@ -646,10 +642,8 @@ export class WorkLogService {
         if (log.status === 'LATE' || log.status === 'LATE_EARLY') counts.late++;
         if (log.status === 'EARLY_LEAVE' || log.status === 'LATE_EARLY')
           counts.early++;
-      } else {
-        if (targetDateStr < todayStr && !hasHalfLeave) {
-          counts.absent++;
-        }
+      } else if (targetDateStr < todayStr && !hasHalfLeave) {
+        counts.absent++;
       }
 
       const dailyTarget = hasHalfLeave ? policyMax / 2 : policyMax;
@@ -748,6 +742,11 @@ export class WorkLogService {
       : AttendanceStatus.NORMAL;
   }
 
+  /**
+   * ✅ 조퇴/미달 여부 확인 (수정됨)
+   * 1. FIXED: 퇴근 시각 이전이거나, 실제 근무 시간이 목표치(8시간) 미달이면 조퇴
+   * 2. 그 외: 실제 근무 시간이 목표치 미달이면 조퇴
+   */
   private resolveIsShort(
     now: Date,
     workMinutes: number,
@@ -756,17 +755,20 @@ export class WorkLogService {
   ): boolean {
     if (!policy) return false;
 
+    // 점심시간 제외 필수 근무 시간 (통상 480분, 반차 240분)
+    const dailyMust = isHalfLeave ? 240 : (policy.workMinutes ?? 480);
+
     if (policy.workType === WorkType.FIXED) {
-      if (isHalfLeave) return workMinutes < 240;
       const [endH, endM] = (policy.workEndTime ?? '18:00')
         .split(':')
         .map(Number);
       const endMinutes = endH * 60 + endM;
       const nowMinutes = this.getKSTMinutes(now);
-      return nowMinutes < endMinutes;
+
+      // (퇴근 시간 전이거나) OR (근무 시간이 8시간 미만이면) 조퇴 처리
+      return nowMinutes < endMinutes || workMinutes < dailyMust;
     }
 
-    const dailyMust = isHalfLeave ? 240 : (policy.workMinutes ?? 480);
     return workMinutes < dailyMust;
   }
 

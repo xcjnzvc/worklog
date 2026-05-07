@@ -1,12 +1,13 @@
 model Company {
-  id        String    @id @default(uuid()) // 기본 키
-  name      String    @map("name") // 이름
-  createdAt DateTime  @default(now()) @map("created_at") // 생성 시간
-  updatedAt DateTime? @updatedAt @map("updated_at") // 수정 시간
+  id        String    @id @default(uuid())
+  name      String // @map("name") 삭제 (이름 같으면 불필요)
+  createdAt DateTime  @default(now()) // @map("created_at") 삭제
+  updatedAt DateTime? @updatedAt // @map("updated_at") 삭제
 
-  workPolicies WorkPolicy[] // 근무 정책
-  users        User[] // 유저
-  invites      Invite[] // 초대
+  workPolicies WorkPolicy[]
+  users        User[]
+  invites      Invite[]
 
-  @@map("company")
+  // 테이블 이름은 Supabase에 대문자 "Company"로 되어있으니 유지
+  @@map("Company")
 }
