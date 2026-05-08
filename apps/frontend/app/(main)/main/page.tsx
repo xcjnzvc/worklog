@@ -125,11 +125,49 @@ export default function Main() {
 
   if (!isLoggedIn || !user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8F9FA] gap-6">
-        <h2 className="text-[24px] font-bold text-gray-700">
-          로그인이 필요한 서비스입니다.
-        </h2>
-        <Button text="로그인하러 가기" onClick={() => router.push("/login")} />
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FA] p-6">
+        <div className="max-w-[480px] w-full bg-white rounded-[40px] p-[60px] border border-gray-100 shadow-[0_20px_50px_rgba(0,41,192,0.05)] text-center">
+          {/* 그래픽 영역: 원 하나로 더 심플하게 변경 */}
+          <div className="relative w-[110px] h-[110px] mx-auto mb-10">
+            {/* 단일 배경 원: 브랜드 컬러의 아주 연한 농도 */}
+            <div className="absolute inset-0 bg-[#0029C0] opacity-[0.05] rounded-full" />
+
+            {/* 메인 아이콘 */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative w-10 h-12">
+                {/* 자물쇠 몸통 */}
+                <div className="absolute bottom-0 w-full h-8 bg-[#0029C0] rounded-lg shadow-sm" />
+                {/* 자물쇠 고리 */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-7 border-[3.5px] border-[#0029C0] rounded-full"
+                  style={{ clipPath: "inset(0 0 50% 0)" }}
+                />
+                {/* 열쇠 구멍 포인트 */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full" />
+              </div>
+            </div>
+          </div>
+
+          {/* 텍스트 영역 */}
+          <h2 className="text-[26px] font-bold text-gray-950 mb-4 tracking-tight">
+            서비스 이용 안내
+          </h2>
+          <p className="text-gray-400 text-[16px] leading-relaxed mb-10">
+            안전한 서비스 이용을 위해
+            <br />
+            <span className="text-gray-600 font-semibold">
+              로그인이 필요합니다.
+            </span>
+          </p>
+
+          {/* 버튼 영역 */}
+          <div className="flex flex-col">
+            <Button
+              text="로그인하러 가기"
+              onClick={() => router.push("/login")}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -174,7 +212,7 @@ export default function Main() {
       <div className="max-w-[1600px] mx-auto">
         <header className="mb-[40px]">
           <h2 className="text-[28px] font-bold text-[#222]">
-            <span className="text-[#0029C0]">{user.companyName}</span>{" "}
+            <span className="text-[#0029C0]">{user.companyName}회사의</span>{" "}
             {user.name}님 환영합니다!
           </h2>
         </header>
