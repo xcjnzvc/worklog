@@ -1,6 +1,6 @@
 model LeaveRequest {
     id        String        @id @default(uuid())
-    userId    String // @map("user_id") 삭제 -> DB 컬럼명이 userId라면 OK
+    userId    String
     companyId String
     type      LeaveType     @default(ANNUAL)
     startDate DateTime
@@ -16,14 +16,16 @@ model LeaveRequest {
     approverId String?
     approver   User?   @relation("approver_relation", fields: [approverId], references: [id])
 
-    // 테이블명도 대문자 시작인지 확인하세요! (예: LeaveRequest)
     @@map("LeaveRequest")
 }
 
 enum LeaveType {
-    ANNUAL
-    HALF_AM
-    HALF_PM
+    ANNUAL // 연차
+    HALF_AM // 오전 반차
+    HALF_PM // 오후 반차
+    SICK // 병가
+    EVENT // 경조사
+    OTHER // 기타
 }
 
 enum RequestStatus {
@@ -31,6 +33,5 @@ enum RequestStatus {
     APPROVED
     REJECTED
 
-    // Enum 타입 명칭도 DB와 맞춤
     @@map("RequestStatus")
 }

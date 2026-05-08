@@ -1,7 +1,7 @@
 import {
   Controller,
   Get,
-  // Post,
+  Post,
   Body,
   // Patch,
   Param,
@@ -10,20 +10,26 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { VacationService } from './vacation.service';
-// import { CreateVacationDto } from './dto/create-vacation.dto';
+import { CreateVacationDto } from './dto/create-vacation.dto';
 // import { UpdateVacationDto } from './dto/update-vacation.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/core/auth/jwt-auth.guard';
 
+@ApiTags('Vacation')
+@ApiBearerAuth('access-token')
 @Controller('vacation')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 export class VacationController {
   constructor(private readonly vacationService: VacationService) {}
 
-  // @Post()
-  // create(@Body() createVacationDto: CreateVacationDto) {
-  //   return this.vacationService.create(createVacationDto);
-  // }
+  @Post()
+  async create(
+    @GetUser('userId') userId: string,
+    @Body() createVacationDto: CreateVacationDto,
+  ) {
+    return this.vacationService.create(userId, createVacationDto);
+  }
 
   @Get()
   async findAll(

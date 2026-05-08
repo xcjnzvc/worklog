@@ -1,13 +1,13 @@
 model Company {
   id        String    @id @default(uuid())
-  name      String // @map("name") 삭제 (이름 같으면 불필요)
-  createdAt DateTime  @default(now()) // @map("created_at") 삭제
-  updatedAt DateTime? @updatedAt // @map("updated_at") 삭제
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
+  teams        Team[]
   workPolicies WorkPolicy[]
   users        User[]
   invites      Invite[]
 
-  // 테이블 이름은 Supabase에 대문자 "Company"로 되어있으니 유지
   @@map("Company")
 }

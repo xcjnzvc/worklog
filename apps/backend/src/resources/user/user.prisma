@@ -1,27 +1,43 @@
 model User {
-    id           String    @id @default(uuid())
-    email        String    @unique
-    password     String
-    name         String
-    phone        String?
-    role         Role      @default(USER)
-    companyId    String
+    id        String  @id @default(uuid())
+    email     String  @unique
+    password  String
+    name      String
+    phone     String?
+    role      Role    @default(USER)
+    position  String?
+    companyId String
+
+    teamId String?
+
     workPolicyId String
     totalLeave   Int       @default(15)
     usedLeave    Float     @default(0.0)
     createdAt    DateTime  @default(now())
     lastLoginAt  DateTime?
 
-    company          Company          @relation(fields: [companyId], references: [id])
-    workPolicy       WorkPolicy       @relation(fields: [workPolicyId], references: [id])
+    company    Company    @relation(fields: [companyId], references: [id])
+    workPolicy WorkPolicy @relation(fields: [workPolicyId], references: [id])
+
+    team Team? @relation(fields: [teamId], references: [id])
+
     workLogs         WorkLog[]
     leaveRequests    LeaveRequest[]
     workLogHistories WorkLogHistory[]
 
     approvedLeaves LeaveRequest[] @relation("approver_relation")
 
-    // 테이블 이름 대문자 확인! (Supabase에 User라고 되어 있다면 아래 유지)
     @@map("User")
+}
+
+model Team {
+    id        String  @id @default(uuid())
+    name      String // 팀 이름 (예: 인사팀, 개발1팀)
+    companyId String
+    company   Company @relation(fields: [companyId], references: [id])
+    users     User[] // 이 팀에 속한 유저들
+
+    @@map("Team")
 }
 
 enum Role {
@@ -30,6 +46,5 @@ enum Role {
     USER
     SUPER_ADMIN
 
-    // DB에 정의된 enum 타입 이름이 "Role"이라면 대문자로 수정
     @@map("Role")
 }

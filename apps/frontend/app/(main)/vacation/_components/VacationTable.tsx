@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { VacationData } from "../page";
+import { VacationData } from "@/types/vacation";
 
 export interface VacationTableRow extends VacationData {
   formattedPeriod: string;

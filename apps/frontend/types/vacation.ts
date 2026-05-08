@@ -1,65 +1,52 @@
-// export interface VacationItem {
-//   id: string;
-//   type: "ANNUAL" | "HALF_AM" | "HALF_PM";
-//   startDate: string;
-//   endDate: string;
-//   status: "PENDING" | "APPROVED" | "REJECTED";
-//   reason: string;
-//   createdAt: string;
-//   timeRange: string;
-// }
+// @/types/vacation.ts
 
-// export interface VacationResponse {
-//   summary: {
-//     total: number;
-//     used: number;
-//     remaining: number;
-//   };
-//   data: VacationItem[];
-//   meta: {
-//     totalCount: number;
-//     page: number;
-//     limit: number;
-//     lastPage: number;
-//   };
-// }
+export type UserRole = "OWNER" | "ADMIN" | "USER";
 
 export interface VacationItem {
   id: string;
+  displayId: string;
   type: "ANNUAL" | "HALF_AM" | "HALF_PM";
   startDate: string;
   endDate: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   reason: string;
+  durationText: string;
+  timeDetail: "오전" | "오후" | null;
+  approver: string;
   createdAt: string;
   timeRange: string;
-  approver: string;
+  // 유저 상세 정보 추가
+  user: {
+    name: string;
+    role: UserRole;
+    department: string;
+    position: string;
+    displayTitle: string;
+  };
+}
+
+export interface VacationTableRow extends VacationItem {
+  formattedPeriod: string;
 }
 
 export interface VacationResponse {
-  summary: { total: number; used: number; remaining: number };
-  data: VacationItem[];
-  meta: { totalCount: number; page: number; limit: number; lastPage: number };
+  summary: {
+    total: number;
+    used: number;
+    remaining: number;
+  };
+  data: VacationItem[]; // data.list 구조에 맞춤
+  meta: {
+    totalCount: number;
+    page: number;
+    limit: number;
+    lastPage: number;
+  };
 }
 
-// 목록 표(Table)에서 사용하는 확장 타입
-export interface VacationTableRow extends VacationItem {
-  formattedPeriod: string;
-  durationText: string;
-  approver: string;
-}
-
-// types/vacation.ts (또는 적절한 위치)
-export interface VacationData {
-  id: string;
-  displayId: string;
-  type: "ANNUAL" | "HALF";
-  startDate: string;
-  endDate: string;
-  status: "APPROVED" | "PENDING" | "REJECTED";
-  reason: string;
-  durationText: string;
-  approver: string;
-  timeDetail: string | null;
-  formattedPeriod?: string; // 선택적 속성으로 추가
+/** * 아래 VacationData가 기존에 "HALF"로 되어 있어서 에러가 난 것입니다.
+ * 아래처럼 수정하거나, 아예 삭제하고 VacationItem을 사용하세요.
+ */
+export interface VacationData extends VacationItem {
+  formattedPeriod?: string;
 }

@@ -31,7 +31,6 @@ model WorkLogHistory {
     user   User   @relation(fields: [userId], references: [id])
     userId String
 
-    // DB 테이블명이 "WorkLogHistory"라면 아래처럼 수정!
     @@map("WorkLogHistory")
 }
 
@@ -44,6 +43,5 @@ enum AttendanceStatus {
     MISSING_OUT
     ABSENT
 
-    // Enum 타입 자체의 이름이 DB에 "AttendanceStatus"로 되어있다면 아래도 대문자로!
     @@map("AttendanceStatus")
 }

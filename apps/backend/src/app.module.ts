@@ -5,6 +5,7 @@ import { AuthModule } from './core/auth/auth.module';
 import { InviteModule } from './resources/invite/invite.module';
 import { WorkLogModule } from './resources/work-log/workLog.module';
 import { VacationModule } from './resources/vacation/vacation.module';
+import { UserModule } from './resources/user/user.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { VacationModule } from './resources/vacation/vacation.module';
     InviteModule,
     WorkLogModule,
     VacationModule,
+    UserModule,
   ],
   controllers: [AppController],
 })

@@ -34,6 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       role: payload.role as Role,
       companyId: payload.companyId,
+      teamId: user.teamId, // 👈 여기서 user.teamId가 undefined면 에러가 날 수 있음
     };
   }
 }
