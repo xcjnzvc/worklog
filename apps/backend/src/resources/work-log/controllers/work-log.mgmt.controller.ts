@@ -7,7 +7,7 @@ import {
   WorkLogHistoryFindListResponseDto,
   WorkLogMgmtUpdateResponseDto,
 } from '../dto/res/work-log.find-list.dto';
-import { WorkLogHistoryFindListDto } from '../dto/work-log-history.find-list.dto';
+import { WorkLogHistoryFindListMgmtDto } from '../dto/work-log-history.find-list.dto';
 import { WorkLogService } from '../work-log.service';
 
 @ResourceMgmt('work-log')
@@ -29,7 +29,7 @@ export class WorkLogMgmtController {
   })
   @UseRole(Role.OWNER, Role.ADMIN)
   async findListWorkLogHistory(
-    @Query() query: WorkLogHistoryFindListDto,
+    @Query() query: WorkLogHistoryFindListMgmtDto,
   ): Promise<WorkLogHistoryFindListResponseDto> {
     const { result, total } =
       await this.workLogService.findListMgmtWorkLog(query);
@@ -40,7 +40,8 @@ export class WorkLogMgmtController {
     endpoint: ':id',
     summary: '근무 기록 수정 (관리자 전용)',
     method: 'PATCH',
-    description: '근무 기록의 출근/퇴근 시간을 수정하고 상태값을 자동 변경합니다.',
+    description:
+      '근무 기록의 출근/퇴근 시간을 수정하고 상태값을 자동 변경합니다.',
     responses: [
       {
         status: 200,

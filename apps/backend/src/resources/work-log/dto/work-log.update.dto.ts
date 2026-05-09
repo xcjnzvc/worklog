@@ -1,4 +1,4 @@
-import { Property } from "ts-deco";
+import { Property } from 'ts-deco';
 
 export class WorkLogUpdateDto {
   @Property({

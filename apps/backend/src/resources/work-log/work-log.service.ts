@@ -11,20 +11,34 @@ import {
   WorkLog,
 } from '@prisma/client';
 import { WorkLogRepository } from './work-log.repository';
-import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
+import {
+  WorkLogHistoryFindListDto,
+  WorkLogHistoryFindListMgmtDto,
+} from './dto/work-log-history.find-list.dto';
 import {
   WorkLogDataDto,
   WorkLogMgmtUpdateResponseDto,
   WorkLogUpdateResponseDto,
 } from './dto/res/work-log.find-list.dto';
 import { WorkLogUpdateDto } from './dto/work-log.update.dto';
+import { WorkLogDashboardResponseDto } from './dto/res/work-log.dashboard.dto';
 
 @Injectable()
 export class WorkLogService {
   constructor(private repo: WorkLogRepository) {}
 
-  async findListMgmtWorkLog(query: WorkLogHistoryFindListDto) {
-    const workLogHistory = await this.repo.findWorkLog(query);
+  async dashboard(userId: string): Promise<WorkLogDashboardResponseDto> {
+    const workLogHistory = await this.repo.dashboard(userId);
+    return workLogHistory;
+  }
+
+  async findListMgmtWorkLog(query: WorkLogHistoryFindListMgmtDto) {
+    const workLogHistory = await this.repo.findWorkLogMgmt(query);
+    return workLogHistory;
+  }
+
+  async findListWorkLog(query: WorkLogHistoryFindListDto, userId: string) {
+    const workLogHistory = await this.repo.findWorkLog(query, userId);
     return workLogHistory;
   }
 
@@ -38,7 +52,9 @@ export class WorkLogService {
     const clockOut = log.fixClockOut;
 
     if (clockOut <= clockIn) {
-      throw new BadRequestException('퇴근 시간은 출근 시간보다 이후여야 합니다.');
+      throw new BadRequestException(
+        '퇴근 시간은 출근 시간보다 이후여야 합니다.',
+      );
     }
 
     const policy = log.user.workPolicy;
@@ -62,9 +78,7 @@ export class WorkLogService {
       );
     });
 
-    const rawMin = Math.floor(
-      (clockOut.getTime() - clockIn.getTime()) / 60000,
-    );
+    const rawMin = Math.floor((clockOut.getTime() - clockIn.getTime()) / 60000);
     const lunch = isHalfLeave
       ? 0
       : this.calcLunchDeduction(clockOut, clockIn, policy);
@@ -92,8 +106,8 @@ export class WorkLogService {
     return { result: this.toWorkLogDataDto(updatedLog) };
   }
 
-  async fixWorkLog(userId: string, body: WorkLogUpdateDto) {
-    return this.repo.fixWorkLog(userId, body);
+  async fixWorkLog(userId: string, id: string, body: WorkLogUpdateDto) {
+    return this.repo.fixWorkLog(userId, id, body);
   }
 
   async findFixWorkLog(userId: string): Promise<WorkLogUpdateResponseDto> {

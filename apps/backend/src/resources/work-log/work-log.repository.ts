@@ -8,7 +8,10 @@ import {
   LeaveRequest,
   Prisma,
 } from '@prisma/client';
-import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
+import {
+  WorkLogHistoryFindListDto,
+  WorkLogHistoryFindListMgmtDto,
+} from './dto/work-log-history.find-list.dto';
 import { WorkLogUpdateDto } from './dto/work-log.update.dto';
 
 // ─────────────────────────────────────────────────────
@@ -30,23 +33,62 @@ export type WorkLogWithUser = WorkLog & {
 export class WorkLogRepository {
   constructor(private prisma: PrismaService) {}
 
-  async fixWorkLog(userId: string, body: WorkLogUpdateDto) {
-    const workLog = await this.prisma.workLog.findUniqueOrThrow({
-      where: { userId_date: { userId, date: new Date() } },
-    });
-    if (!workLog) {
-      throw new NotFoundException('오늘 근무 기록을 찾을 수 없습니다.');
-    }
+  async dashboard(userId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
+      const fixCount = await tx.workLog.count({
+        where: { userId, isFix: true },
+      });
+      const tixCompletedCount = await tx.workLog.count({
+        where: {
+          userId,
+          isFix: false,
+          fixClockIn: { not: null },
+          fixClockOut: { not: null },
+        },
+      });
+      const monthlyWorkMinutes = await tx.workLog.aggregate({
+        where: {
+          userId,
+          date: {
+            gte: monthStart,
+            lt: nextMonthStart,
+          },
+        },
+        _sum: { workMinutes: true },
+      });
+      return { fixCount, tixCompletedCount, monthlyWorkMinutes };
+    });
+  }
+
+  async fixWorkLog(userId: string, id: string, body: WorkLogUpdateDto) {
     const { fixClockIn, fixClockOut, reason } = body;
     return this.prisma.workLog.update({
-      where: { id: workLog.id },
+      where: { id, userId },
       data: { fixReason: reason, fixClockIn, fixClockOut, isFix: true },
     });
   }
 
-  async findWorkLog(query: WorkLogHistoryFindListDto) {
+  async findWorkLogMgmt(query: WorkLogHistoryFindListMgmtDto) {
     const { page, limit, userId } = query;
+    const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
+      where: { userId },
+      omit: { userId: true, companyId: true },
+      skip: (page - 1) * limit,
+      take: Number(limit),
+      orderBy: { createdAt: 'desc' },
+    });
+    const workLogHistory = await this.prisma.workLog.findMany(options);
+
+    const total = await this.prisma.workLog.count({ where: options.where });
+    return { result: workLogHistory, total };
+  }
+
+  async findWorkLog(query: WorkLogHistoryFindListDto, userId: string) {
+    const { page, limit } = query;
     const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
       where: { userId },
       omit: { userId: true, companyId: true },

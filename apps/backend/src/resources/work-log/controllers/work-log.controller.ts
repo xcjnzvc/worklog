@@ -1,11 +1,25 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../../../core/auth/jwt-auth.guard';
 import { WorkLogService } from '../work-log.service';
 import { Endpoint } from 'ts-deco';
 import { WorkLogUpdateDto } from '../dto/work-log.update.dto';
-import { WorkLogUpdateResponseDto } from '../dto/res/work-log.find-list.dto';
+import {
+  WorkLogHistoryFindListResponseDto,
+  WorkLogUpdateResponseDto,
+} from '../dto/res/work-log.find-list.dto';
+import { WorkLogHistoryFindListDto } from '../dto/work-log-history.find-list.dto';
+import getMetadata from 'src/common/utils/get-metadata';
+import { WorkLogDashboardResponseDto } from '../dto/res/work-log.dashboard.dto';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard)
@@ -34,7 +48,7 @@ export class WorkLogController {
   }
 
   @Endpoint({
-    endpoint: 'work-log/fix',
+    endpoint: 'work-log/fix/:id',
     summary: '근무 기록 수정',
     method: 'POST',
     description: '근무 기록을 수정합니다.',
@@ -49,8 +63,9 @@ export class WorkLogController {
   async fixWorkLog(
     @GetUser('userId') userId: string,
     @Body() body: WorkLogUpdateDto,
+    @Param('id') id: string,
   ) {
-    return this.workLogService.fixWorkLog(userId, body);
+    return this.workLogService.fixWorkLog(userId, id, body);
   }
 
   @Endpoint({
@@ -70,5 +85,48 @@ export class WorkLogController {
     @GetUser('userId') userId: string,
   ): Promise<WorkLogUpdateResponseDto> {
     return this.workLogService.findFixWorkLog(userId);
+  }
+
+  @Endpoint({
+    endpoint: 'work-log',
+    summary: '근무 기록 목록 조회',
+    method: 'GET',
+    description: '근무 기록 목록을 조회합니다.',
+    responses: [
+      {
+        status: 200,
+        description: '조회 성공',
+        type: WorkLogHistoryFindListResponseDto,
+      },
+    ],
+  })
+  async findListWorkHistory(
+    @GetUser('userId') userId: string,
+    @Query() query: WorkLogHistoryFindListDto,
+  ): Promise<WorkLogHistoryFindListResponseDto> {
+    const { result, total } = await this.workLogService.findListWorkLog(
+      query,
+      userId,
+    );
+    return { result, metadata: getMetadata(query, total) };
+  }
+
+  @Endpoint({
+    endpoint: 'work-log/own/dashboard',
+    summary: '내 근무 대시보드 조회',
+    method: 'GET',
+    description: '내 근무 대시보드를 조회합니다.',
+    responses: [
+      {
+        status: 200,
+        description: '조회 성공',
+        type: WorkLogDashboardResponseDto,
+      },
+    ],
+  })
+  async findDashboard(
+    @GetUser('userId') userId: string,
+  ): Promise<WorkLogDashboardResponseDto> {
+    return this.workLogService.dashboard(userId);
   }
 }
