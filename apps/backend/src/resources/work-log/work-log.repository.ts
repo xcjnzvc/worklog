@@ -9,6 +9,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
+import { WorkLogUpdateDto } from './dto/work-log.update.dto';
 
 // ─────────────────────────────────────────────────────
 // 타입 정의
@@ -29,16 +30,18 @@ export type WorkLogWithUser = WorkLog & {
 export class WorkLogRepository {
   constructor(private prisma: PrismaService) {}
 
-  async fixWorkLog(userId: string, reason: string) {
+  async fixWorkLog(userId: string, body: WorkLogUpdateDto) {
     const workLog = await this.prisma.workLog.findUniqueOrThrow({
       where: { userId_date: { userId, date: new Date() } },
     });
     if (!workLog) {
       throw new NotFoundException('오늘 근무 기록을 찾을 수 없습니다.');
     }
+
+    const { fixClockIn, fixClockOut, reason } = body;
     return this.prisma.workLog.update({
       where: { id: workLog.id },
-      data: { fixReason: reason, isFix: true },
+      data: { fixReason: reason, fixClockIn, fixClockOut, isFix: true },
     });
   }
 
@@ -73,16 +76,20 @@ export class WorkLogRepository {
     }) as Promise<WorkLogWithUser>;
   }
 
+  async findFixWorkLog(userId: string): Promise<WorkLog[]> {
+    return this.prisma.workLog.findMany({
+      where: { userId, isFix: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async updateMgmtWorkLog(
     id: string,
     data: {
-      clockIn: Date;
-      clockOut: Date;
       workMinutes: number;
       status: AttendanceStatus;
       isOvertime: boolean;
       date: Date;
-      fixReason?: string;
       isFix: boolean;
     },
   ): Promise<WorkLog> {

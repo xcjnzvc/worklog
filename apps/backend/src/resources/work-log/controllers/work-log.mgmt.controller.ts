@@ -1,4 +1,4 @@
-import { Body, Param, Query } from '@nestjs/common';
+import { Param, Query } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { UseRole } from 'src/common/decorators/use-role.decorator';
 import getMetadata from 'src/common/utils/get-metadata';
@@ -8,7 +8,6 @@ import {
   WorkLogMgmtUpdateResponseDto,
 } from '../dto/res/work-log.find-list.dto';
 import { WorkLogHistoryFindListDto } from '../dto/work-log-history.find-list.dto';
-import { WorkLogMgmtUpdateDto } from '../dto/work-log.mgmt.update.dto';
 import { WorkLogService } from '../work-log.service';
 
 @ResourceMgmt('work-log')
@@ -53,8 +52,7 @@ export class WorkLogMgmtController {
   @UseRole(Role.OWNER, Role.ADMIN)
   async updateWorkLog(
     @Param('id') id: string,
-    @Body() body: WorkLogMgmtUpdateDto,
   ): Promise<WorkLogMgmtUpdateResponseDto> {
-    return this.workLogService.updateMgmtWorkLog(id, body);
+    return this.workLogService.updateMgmtWorkLog(id);
   }
 }

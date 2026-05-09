@@ -11,8 +11,10 @@ model WorkLog {
   date        DateTime         @db.Timestamp(3)
   createdAt   DateTime         @default(now())
 
-  fixReason String? // 수정 사유
-  isFix     Boolean @default(false) // 수정 여부
+  fixReason   String? // 수정 사유
+  fixClockIn  DateTime?
+  fixClockOut DateTime?
+  isFix       Boolean   @default(false) // 수정 여부
 
   user User @relation(fields: [userId], references: [id])
 

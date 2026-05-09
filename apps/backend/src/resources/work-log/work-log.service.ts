@@ -12,11 +12,12 @@ import {
 } from '@prisma/client';
 import { WorkLogRepository } from './work-log.repository';
 import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
-import { WorkLogMgmtUpdateDto } from './dto/work-log.mgmt.update.dto';
 import {
   WorkLogDataDto,
   WorkLogMgmtUpdateResponseDto,
+  WorkLogUpdateResponseDto,
 } from './dto/res/work-log.find-list.dto';
+import { WorkLogUpdateDto } from './dto/work-log.update.dto';
 
 @Injectable()
 export class WorkLogService {
@@ -27,18 +28,19 @@ export class WorkLogService {
     return workLogHistory;
   }
 
-  async updateMgmtWorkLog(
-    id: string,
-    body: WorkLogMgmtUpdateDto,
-  ): Promise<WorkLogMgmtUpdateResponseDto> {
-    const clockIn = new Date(body.clockIn);
-    const clockOut = new Date(body.clockOut);
+  async updateMgmtWorkLog(id: string): Promise<WorkLogMgmtUpdateResponseDto> {
+    const log = await this.repo.findWorkLogById(id);
+    if (!log.fixClockIn || !log.fixClockOut) {
+      throw new BadRequestException('승인할 수정 출퇴근 시간이 없습니다.');
+    }
+
+    const clockIn = log.fixClockIn;
+    const clockOut = log.fixClockOut;
 
     if (clockOut <= clockIn) {
       throw new BadRequestException('퇴근 시간은 출근 시간보다 이후여야 합니다.');
     }
 
-    const log = await this.repo.findWorkLogById(id);
     const policy = log.user.workPolicy;
     if (!policy) {
       throw new BadRequestException('근무 정책이 없습니다.');
@@ -80,21 +82,23 @@ export class WorkLogService {
     );
 
     const updatedLog = await this.repo.updateMgmtWorkLog(id, {
-      clockIn,
-      clockOut,
       workMinutes,
       status,
       isOvertime: workMinutes > (policy.workMinutes ?? 480),
       date: workDate,
-      fixReason: body.reason,
-      isFix: true,
+      isFix: false,
     });
 
     return { result: this.toWorkLogDataDto(updatedLog) };
   }
 
-  async fixWorkLog(userId: string, reason: string) {
-    return this.repo.fixWorkLog(userId, reason);
+  async fixWorkLog(userId: string, body: WorkLogUpdateDto) {
+    return this.repo.fixWorkLog(userId, body);
+  }
+
+  async findFixWorkLog(userId: string): Promise<WorkLogUpdateResponseDto> {
+    const logs = await this.repo.findFixWorkLog(userId);
+    return { result: logs.map((log) => this.toWorkLogDataDto(log)) };
   }
 
   // ─────────────────────────────────────────
@@ -514,6 +518,8 @@ export class WorkLogService {
       date: log.date,
       createdAt: log.createdAt,
       fixReason: log.fixReason,
+      fixClockIn: log.fixClockIn,
+      fixClockOut: log.fixClockOut,
       isFix: log.isFix,
     };
   }

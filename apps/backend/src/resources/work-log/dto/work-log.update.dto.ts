@@ -7,4 +7,18 @@ export class WorkLogUpdateDto {
     required: true,
   })
   reason: string;
+
+  @Property({
+    type: Date,
+    description: '수정 출근 시간',
+    required: true,
+  })
+  fixClockIn: Date;
+
+  @Property({
+    type: Date,
+    description: '수정 퇴근 시간',
+    required: true,
+  })
+  fixClockOut: Date;
 }

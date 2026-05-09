@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../../../core/auth/jwt-auth.guard';
 import { WorkLogService } from '../work-log.service';
 import { Endpoint } from 'ts-deco';
 import { WorkLogUpdateDto } from '../dto/work-log.update.dto';
+import { WorkLogUpdateResponseDto } from '../dto/res/work-log.find-list.dto';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard)
@@ -32,7 +33,6 @@ export class WorkLogController {
     return this.workLogService.clockOut(userId);
   }
 
-
   @Endpoint({
     endpoint: 'work-log/fix',
     summary: '근무 기록 수정',
@@ -46,7 +46,29 @@ export class WorkLogController {
       },
     ],
   })
-  async fixWorkLog(@GetUser('userId') userId: string,@Body() body:WorkLogUpdateDto) {
-    return this.workLogService.fixWorkLog(userId, body.reason);
+  async fixWorkLog(
+    @GetUser('userId') userId: string,
+    @Body() body: WorkLogUpdateDto,
+  ) {
+    return this.workLogService.fixWorkLog(userId, body);
+  }
+
+  @Endpoint({
+    endpoint: 'work-log/fix',
+    summary: '근무 수정 기록 조회',
+    method: 'GET',
+    description: '근무 기록을 수정합니다.',
+    responses: [
+      {
+        status: 200,
+        description: '조회 성공',
+        type: WorkLogUpdateResponseDto,
+      },
+    ],
+  })
+  async findFixWorkLog(
+    @GetUser('userId') userId: string,
+  ): Promise<WorkLogUpdateResponseDto> {
+    return this.workLogService.findFixWorkLog(userId);
   }
 }

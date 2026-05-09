@@ -64,6 +64,22 @@ export class WorkLogDataDto {
   fixReason?: string | null;
 
   @ApiProperty({
+    description: '수정 요청 출근 시간',
+    example: '2026-05-09T07:36:23.478Z',
+    nullable: true,
+    required: false,
+  })
+  fixClockIn?: Date | null;
+
+  @ApiProperty({
+    description: '수정 요청 퇴근 시간',
+    example: '2026-05-09T09:36:23.478Z',
+    nullable: true,
+    required: false,
+  })
+  fixClockOut?: Date | null;
+
+  @ApiProperty({
     description: '수정 여부',
     example: true,
   })
@@ -87,4 +103,14 @@ export class WorkLogMgmtUpdateResponseDto {
     required: true,
   })
   result: WorkLogDataDto;
+}
+
+export class WorkLogUpdateResponseDto {
+  @ApiProperty({
+    type: WorkLogDataDto,
+    description: '수정 요청 근무 기록',
+    required: true,
+    isArray: true,
+  })
+  result: WorkLogDataDto[];
 }
