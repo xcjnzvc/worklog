@@ -5,7 +5,7 @@ export class WorkLogHistoryFindListDto extends PaginationDto {
   @Property({
     type: String,
     description: 'The user ID',
-    required: true,
+    isOptional: true,
   })
-  userId: string;
+  userId?: string ;
 }
