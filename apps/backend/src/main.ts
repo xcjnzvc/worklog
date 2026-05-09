@@ -20,7 +20,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // main.ts 수정
   const config = new DocumentBuilder()
     .setTitle('WorkLog API')
     .setDescription('근태 관리 시스템 API')
@@ -33,7 +32,7 @@ async function bootstrap() {
         description: 'JWT 토큰을 입력하세요',
         in: 'header',
       },
-      'access-token', // 👈 이 이름이 중요합니다!
+      'access-token',
     )
     .build();
 
@@ -43,6 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
+      withCredentials: true,
     },
   });
 

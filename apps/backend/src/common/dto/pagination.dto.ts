@@ -5,6 +5,7 @@ export class PaginationDto {
     type: Number,
     description: 'The page number',
     required: true,
+    default: 1,
   })
   page: number;
 
@@ -12,6 +13,7 @@ export class PaginationDto {
     type: Number,
     description: 'The page size',
     required: true,
+    default: 10,
   })
   limit: number;
 }

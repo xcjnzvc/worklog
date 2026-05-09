@@ -1,12 +1,10 @@
-import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import getMetadata from 'src/common/utils/get-metadata';
-import { Endpoint } from 'ts-deco';
 import { JwtAuthGuard } from '../../../core/auth/jwt-auth.guard';
-import { WorkLogHistoryFindListResponseDto } from '../dto/res/work-log.find-list.dto';
-import { WorkLogHistoryFindListDto } from '../dto/work-log-history.find-list.dto';
 import { WorkLogService } from '../work-log.service';
+import { Endpoint } from 'ts-deco';
+import { WorkLogUpdateDto } from '../dto/work-log.update.dto';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard)
@@ -34,27 +32,21 @@ export class WorkLogController {
     return this.workLogService.clockOut(userId);
   }
 
+
   @Endpoint({
-    endpoint: 'work-log',
-    summary: '근무 기록 조회',
-    method: 'GET',
-    description: '유저의 근무 기록을 조회합니다.',
+    endpoint: 'work-log/fix',
+    summary: '근무 기록 수정',
+    method: 'POST',
+    description: '근무 기록을 수정합니다.',
     responses: [
       {
         status: 200,
-        description: '근무 기록 조회 성공',
-        type: WorkLogHistoryFindListResponseDto,
+        description: '근무 기록 수정 성공',
+        type: null,
       },
     ],
   })
-  async findListWorkLogHistory(
-    @Query() query: WorkLogHistoryFindListDto,
-    @GetUser('userId') userId: string,
-  ): Promise<WorkLogHistoryFindListResponseDto> {
-    const { result, total } = await this.workLogService.getWorkLogHistory(
-      query,
-      userId,
-    );
-    return { result, metadata: getMetadata(query, total) };
+  async fixWorkLog(@GetUser('userId') userId: string,@Body() body:WorkLogUpdateDto) {
+    return this.workLogService.fixWorkLog(userId, body.reason);
   }
 }

@@ -8,17 +8,93 @@ import {
   WorkType,
   LeaveType,
   WorkPolicy,
+  WorkLog,
 } from '@prisma/client';
 import { WorkLogRepository } from './work-log.repository';
 import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
+import { WorkLogMgmtUpdateDto } from './dto/work-log.mgmt.update.dto';
+import {
+  WorkLogDataDto,
+  WorkLogMgmtUpdateResponseDto,
+} from './dto/res/work-log.find-list.dto';
 
 @Injectable()
 export class WorkLogService {
   constructor(private repo: WorkLogRepository) {}
 
-  async getWorkLogHistory(query: WorkLogHistoryFindListDto, userId: string) {
-    const workLogHistory = await this.repo.findWorkLog(query, userId);
+  async findListMgmtWorkLog(query: WorkLogHistoryFindListDto) {
+    const workLogHistory = await this.repo.findWorkLog(query);
     return workLogHistory;
+  }
+
+  async updateMgmtWorkLog(
+    id: string,
+    body: WorkLogMgmtUpdateDto,
+  ): Promise<WorkLogMgmtUpdateResponseDto> {
+    const clockIn = new Date(body.clockIn);
+    const clockOut = new Date(body.clockOut);
+
+    if (clockOut <= clockIn) {
+      throw new BadRequestException('퇴근 시간은 출근 시간보다 이후여야 합니다.');
+    }
+
+    const log = await this.repo.findWorkLogById(id);
+    const policy = log.user.workPolicy;
+    if (!policy) {
+      throw new BadRequestException('근무 정책이 없습니다.');
+    }
+
+    const workDate = this.getKSTDateStart(clockIn);
+    const isHalfLeave = log.user.leaveRequests.some((leave) => {
+      const leaveDate = this.getKSTDateStart(new Date(leave.startDate));
+      return (
+        leaveDate.getTime() === workDate.getTime() &&
+        (leave.type === LeaveType.HALF_AM || leave.type === LeaveType.HALF_PM)
+      );
+    });
+    const hasHalfAM = log.user.leaveRequests.some((leave) => {
+      const leaveDate = this.getKSTDateStart(new Date(leave.startDate));
+      return (
+        leaveDate.getTime() === workDate.getTime() &&
+        leave.type === LeaveType.HALF_AM
+      );
+    });
+
+    const rawMin = Math.floor(
+      (clockOut.getTime() - clockIn.getTime()) / 60000,
+    );
+    const lunch = isHalfLeave
+      ? 0
+      : this.calcLunchDeduction(clockOut, clockIn, policy);
+    const workMinutes = Math.max(0, rawMin - lunch);
+    const clockInStatus = this.resolveClockInStatus(clockIn, policy, hasHalfAM);
+    const isShort = this.resolveIsShort(
+      clockOut,
+      workMinutes,
+      policy,
+      isHalfLeave,
+    );
+    const status = this.resolveFinalStatus(
+      clockInStatus === AttendanceStatus.LATE,
+      isShort,
+    );
+
+    const updatedLog = await this.repo.updateMgmtWorkLog(id, {
+      clockIn,
+      clockOut,
+      workMinutes,
+      status,
+      isOvertime: workMinutes > (policy.workMinutes ?? 480),
+      date: workDate,
+      fixReason: body.reason,
+      isFix: true,
+    });
+
+    return { result: this.toWorkLogDataDto(updatedLog) };
+  }
+
+  async fixWorkLog(userId: string, reason: string) {
+    return this.repo.fixWorkLog(userId, reason);
   }
 
   // ─────────────────────────────────────────
@@ -413,13 +489,32 @@ export class WorkLogService {
 
   private getTodayStart(): Date {
     const now = new Date();
+    return this.getKSTDateStart(now);
+  }
+
+  private getKSTDateStart(date: Date): Date {
     const formatter = new Intl.DateTimeFormat('en-CA', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       timeZone: 'Asia/Seoul',
     });
-    const kstDate = formatter.format(now);
+    const kstDate = formatter.format(date);
     return new Date(`${kstDate}T00:00:00.000Z`);
+  }
+
+  private toWorkLogDataDto(log: WorkLog): WorkLogDataDto {
+    return {
+      id: log.id,
+      clockIn: log.clockIn,
+      clockOut: log.clockOut,
+      workMinutes: log.workMinutes,
+      status: log.status,
+      isOvertime: log.isOvertime,
+      date: log.date,
+      createdAt: log.createdAt,
+      fixReason: log.fixReason,
+      isFix: log.isFix,
+    };
   }
 }

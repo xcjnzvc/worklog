@@ -8,8 +8,11 @@ model WorkLog {
   workMinutes Int?
   status      AttendanceStatus @default(NORMAL)
   isOvertime  Boolean          @default(false)
-  date        DateTime         @db.Date
+  date        DateTime         @db.Timestamp(3)
   createdAt   DateTime         @default(now())
+
+  fixReason String? // 수정 사유
+  isFix     Boolean @default(false) // 수정 여부
 
   user User @relation(fields: [userId], references: [id])
 

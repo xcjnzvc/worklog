@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "WorkLog" ADD COLUMN     "fixReason" TEXT,
+ADD COLUMN     "isFix" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "date" SET DATA TYPE TIMESTAMP(3);

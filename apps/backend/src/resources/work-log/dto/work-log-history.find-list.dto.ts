@@ -1,4 +1,11 @@
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { Resource } from 'ts-deco';
+import { Property } from 'ts-deco';
 
-export class WorkLogHistoryFindListDto extends PaginationDto {}
+export class WorkLogHistoryFindListDto extends PaginationDto {
+  @Property({
+    type: String,
+    description: 'The user ID',
+    required: true,
+  })
+  userId: string;
+}

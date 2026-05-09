@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import {
   AttendanceStatus,
@@ -16,7 +16,7 @@ import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto'
 
 export type WorkLogWithUser = WorkLog & {
   user: {
-    workPolicy: WorkPolicy;
+    workPolicy: WorkPolicy | null;
     leaveRequests: LeaveRequest[];
   };
 };
@@ -29,8 +29,21 @@ export type WorkLogWithUser = WorkLog & {
 export class WorkLogRepository {
   constructor(private prisma: PrismaService) {}
 
-  async findWorkLog(query: WorkLogHistoryFindListDto, userId: string) {
-    const { page, limit } = query;
+  async fixWorkLog(userId: string, reason: string) {
+    const workLog = await this.prisma.workLog.findUniqueOrThrow({
+      where: { userId_date: { userId, date: new Date() } },
+    });
+    if (!workLog) {
+      throw new NotFoundException('오늘 근무 기록을 찾을 수 없습니다.');
+    }
+    return this.prisma.workLog.update({
+      where: { id: workLog.id },
+      data: { fixReason: reason, isFix: true },
+    });
+  }
+
+  async findWorkLog(query: WorkLogHistoryFindListDto) {
+    const { page, limit, userId } = query;
     const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
       where: { userId },
       omit: { userId: true, companyId: true },
@@ -42,6 +55,38 @@ export class WorkLogRepository {
 
     const total = await this.prisma.workLog.count({ where: options.where });
     return { result: workLogHistory, total };
+  }
+
+  async findWorkLogById(id: string): Promise<WorkLogWithUser> {
+    return this.prisma.workLog.findUniqueOrThrow({
+      where: { id },
+      include: {
+        user: {
+          include: {
+            workPolicy: true,
+            leaveRequests: {
+              where: { status: RequestStatus.APPROVED },
+            },
+          },
+        },
+      },
+    }) as Promise<WorkLogWithUser>;
+  }
+
+  async updateMgmtWorkLog(
+    id: string,
+    data: {
+      clockIn: Date;
+      clockOut: Date;
+      workMinutes: number;
+      status: AttendanceStatus;
+      isOvertime: boolean;
+      date: Date;
+      fixReason?: string;
+      isFix: boolean;
+    },
+  ): Promise<WorkLog> {
+    return this.prisma.workLog.update({ where: { id }, data });
   }
 
   /**
