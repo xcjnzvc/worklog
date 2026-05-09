@@ -39,6 +39,13 @@ export class WorkLogController {
     summary: '근무 기록 조회',
     method: 'GET',
     description: '유저의 근무 기록을 조회합니다.',
+    responses: [
+      {
+        status: 200,
+        description: '근무 기록 조회 성공',
+        type: WorkLogHistoryFindListResponseDto,
+      },
+    ],
   })
   async findListWorkLogHistory(
     @Query() query: WorkLogHistoryFindListDto,
