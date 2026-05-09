@@ -6,6 +6,7 @@ export class WorkLogHistoryFindListDto extends PaginationDto {
     type: String,
     description: 'The user ID',
     isOptional: true,
+    nullable: true,
   })
   userId?: string ;
 }
