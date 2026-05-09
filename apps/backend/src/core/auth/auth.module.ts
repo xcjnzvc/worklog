@@ -6,6 +6,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { RolesGuard } from '../guards/roles.guard';
 
 @Module({
   imports: [
@@ -15,8 +16,14 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  controllers: [AuthController], // 👈 이 줄이 꼭 있어야 /auth/login이 작동합니다!
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, PrismaService],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  controllers: [AuthController],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    PrismaService,
+    RolesGuard,
+  ],
+  exports: [AuthService, JwtStrategy, PassportModule, RolesGuard],
 })
 export class AuthModule {}

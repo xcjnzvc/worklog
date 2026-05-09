@@ -1,47 +1,31 @@
 // --- 근무 기록 ---
 model WorkLog {
-    id          String           @id @default(uuid())
-    userId      String
-    companyId   String
-    clockIn     DateTime
-    clockOut    DateTime?
-    workMinutes Int?
-    status      AttendanceStatus @default(NORMAL)
-    isOvertime  Boolean          @default(false)
-    date        DateTime         @db.Date
-    createdAt   DateTime         @default(now())
+  id          String           @id @default(uuid())
+  userId      String
+  companyId   String
+  clockIn     DateTime
+  clockOut    DateTime?
+  workMinutes Int?
+  status      AttendanceStatus @default(NORMAL)
+  isOvertime  Boolean          @default(false)
+  date        DateTime         @db.Date
+  createdAt   DateTime         @default(now())
 
-    user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-    @@unique([userId, date])
-    // DB 테이블명이 대문자 "WorkLog"라면 아래처럼 맞춰주세요.
-    @@map("WorkLog")
-}
-
-// --- 근무 기록 히스토리 ---
-model WorkLogHistory {
-    id                String    @id @default(uuid())
-    companyId         String
-    targetDate        DateTime  @db.Date
-    reason            String
-    requestedClockIn  DateTime?
-    requestedClockOut DateTime?
-    createdAt         DateTime  @default(now())
-
-    user   User   @relation(fields: [userId], references: [id])
-    userId String
-
-    @@map("WorkLogHistory")
+  @@unique([userId, date])
+  // DB 테이블명이 대문자 "WorkLog"라면 아래처럼 맞춰주세요.
+  @@map("WorkLog")
 }
 
 enum AttendanceStatus {
-    NORMAL
-    LATE
-    EARLY_LEAVE
-    LATE_EARLY
-    INSUFFICIENT
-    MISSING_OUT
-    ABSENT
+  NORMAL
+  LATE
+  EARLY_LEAVE
+  LATE_EARLY
+  INSUFFICIENT
+  MISSING_OUT
+  ABSENT
 
-    @@map("AttendanceStatus")
+  @@map("AttendanceStatus")
 }

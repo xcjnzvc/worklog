@@ -1,50 +1,49 @@
 model User {
-    id        String  @id @default(uuid())
-    email     String  @unique
-    password  String
-    name      String
-    phone     String?
-    role      Role    @default(USER)
-    position  String?
-    companyId String
+  id        String  @id @default(uuid())
+  email     String  @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role    @default(USER)
+  position  String?
+  companyId String
 
-    teamId String?
+  teamId String?
 
-    workPolicyId String
-    totalLeave   Int       @default(15)
-    usedLeave    Float     @default(0.0)
-    createdAt    DateTime  @default(now())
-    lastLoginAt  DateTime?
+  workPolicyId String
+  totalLeave   Int       @default(15)
+  usedLeave    Float     @default(0.0)
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
 
-    company    Company    @relation(fields: [companyId], references: [id])
-    workPolicy WorkPolicy @relation(fields: [workPolicyId], references: [id])
+  company    Company    @relation(fields: [companyId], references: [id])
+  workPolicy WorkPolicy @relation(fields: [workPolicyId], references: [id])
 
-    team Team? @relation(fields: [teamId], references: [id])
+  team Team? @relation(fields: [teamId], references: [id])
 
-    workLogs         WorkLog[]
-    leaveRequests    LeaveRequest[]
-    workLogHistories WorkLogHistory[]
+  workLogs      WorkLog[]
+  leaveRequests LeaveRequest[]
 
-    approvedLeaves LeaveRequest[] @relation("approver_relation")
+  approvedLeaves LeaveRequest[] @relation("approver_relation")
 
-    @@map("User")
+  @@map("User")
 }
 
 model Team {
-    id        String  @id @default(uuid())
-    name      String // 팀 이름 (예: 인사팀, 개발1팀)
-    companyId String
-    company   Company @relation(fields: [companyId], references: [id])
-    users     User[] // 이 팀에 속한 유저들
+  id        String  @id @default(uuid())
+  name      String // 팀 이름 (예: 인사팀, 개발1팀)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+  users     User[] // 이 팀에 속한 유저들
 
-    @@map("Team")
+  @@map("Team")
 }
 
 enum Role {
-    OWNER
-    ADMIN
-    USER
-    SUPER_ADMIN
+  OWNER
+  ADMIN
+  USER
+  SUPER_ADMIN
 
-    @@map("Role")
+  @@map("Role")
 }

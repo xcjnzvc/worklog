@@ -3,7 +3,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { WorkLogService } from './work-log.service';
 import { WorkLogRepository } from './work-log.repository';
 import { WorkLogScheduler } from './work-log.scheduler';
-import { WorkLogController } from './work-log.controller';
+import { WorkLogController } from './controllers/work-log.controller';
 import { PrismaModule } from '../../core/prisma/prisma.module';
 
 @Module({

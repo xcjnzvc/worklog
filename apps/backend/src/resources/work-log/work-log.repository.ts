@@ -6,7 +6,9 @@ import {
   WorkLog,
   WorkPolicy,
   LeaveRequest,
+  Prisma,
 } from '@prisma/client';
+import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
 
 // ─────────────────────────────────────────────────────
 // 타입 정의
@@ -26,6 +28,21 @@ export type WorkLogWithUser = WorkLog & {
 @Injectable()
 export class WorkLogRepository {
   constructor(private prisma: PrismaService) {}
+
+  async findWorkLog(query: WorkLogHistoryFindListDto, userId: string) {
+    const { page, limit } = query;
+    const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
+      where: { userId },
+      omit: { userId: true, companyId: true },
+      skip: (page - 1) * limit,
+      take: Number(limit),
+      orderBy: { createdAt: 'desc' },
+    });
+    const workLogHistory = await this.prisma.workLog.findMany(options);
+
+    const total = await this.prisma.workLog.count({ where: options.where });
+    return { result: workLogHistory, total };
+  }
 
   /**
    * 오늘 날짜의 승인된 휴가를 포함한 유저 + 정책 조회

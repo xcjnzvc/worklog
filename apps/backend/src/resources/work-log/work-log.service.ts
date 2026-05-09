@@ -10,10 +10,16 @@ import {
   WorkPolicy,
 } from '@prisma/client';
 import { WorkLogRepository } from './work-log.repository';
+import { WorkLogHistoryFindListDto } from './dto/work-log-history.find-list.dto';
 
 @Injectable()
 export class WorkLogService {
   constructor(private repo: WorkLogRepository) {}
+
+  async getWorkLogHistory(query: WorkLogHistoryFindListDto, userId: string) {
+    const workLogHistory = await this.repo.findWorkLog(query, userId);
+    return workLogHistory;
+  }
 
   // ─────────────────────────────────────────
   // 1. 실시간 근무 상태 조회
