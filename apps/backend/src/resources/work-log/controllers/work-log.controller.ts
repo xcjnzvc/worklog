@@ -54,8 +54,8 @@ export class WorkLogController {
   }
 
   @Endpoint({
-    endpoint: 'work-log/fix',
-    summary: '근무 수정 기록 조회',
+    endpoint: 'work-log/fix/own',
+    summary: '내 근무 수정 기록 조회',
     method: 'GET',
     description: '근무 기록을 수정합니다.',
     responses: [
