@@ -2,11 +2,11 @@ import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
-import { WorkLogService } from './workLog.service';
+import { WorkLogService } from './work-log.service';
 
-@ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard)
 @Controller('attendance')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 export class WorkLogController {
   constructor(private readonly workLogService: WorkLogService) {}
 

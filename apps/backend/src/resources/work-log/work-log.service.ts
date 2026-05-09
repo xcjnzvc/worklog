@@ -9,7 +9,7 @@ import {
   LeaveType,
   WorkPolicy,
 } from '@prisma/client';
-import { WorkLogRepository } from './workLog.repository';
+import { WorkLogRepository } from './work-log.repository';
 
 @Injectable()
 export class WorkLogService {

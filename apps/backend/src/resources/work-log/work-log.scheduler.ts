@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { WorkLogRepository } from './workLog.repository';
+import { WorkLogRepository } from './work-log.repository';
 import { RequestStatus, LeaveType } from '@prisma/client';
 
 @Injectable()
