@@ -105,11 +105,13 @@ import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import WorkStatusCard from "./_components/WorkStatusCard";
-import AttendanceSummaryCard from "./_components/AttendanceSummaryCard";
+// import AttendanceSummaryCard from "./_components/AttendanceSummaryCard";
+
 import LeaveStatusCard from "./_components/LeaveStatusCard";
 import WeeklyScheduleCard from "./_components/WeeklyScheduleCard";
 import QuickActionCard from "./_components/QuickActionCard";
 import TodoListCard from "./_components/TodoListCard";
+import AttendanceSummaryCard from "@/components/AttendanceSummaryCard";
 
 export default function Main() {
   const { user, isLoggedIn, isLoading } = useUserStore();
@@ -223,6 +225,7 @@ export default function Main() {
             <LeaveStatusCard />
           </div>
           <div className="col-span-6 flex flex-col gap-[30px]">
+            {/* <AttendanceSummaryCard /> */}
             <AttendanceSummaryCard />
             <WeeklyScheduleCard />
           </div>

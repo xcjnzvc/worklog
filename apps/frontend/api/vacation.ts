@@ -9,7 +9,7 @@ export const getApproversAPI = async (): Promise<Approver[]> => {
 
 // 2. 휴가 신청하기 API
 export const createVacationAPI = async (payload: CreateVacationPayload) => {
-  const res = await axiosInstance.post("/vacations", payload);
+  const res = await axiosInstance.post("/vacation", payload);
   return res.data;
 };
 

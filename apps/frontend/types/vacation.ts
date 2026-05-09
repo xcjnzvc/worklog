@@ -50,3 +50,12 @@ export interface VacationResponse {
 export interface VacationData extends VacationItem {
   formattedPeriod?: string;
 }
+
+export type VacationTabType = "LIST" | "STATISTICS";
+
+// interface VacationTabsProps {
+//   activeTab: VacationTabType;
+//   onTabChange: (tab: VacationTabType) => void;
+//   searchKeyword: string;
+//   onSearchChange: (value: string) => void;
+// }

@@ -2,11 +2,11 @@
 
 import React, { useState, useMemo } from "react";
 import { Plus, Calendar, PieChart, List } from "lucide-react";
-import { VacationTabs, VacationTabType } from "./_components/VacationTabs";
 import { VacationTable, VacationTableRow } from "./_components/VacationTable";
 import Link from "next/link";
 import { useVacation } from "@/hooks/useVacation";
-import { VacationItem } from "@/types/vacation";
+import { VacationItem, VacationTabType } from "@/types/vacation";
+import { PageTabs } from "@/components/PageTabs";
 
 export default function VacationPage() {
   const { useVacationList } = useVacation();
@@ -14,6 +14,11 @@ export default function VacationPage() {
 
   const [activeTab, setActiveTab] = useState<VacationTabType>("LIST");
   const [searchKeyword, setSearchKeyword] = useState("");
+
+  const VACATION_TABS: { value: VacationTabType; label: string }[] = [
+    { value: "LIST", label: "휴가 내역 목록" },
+    // { value: "STATISTICS", label: "상세 통계" },
+  ];
 
   const filteredData = useMemo((): VacationTableRow[] => {
     if (!data?.list) return [];
@@ -83,11 +88,13 @@ export default function VacationPage() {
           />
         </div>
 
-        <VacationTabs
+        <PageTabs
+          tabs={VACATION_TABS}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           searchKeyword={searchKeyword}
           onSearchChange={setSearchKeyword}
+          searchPlaceholder="내용 또는 승인자 검색..."
         />
 
         {activeTab === "LIST" ? (

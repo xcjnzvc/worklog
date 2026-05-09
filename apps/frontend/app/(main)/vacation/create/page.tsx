@@ -99,6 +99,8 @@ export default function VacationCreatePage() {
     if (!reason) return alert("사유를 입력해주세요.");
     if (!selectedApprover) return alert("결재권자를 선택해주세요.");
 
+    console.log("눌리니?");
+
     const payload: CreateVacationPayload = {
       type:
         leaveType === "연차"
