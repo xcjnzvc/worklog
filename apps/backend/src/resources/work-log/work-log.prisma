@@ -1,4 +1,3 @@
-// --- 근무 기록 ---
 model WorkLog {
   id          String           @id @default(uuid())
   userId      String
@@ -11,16 +10,27 @@ model WorkLog {
   date        DateTime         @db.Timestamp(3)
   createdAt   DateTime         @default(now())
 
-  fixReason   String? // 수정 사유
-  fixClockIn  DateTime?
-  fixClockOut DateTime?
-  isFix       Boolean   @default(false) // 수정 여부
+  // --- 정정 신청 관련 필드 ---
+  isFix       Boolean   @default(false)
+  fixType     String? // 정정 분류 (LATE, ABSENT, EARLY, OTHER)
+  fixReason   String? // 정정 사유
+  fixClockIn  DateTime? // 수정 요청 출근 시간
+  fixClockOut DateTime? // 수정 요청 퇴근 시간
+
+  approverId String? // 결재권자 ID
+  apprStatus ApprStatus? // 승인 상태 (PENDING, APPROVED, REJECTED)
+  approver   User?       @relation("WorkLogApprover", fields: [approverId], references: [id])
 
   user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, date])
-  // DB 테이블명이 대문자 "WorkLog"라면 아래처럼 맞춰주세요.
   @@map("WorkLog")
+}
+
+enum ApprStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum AttendanceStatus {

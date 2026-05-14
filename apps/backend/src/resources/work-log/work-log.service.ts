@@ -9,8 +9,11 @@ import {
   LeaveType,
   WorkPolicy,
   WorkLog,
+  LeaveRequest,
+  ApprStatus,
+  Prisma,
 } from '@prisma/client';
-import { WorkLogRepository } from './work-log.repository';
+import { WorkLogRepository, WorkLogWithUser } from './work-log.repository';
 import {
   WorkLogHistoryFindListDto,
   WorkLogHistoryFindListMgmtDto,
@@ -18,38 +21,54 @@ import {
 import {
   WorkLogDataDto,
   WorkLogMgmtUpdateResponseDto,
-  WorkLogUpdateResponseDto,
 } from './dto/res/work-log.find-list.dto';
 import { WorkLogUpdateDto } from './dto/work-log.update.dto';
 import { WorkLogDashboardResponseDto } from './dto/res/work-log.dashboard.dto';
+
+type UserWithPolicy = {
+  id: string;
+  companyId: string;
+  workPolicy: WorkPolicy | null;
+  leaveRequests: LeaveRequest[];
+};
+
+// 💡 1. 런타임 에러와 타입 에러를 동시에 잡기 위한 Payload 타입 정의
+type WorkLogWithApprover = Prisma.WorkLogGetPayload<{
+  include: {
+    approver: {
+      include: { team: true };
+    };
+  };
+}>;
 
 @Injectable()
 export class WorkLogService {
   constructor(private repo: WorkLogRepository) {}
 
   async dashboard(userId: string): Promise<WorkLogDashboardResponseDto> {
-    const workLogHistory = await this.repo.dashboard(userId);
-    return workLogHistory;
+    return this.repo.dashboard(userId);
   }
 
   async findListMgmtWorkLog(query: WorkLogHistoryFindListMgmtDto) {
-    const workLogHistory = await this.repo.findWorkLogMgmt(query);
-    return workLogHistory;
+    return this.repo.findWorkLogMgmt(query);
   }
 
   async findListWorkLog(query: WorkLogHistoryFindListDto, userId: string) {
-    const workLogHistory = await this.repo.findWorkLog(query, userId);
-    return workLogHistory;
+    return this.repo.findWorkLog(query, userId);
   }
 
+  /**
+   * [관리자용] 정정 최종 승인
+   */
   async updateMgmtWorkLog(id: string): Promise<WorkLogMgmtUpdateResponseDto> {
-    const log = await this.repo.findWorkLogById(id);
+    const log: WorkLogWithUser = await this.repo.findWorkLogById(id);
+
     if (!log.fixClockIn || !log.fixClockOut) {
       throw new BadRequestException('승인할 수정 출퇴근 시간이 없습니다.');
     }
 
-    const clockIn = log.fixClockIn;
-    const clockOut = log.fixClockOut;
+    const clockIn: Date = log.fixClockIn;
+    const clockOut: Date = log.fixClockOut;
 
     if (clockOut <= clockIn) {
       throw new BadRequestException(
@@ -63,14 +82,16 @@ export class WorkLogService {
     }
 
     const workDate = this.getKSTDateStart(clockIn);
-    const isHalfLeave = log.user.leaveRequests.some((leave) => {
+
+    const isHalfLeave = log.user.leaveRequests.some((leave: LeaveRequest) => {
       const leaveDate = this.getKSTDateStart(new Date(leave.startDate));
       return (
         leaveDate.getTime() === workDate.getTime() &&
         (leave.type === LeaveType.HALF_AM || leave.type === LeaveType.HALF_PM)
       );
     });
-    const hasHalfAM = log.user.leaveRequests.some((leave) => {
+
+    const hasHalfAM = log.user.leaveRequests.some((leave: LeaveRequest) => {
       const leaveDate = this.getKSTDateStart(new Date(leave.startDate));
       return (
         leaveDate.getTime() === workDate.getTime() &&
@@ -83,6 +104,7 @@ export class WorkLogService {
       ? 0
       : this.calcLunchDeduction(clockOut, clockIn, policy);
     const workMinutes = Math.max(0, rawMin - lunch);
+
     const clockInStatus = this.resolveClockInStatus(clockIn, policy, hasHalfAM);
     const isShort = this.resolveIsShort(
       clockOut,
@@ -95,29 +117,72 @@ export class WorkLogService {
       isShort,
     );
 
-    const updatedLog = await this.repo.updateMgmtWorkLog(id, {
+    // 💡 2. update 시 타입을 WorkLogWithApprover로 캐스팅하여 ESLint 통과
+    const updatedLog = (await this.repo.updateMgmtWorkLog(id, {
+      clockIn,
+      clockOut,
       workMinutes,
       status,
       isOvertime: workMinutes > (policy.workMinutes ?? 480),
       date: workDate,
       isFix: false,
-    });
+      apprStatus: 'APPROVED' as ApprStatus,
+    })) as WorkLogWithApprover;
 
     return { result: this.toWorkLogDataDto(updatedLog) };
   }
 
-  async fixWorkLog(userId: string, id: string, body: WorkLogUpdateDto) {
-    return this.repo.fixWorkLog(userId, id, body);
+  /**
+   * [관리자용] 정정 신청 반려
+   */
+  async rejectMgmtWorkLog(id: string): Promise<WorkLogDataDto> {
+    const updatedLog = (await this.repo.updateMgmtWorkLog(id, {
+      isFix: false,
+      apprStatus: 'REJECTED' as ApprStatus,
+    })) as WorkLogWithApprover;
+
+    return this.toWorkLogDataDto(updatedLog);
   }
 
-  async findFixWorkLog(userId: string): Promise<WorkLogUpdateResponseDto> {
-    const logs = await this.repo.findFixWorkLog(userId);
-    return { result: logs.map((log) => this.toWorkLogDataDto(log)) };
+  /**
+   * [사용자용] 정정 신청하기
+   */
+  fixWorkLog(
+    userId: string,
+    id: string,
+    body: WorkLogUpdateDto,
+  ): Promise<WorkLog> {
+    // 💡 3. TS(2561) 해결: approverId 직접 사용이 안되면 connect 구문 사용
+    // Repository의 fixWorkLog 메서드 내부에서 아래 구조를 받도록 처리해야 합니다.
+    return this.repo.fixWorkLog(userId, id, {
+      fixClockIn: body.fixClockIn,
+      fixClockOut: body.fixClockOut,
+      fixReason: body.reason,
+      fixType: body.type,
+      isFix: true,
+      apprStatus: 'PENDING' as ApprStatus,
+      // 💡 관계를 맺을 때는 connect를 사용하는 것이 정석입니다.
+      approver: body.approverId
+        ? { connect: { id: body.approverId } }
+        : undefined,
+    } as any);
   }
 
-  // ─────────────────────────────────────────
-  // 1. 실시간 근무 상태 조회
-  // ─────────────────────────────────────────
+  /**
+   * [사용자용] 정정 신청 중인 로그 목록 조회
+   */
+  async findFixWorkLog(userId: string, query: WorkLogHistoryFindListDto) {
+    const { result, total } = await this.repo.findFixWorkLog(userId, query);
+
+    return {
+      // 💡 4. any 대신 정확한 타입을 명시하여 ESLint 오류 해결
+      result: (result as WorkLogWithApprover[]).map((log) =>
+        this.toWorkLogDataDto(log),
+      ),
+      total,
+    };
+  }
+
   async getLiveWorkMinutes(userId: string) {
     const now = new Date();
     const today = this.getTodayStart();
@@ -140,7 +205,8 @@ export class WorkLogService {
         .replace('.', '');
     };
 
-    const activeLog = await this.repo.findOpenLog(userId);
+    const activeLog: WorkLogWithUser | null =
+      await this.repo.findOpenLog(userId);
 
     if (activeLog) {
       const rawMin = Math.floor(
@@ -164,7 +230,10 @@ export class WorkLogService {
       };
     }
 
-    const finishedLog = await this.repo.findTodayFinishedLog(userId, today);
+    const finishedLog: WorkLog | null = await this.repo.findTodayFinishedLog(
+      userId,
+      today,
+    );
     if (finishedLog) {
       return {
         status: finishedLog.status,
@@ -190,33 +259,41 @@ export class WorkLogService {
     };
   }
 
-  // ─────────────────────────────────────────
-  // 2. 출근 처리
-  // ─────────────────────────────────────────
-  async clockIn(userId: string) {
+  async clockIn(userId: string): Promise<WorkLog> {
     const now = new Date();
     const today = this.getTodayStart();
 
-    const user = await this.repo.findUserWithPolicyAndTodayLeave(userId, today);
-    if (!user.workPolicy)
-      throw new BadRequestException('근무 정책이 없습니다.');
+    const user: UserWithPolicy =
+      await this.repo.findUserWithPolicyAndTodayLeave(userId, today);
 
-    if (user.leaveRequests.some((l) => l.type === LeaveType.ANNUAL)) {
+    if (!user.workPolicy) {
+      throw new BadRequestException('근무 정책이 없습니다.');
+    }
+
+    if (
+      user.leaveRequests.some((l: LeaveRequest) => l.type === LeaveType.ANNUAL)
+    ) {
       throw new BadRequestException('오늘은 연차 휴가일입니다.');
     }
 
-    const forgotLog = await this.repo.findForgottenLog(userId, today);
+    const forgotLog: WorkLog | null = await this.repo.findForgottenLog(
+      userId,
+      today,
+    );
     if (forgotLog) {
       const yesterdayEnd = new Date(forgotLog.date);
       yesterdayEnd.setHours(23, 59, 59, 999);
       await this.repo.markMissingOut(forgotLog.id, yesterdayEnd);
     }
 
-    const activeLog = await this.repo.findTodayActiveLog(userId, today);
+    const activeLog: WorkLog | null = await this.repo.findTodayActiveLog(
+      userId,
+      today,
+    );
     if (activeLog) throw new ConflictException('이미 출근한 상태입니다.');
 
     const hasHalfAM = user.leaveRequests.some(
-      (l) => l.type === LeaveType.HALF_AM,
+      (l: LeaveRequest) => l.type === LeaveType.HALF_AM,
     );
 
     const status = this.resolveClockInStatus(now, user.workPolicy, hasHalfAM);
@@ -230,19 +307,18 @@ export class WorkLogService {
     });
   }
 
-  // ─────────────────────────────────────────
-  // 3. 퇴근 처리
-  // ─────────────────────────────────────────
-  async clockOut(userId: string) {
+  async clockOut(userId: string): Promise<WorkLog> {
     const now = new Date();
-    const log = await this.repo.findOpenLog(userId);
+    const log: WorkLogWithUser | null = await this.repo.findOpenLog(userId);
 
     if (!log) throw new BadRequestException('출근 기록이 없습니다.');
 
     const policy = log.user.workPolicy;
+    if (!policy) throw new BadRequestException('근무 정책이 없습니다.');
+
     const today = this.getTodayStart();
 
-    const isHalfLeave = log.user.leaveRequests.some((l) => {
+    const isHalfLeave = log.user.leaveRequests.some((l: LeaveRequest) => {
       const start = new Date(l.startDate).getTime();
       return (
         start === today.getTime() &&
@@ -256,7 +332,6 @@ export class WorkLogService {
       : this.calcLunchDeduction(now, log.clockIn, policy);
     const workMinutes = Math.max(0, rawMin - lunch);
 
-    // ✅ 개선된 조퇴 판별 로직 적용
     const isShort = this.resolveIsShort(now, workMinutes, policy, isHalfLeave);
     const wasLate =
       log.status === AttendanceStatus.LATE ||
@@ -267,13 +342,10 @@ export class WorkLogService {
       clockOut: now,
       workMinutes,
       status: finalStatus,
-      isOvertime: workMinutes > (policy?.workMinutes ?? 480),
+      isOvertime: workMinutes > (policy.workMinutes ?? 480),
     });
   }
 
-  // ─────────────────────────────────────────
-  // 4. 주간 통계 조회 (생략 가능하나 최신 상태 유지를 위해 포함)
-  // ─────────────────────────────────────────
   async getWeeklyStats(userId: string) {
     const now = new Date();
     const day = now.getDay();
@@ -281,17 +353,15 @@ export class WorkLogService {
     monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
     monday.setHours(0, 0, 0, 0);
 
-    const user = await this.repo.findUserWithPolicyAndTodayLeave(
-      userId,
-      monday,
-    );
-    const logs = await this.repo.findWeeklyLogs(userId, monday);
-    const activeLog = await this.repo.findOpenLog(userId);
+    const user: UserWithPolicy =
+      await this.repo.findUserWithPolicyAndTodayLeave(userId, monday);
+    const logs: WorkLog[] = await this.repo.findWeeklyLogs(userId, monday);
+    const activeLog: WorkLog | null = await this.repo.findOpenLog(userId);
 
     const policyMax = user.workPolicy?.workMinutes ?? 480;
     const counts = { normal: 0, late: 0, early: 0, absent: 0 };
 
-    const getKSTDateString = (date: Date) => {
+    const getKSTDateString = (date: Date): string => {
       return new Intl.DateTimeFormat('en-CA', {
         year: 'numeric',
         month: '2-digit',
@@ -312,7 +382,7 @@ export class WorkLogService {
         (l) => getKSTDateString(new Date(l.date)) === targetDateStr,
       );
 
-      const hasHalfLeave = user.leaveRequests?.some((leave) => {
+      const hasHalfLeave = user.leaveRequests?.some((leave: LeaveRequest) => {
         return (
           getKSTDateString(new Date(leave.startDate)) === targetDateStr &&
           (leave.type === LeaveType.HALF_AM || leave.type === LeaveType.HALF_PM)
@@ -410,10 +480,6 @@ export class WorkLogService {
     };
   }
 
-  // ─────────────────────────────────────────
-  // Private Helpers
-  // ─────────────────────────────────────────
-
   private getKSTMinutes(date: Date): number {
     const kstStr = new Intl.DateTimeFormat('ko-KR', {
       hour: '2-digit',
@@ -421,7 +487,6 @@ export class WorkLogService {
       hour12: false,
       timeZone: 'Asia/Seoul',
     }).format(date);
-
     const [h, m] = kstStr.split(':').map(Number);
     return h * 60 + m;
   }
@@ -432,21 +497,14 @@ export class WorkLogService {
     hasHalfAM: boolean,
   ): AttendanceStatus {
     if (hasHalfAM) return AttendanceStatus.NORMAL;
-
     const [h, m] = (policy.workStartTime ?? '09:00').split(':').map(Number);
     const startMinutes = h * 60 + m;
     const nowMinutes = this.getKSTMinutes(now);
-
     return nowMinutes > startMinutes
       ? AttendanceStatus.LATE
       : AttendanceStatus.NORMAL;
   }
 
-  /**
-   * ✅ 조퇴/미달 여부 확인 (수정됨)
-   * 1. FIXED: 퇴근 시각 이전이거나, 실제 근무 시간이 목표치(8시간) 미달이면 조퇴
-   * 2. 그 외: 실제 근무 시간이 목표치 미달이면 조퇴
-   */
   private resolveIsShort(
     now: Date,
     workMinutes: number,
@@ -454,21 +512,15 @@ export class WorkLogService {
     isHalfLeave: boolean,
   ): boolean {
     if (!policy) return false;
-
-    // 점심시간 제외 필수 근무 시간 (통상 480분, 반차 240분)
     const dailyMust = isHalfLeave ? 240 : (policy.workMinutes ?? 480);
-
     if (policy.workType === WorkType.FIXED) {
       const [endH, endM] = (policy.workEndTime ?? '18:00')
         .split(':')
         .map(Number);
       const endMinutes = endH * 60 + endM;
       const nowMinutes = this.getKSTMinutes(now);
-
-      // (퇴근 시간 전이거나) OR (근무 시간이 8시간 미만이면) 조퇴 처리
       return nowMinutes < endMinutes || workMinutes < dailyMust;
     }
-
     return workMinutes < dailyMust;
   }
 
@@ -490,12 +542,10 @@ export class WorkLogService {
     if (!policy || !policy.lunchStartTime || !policy.lunchEndTime) return 0;
     const [sh, sm] = policy.lunchStartTime.split(':').map(Number);
     const [eh, em] = policy.lunchEndTime.split(':').map(Number);
-
     const lStart = new Date(now);
     lStart.setHours(sh, sm, 0, 0);
     const lEnd = new Date(now);
     lEnd.setHours(eh, em, 0, 0);
-
     if (now <= lStart || clockIn >= lEnd) return 0;
     const effectiveStart = clockIn > lStart ? clockIn : lStart;
     const effectiveEnd = now < lEnd ? now : lEnd;
@@ -506,8 +556,7 @@ export class WorkLogService {
   }
 
   private getTodayStart(): Date {
-    const now = new Date();
-    return this.getKSTDateStart(now);
+    return this.getKSTDateStart(new Date());
   }
 
   private getKSTDateStart(date: Date): Date {
@@ -521,7 +570,24 @@ export class WorkLogService {
     return new Date(`${kstDate}T00:00:00.000Z`);
   }
 
-  private toWorkLogDataDto(log: WorkLog): WorkLogDataDto {
+  private toWorkLogDataDto(log: WorkLogWithApprover): WorkLogDataDto {
+    let formattedApprover: string | null = null;
+
+    if (log.approver) {
+      const { name, position, role, team } = log.approver; // 💡 2. team을 바로 구조분해할당
+
+      const dept = team?.name || '';
+
+      if (role === 'OWNER') {
+        formattedApprover = `${name} 대표`;
+      } else {
+        const displayPosition = position || '사원';
+        formattedApprover = dept
+          ? `${dept} ${name} ${displayPosition}`
+          : `${name} ${displayPosition}`;
+      }
+    }
+
     return {
       id: log.id,
       clockIn: log.clockIn,
@@ -535,6 +601,8 @@ export class WorkLogService {
       fixClockIn: log.fixClockIn,
       fixClockOut: log.fixClockOut,
       isFix: log.isFix,
+      apprStatus: log.apprStatus,
+      approverName: formattedApprover,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import {
   AttendanceStatus,
@@ -12,7 +12,10 @@ import {
   WorkLogHistoryFindListDto,
   WorkLogHistoryFindListMgmtDto,
 } from './dto/work-log-history.find-list.dto';
-import { WorkLogUpdateDto } from './dto/work-log.update.dto';
+
+export type WorkLogWithApprover = Prisma.WorkLogGetPayload<{
+  include: { approver: true };
+}>;
 
 // ─────────────────────────────────────────────────────
 // 타입 정의
@@ -33,24 +36,35 @@ export type WorkLogWithUser = WorkLog & {
 export class WorkLogRepository {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * 대시보드 통계 조회
+   */
+  // work-log.repository.ts
+
   async dashboard(userId: string) {
     return this.prisma.$transaction(async (tx) => {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-      const fixCount = await tx.workLog.count({
-        where: { userId, isFix: true },
-      });
-      const tixCompletedCount = await tx.workLog.count({
+      // 💡 1. 상태별 카운트를 위해 groupBy 실행
+      const fixStatsRaw = await tx.workLog.groupBy({
+        by: ['apprStatus'],
         where: {
           userId,
-          isFix: false,
-          fixClockIn: { not: null },
-          fixClockOut: { not: null },
+          isFix: true, // 정정 신청 중이거나 신청했던 기록 대상
         },
+        _count: { id: true },
       });
-      const monthlyWorkMinutes = await tx.workLog.aggregate({
+
+      // 💡 2. 가공 (변수명 fixStats 정의)
+      const pendingCount =
+        fixStatsRaw.find((s) => s.apprStatus === 'PENDING')?._count.id || 0;
+      const approvedCount =
+        fixStatsRaw.find((s) => s.apprStatus === 'APPROVED')?._count.id || 0;
+
+      // 💡 3. 이번 달 총 근무 시간 (이미지의 160h 부분)
+      const monthlyWork = await tx.workLog.aggregate({
         where: {
           userId,
           date: {
@@ -60,23 +74,41 @@ export class WorkLogRepository {
         },
         _sum: { workMinutes: true },
       });
-      return { fixCount, tixCompletedCount, monthlyWorkMinutes };
+
+      const totalMinutes = monthlyWork._sum.workMinutes || 0;
+
+      return {
+        pendingCount, // "정정 요청 중" 카드용
+        approvedCount, // "정정 완료" 카드용
+        totalWorkHours: Math.floor(totalMinutes / 60), // "이번 달 총 근무" 시간만 계산
+        totalWorkMinutes: totalMinutes,
+      };
     });
   }
 
-  async fixWorkLog(userId: string, id: string, body: WorkLogUpdateDto) {
-    const { fixClockIn, fixClockOut, reason } = body;
+  /**
+   * [사용자] 정정 신청 정보 업데이트
+   * Prisma.WorkLogUpdateInput을 사용하여 fixType, approverId 등 모든 필드 수용 가능
+   */
+  async fixWorkLog(
+    userId: string,
+    id: string,
+    data: Prisma.WorkLogUpdateInput,
+  ): Promise<WorkLog> {
     return this.prisma.workLog.update({
       where: { id, userId },
-      data: { fixReason: reason, fixClockIn, fixClockOut, isFix: true },
+      data,
     });
   }
 
+  /**
+   * [관리자] 근태 기록 목록 조회
+   */
   async findWorkLogMgmt(query: WorkLogHistoryFindListMgmtDto) {
     const { page, limit, userId } = query;
     const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
       where: { userId },
-      omit: { userId: true, companyId: true },
+      omit: { userId: true, companyId: true } as any, // Prisma 버전에 따라 필드 제외 설정
       skip: (page - 1) * limit,
       take: Number(limit),
       orderBy: { createdAt: 'desc' },
@@ -87,11 +119,14 @@ export class WorkLogRepository {
     return { result: workLogHistory, total };
   }
 
+  /**
+   * [사용자] 본인 근태 기록 목록 조회
+   */
   async findWorkLog(query: WorkLogHistoryFindListDto, userId: string) {
     const { page, limit } = query;
     const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
       where: { userId },
-      omit: { userId: true, companyId: true },
+      omit: { userId: true, companyId: true } as any,
       skip: (page - 1) * limit,
       take: Number(limit),
       orderBy: { createdAt: 'desc' },
@@ -102,6 +137,9 @@ export class WorkLogRepository {
     return { result: workLogHistory, total };
   }
 
+  /**
+   * ID로 단일 로그 조회 (유저 정책 및 승인된 휴가 포함)
+   */
   async findWorkLogById(id: string): Promise<WorkLogWithUser> {
     return this.prisma.workLog.findUniqueOrThrow({
       where: { id },
@@ -118,24 +156,43 @@ export class WorkLogRepository {
     }) as Promise<WorkLogWithUser>;
   }
 
-  async findFixWorkLog(userId: string): Promise<WorkLog[]> {
-    return this.prisma.workLog.findMany({
-      where: { userId, isFix: true },
-      orderBy: { createdAt: 'desc' },
-    });
+  /**
+   * 정정 신청 중인 로그 목록 조회
+   */
+  async findFixWorkLog(userId: string, query: WorkLogHistoryFindListDto) {
+    const { page, limit } = query;
+    const skip = (page - 1) * limit;
+    const take = Number(limit);
+
+    const [logs, total] = await this.prisma.$transaction([
+      this.prisma.workLog.findMany({
+        where: { userId, isFix: true },
+        include: {
+          approver: {
+            include: { team: true }, // 💡 실제 데이터를 가져옴
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.workLog.count({ where: { userId, isFix: true } }),
+    ]);
+
+    return { result: logs, total };
   }
 
+  /**
+   * [관리자] 최종 승인 처리 및 시간 덮어쓰기
+   */
   async updateMgmtWorkLog(
     id: string,
-    data: {
-      workMinutes: number;
-      status: AttendanceStatus;
-      isOvertime: boolean;
-      date: Date;
-      isFix: boolean;
-    },
+    data: Prisma.WorkLogUpdateInput,
   ): Promise<WorkLog> {
-    return this.prisma.workLog.update({ where: { id }, data });
+    return this.prisma.workLog.update({
+      where: { id },
+      data,
+    });
   }
 
   /**
@@ -168,9 +225,7 @@ export class WorkLogRepository {
   }
 
   /**
-   * 미퇴근 로그 조회 (익일 퇴근 포함)
-   * - user.workPolicy, user.leaveRequests(APPROVED 전체) 포함
-   * - 날짜 필터는 서비스에서 처리
+   * 미퇴근 로그 조회 (실시간 근무 상태용)
    */
   async findOpenLog(userId: string): Promise<WorkLogWithUser | null> {
     return this.prisma.workLog.findFirst({
@@ -217,7 +272,7 @@ export class WorkLogRepository {
     userId: string,
     today: Date,
   ): Promise<WorkLog | null> {
-    const result = await this.prisma.workLog.findFirst({
+    return this.prisma.workLog.findFirst({
       where: {
         userId,
         date: today,
@@ -225,14 +280,10 @@ export class WorkLogRepository {
       },
       orderBy: { clockOut: 'desc' },
     });
-
-    return result;
   }
 
   /**
-   * 이번 주 월요일 이후 로그 전체 조회
-   * ✅ workMinutes 조건 제거: 출근 중(clockOut: null)인 로그도 포함해야
-   *    오늘 출근 기록이 ABSENT로 잘못 표시되는 버그 방지
+   * 주간 통계용 로그 조회
    */
   async findWeeklyLogs(userId: string, monday: Date): Promise<WorkLog[]> {
     return this.prisma.workLog.findMany({

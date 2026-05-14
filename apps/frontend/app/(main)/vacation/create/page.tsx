@@ -18,15 +18,12 @@ import { Approver, CreateVacationPayload } from "@/types/user";
 export default function VacationCreatePage() {
   const router = useRouter();
 
-  // 1. 커스텀 훅에서 필요한 기능 가져오기
   const { useApprovers, useCreateVacation } = useVacation();
 
-  // 2. API 데이터 및 변수
   const { data: approvers = [] } = useApprovers();
   const { mutate: createVacation, isPending: isSubmitting } =
     useCreateVacation();
 
-  // --- States ---
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 7));
   const [leaveType, setLeaveType] = useState("연차");
   const [rangeStart, setRangeStart] = useState("");

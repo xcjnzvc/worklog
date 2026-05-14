@@ -29,18 +29,20 @@ export interface VacationTableRow extends VacationItem {
   formattedPeriod: string;
 }
 
+// types/vacation.ts (파일 위치를 확인해보세요!)
+
 export interface VacationResponse {
   summary: {
     total: number;
     used: number;
     remaining: number;
   };
-  data: VacationItem[]; // data.list 구조에 맞춤
+  data: VacationItem[];
   meta: {
     totalCount: number;
-    page: number;
+    currentPage: number;
     limit: number;
-    lastPage: number;
+    totalPages: number;
   };
 }
 

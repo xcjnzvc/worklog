@@ -13,10 +13,7 @@ import { JwtAuthGuard } from '../../../core/auth/jwt-auth.guard';
 import { WorkLogService } from '../work-log.service';
 import { Endpoint } from 'ts-deco';
 import { WorkLogUpdateDto } from '../dto/work-log.update.dto';
-import {
-  WorkLogHistoryFindListResponseDto,
-  WorkLogUpdateResponseDto,
-} from '../dto/res/work-log.find-list.dto';
+import { WorkLogHistoryFindListResponseDto } from '../dto/res/work-log.find-list.dto';
 import { WorkLogHistoryFindListDto } from '../dto/work-log-history.find-list.dto';
 import getMetadata from 'src/common/utils/get-metadata';
 import { WorkLogDashboardResponseDto } from '../dto/res/work-log.dashboard.dto';
@@ -72,19 +69,29 @@ export class WorkLogController {
     endpoint: 'work-log/fix/own',
     summary: '내 근무 수정 기록 조회',
     method: 'GET',
-    description: '근무 기록을 수정합니다.',
+    description: '내 정정 신청 목록을 조회합니다.',
     responses: [
       {
         status: 200,
         description: '조회 성공',
-        type: WorkLogUpdateResponseDto,
+        // 💡 기존에 있던 DTO를 그대로 사용합니다.
+        type: WorkLogHistoryFindListResponseDto,
       },
     ],
   })
   async findFixWorkLog(
     @GetUser('userId') userId: string,
-  ): Promise<WorkLogUpdateResponseDto> {
-    return this.workLogService.findFixWorkLog(userId);
+    @Query() query: WorkLogHistoryFindListDto,
+  ): Promise<WorkLogHistoryFindListResponseDto> {
+    const { result, total } = await this.workLogService.findFixWorkLog(
+      userId,
+      query,
+    );
+
+    return {
+      result,
+      metadata: getMetadata(query, total),
+    };
   }
 
   @Endpoint({
@@ -108,6 +115,7 @@ export class WorkLogController {
       query,
       userId,
     );
+
     return { result, metadata: getMetadata(query, total) };
   }
 

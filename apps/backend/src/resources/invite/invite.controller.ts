@@ -4,7 +4,7 @@ import { InviteService } from './invite.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { RegisterInviteDto } from './dto/register-invite.dto';
 import { JwtAuthGuard } from '../../core/auth/jwt-auth.guard';
-import { UserPayload } from '../../core/auth/interfaces/user-payload.interface'; // 유저 페이로드 인터페이스
+import { UserPayload } from '../../core/auth/interfaces/user-payload.interface';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @ApiTags('Invite')

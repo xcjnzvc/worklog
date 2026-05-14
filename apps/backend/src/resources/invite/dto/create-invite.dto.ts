@@ -16,5 +16,5 @@ export class CreateInviteDto {
     description: '부여할 역할 (ADMIN 또는 USER)',
   })
   @IsEnum(Role, { message: '역할은 ADMIN 또는 USER만 가능합니다' })
-  role: Role; // string에서 Role 타입으로 변경
+  role: Role;
 }

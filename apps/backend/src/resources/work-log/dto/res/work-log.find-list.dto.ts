@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AttendanceStatus } from '@prisma/client';
+import { ApprStatus, AttendanceStatus } from '@prisma/client';
 import { ResponseWithMetaData } from 'src/common/dto/response.dto';
 
 export class WorkLogDataDto {
@@ -36,6 +36,14 @@ export class WorkLogDataDto {
     example: AttendanceStatus.LATE_EARLY,
   })
   status: AttendanceStatus;
+
+  @ApiProperty({
+    enum: ApprStatus,
+    description: '정정 신청 승인 상태',
+    example: 'PENDING',
+    nullable: true,
+  })
+  apprStatus: ApprStatus | null;
 
   @ApiProperty({
     description: '초과 근무 여부',
@@ -84,6 +92,13 @@ export class WorkLogDataDto {
     example: true,
   })
   isFix: boolean;
+
+  @ApiProperty({
+    description: '승인자 이름',
+    example: '홍길동',
+    nullable: true,
+  })
+  approverName?: string | null;
 }
 
 export class WorkLogHistoryFindListResponseDto extends ResponseWithMetaData {

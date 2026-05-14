@@ -21,8 +21,9 @@ model User {
 
   team Team? @relation(fields: [teamId], references: [id])
 
-  workLogs      WorkLog[]
-  leaveRequests LeaveRequest[]
+  workLogs         WorkLog[]
+  approvedWorkLogs WorkLog[]      @relation("WorkLogApprover")
+  leaveRequests    LeaveRequest[]
 
   approvedLeaves LeaveRequest[] @relation("approver_relation")
 

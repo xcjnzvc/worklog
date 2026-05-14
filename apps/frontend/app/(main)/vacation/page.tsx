@@ -7,25 +7,23 @@ import Link from "next/link";
 import { useVacation } from "@/hooks/useVacation";
 import { VacationItem, VacationTabType } from "@/types/vacation";
 import { PageTabs } from "@/components/PageTabs";
+import { StatCard } from "@/components/StatCard";
+import { Pagination } from "@/components/Pagination";
 
 export default function VacationPage() {
+  const [currentPage, setCurrentPage] = useState(1);
   const { useVacationList } = useVacation();
-  const { data, isLoading, isError } = useVacationList();
+  const { data, isLoading, isError } = useVacationList(currentPage);
+
+  console.log("전체 응답 데이터:", data);
+  console.log("메타데이터 확인:", data?.metadata);
 
   const [activeTab, setActiveTab] = useState<VacationTabType>("LIST");
   const [searchKeyword, setSearchKeyword] = useState("");
 
-  const VACATION_TABS: { value: VacationTabType; label: string }[] = [
-    { value: "LIST", label: "휴가 내역 목록" },
-    // { value: "STATISTICS", label: "상세 통계" },
-  ];
-
   const filteredData = useMemo((): VacationTableRow[] => {
     if (!data?.list) return [];
-
-    // list를 VacationItem[]로 간주
     const list = data.list as VacationItem[];
-
     return list
       .map(
         (item): VacationTableRow => ({
@@ -47,8 +45,6 @@ export default function VacationPage() {
   if (isError || !data)
     return <div className="p-10 text-red-500">에러 발생</div>;
 
-  const { summary } = data;
-
   return (
     <div className="w-full min-h-screen bg-[#F8F9FA] p-6 md:p-10 font-sans text-[#1B254B]">
       <div className="max-w-[1600px] mx-auto space-y-8">
@@ -66,30 +62,29 @@ export default function VacationPage() {
           </Link>
         </div>
 
-        {/* 대시보드 카드 */}
         <div className="grid grid-cols-3 gap-6">
           <StatCard
             label="총 연차"
-            value={`${summary.total}일`}
+            value={`${data.summary.total}일`}
             color="text-[#1B254B]"
             icon={<Calendar />}
           />
           <StatCard
             label="사용한 연차"
-            value={`${summary.used}일`}
+            value={`${data.summary.used}일`}
             color="text-[#4318FF]"
             icon={<PieChart />}
           />
           <StatCard
             label="잔여 연차"
-            value={`${summary.remaining}일`}
+            value={`${data.summary.remaining}일`}
             color="text-[#00B050]"
             icon={<List />}
           />
         </div>
 
         <PageTabs
-          tabs={VACATION_TABS}
+          tabs={[{ value: "LIST", label: "휴가 내역 목록" }]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           searchKeyword={searchKeyword}
@@ -97,39 +92,25 @@ export default function VacationPage() {
           searchPlaceholder="내용 또는 승인자 검색..."
         />
 
-        {activeTab === "LIST" ? (
+        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-50">
+          <div className="flex items-center justify-end mb-6">
+            <span className="text-sm text-[#A3AED0] font-medium">
+              총 {data.metadata?.totalCount || filteredData.length}건
+            </span>
+          </div>
+
           <VacationTable
             data={filteredData}
             onItemClick={(item) => console.log(item)}
           />
-        ) : (
-          <div className="p-20 text-center bg-white rounded-[32px]">
-            통계 리포트 준비 중
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
-interface StatCardProps {
-  label: string;
-  value: string;
-  color: string;
-  icon: React.ReactNode; // Lucide 아이콘이나 JSX 요소는 React.ReactNode 타입을 사용합니다.
-}
-
-function StatCard({ label, value, color, icon }: StatCardProps) {
-  return (
-    <div className="bg-white p-8 rounded-[32px] shadow-sm flex items-center gap-6">
-      <div
-        className={`w-14 h-14 rounded-2xl bg-[#F4F7FE] flex items-center justify-center ${color}`}
-      >
-        {icon}
-      </div>
-      <div>
-        <p className="text-sm font-bold text-[#A3AED0]">{label}</p>
-        <p className={`text-[28px] font-black ${color}`}>{value}</p>
+          {/* 페이지네이션 컴포넌트 적용 */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={data.metadata?.totalPages || 1}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </div>
     </div>
   );

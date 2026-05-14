@@ -10,20 +10,23 @@ import { Approver, CreateVacationPayload } from "@/types/user";
 export const useVacation = () => {
   const queryClient = useQueryClient();
 
-  // 1. 휴가 내역 목록 조회
-  const useVacationList = () =>
+  //  휴가 내역 목록 조회
+  const useVacationList = (page: number = 1) =>
     useQuery({
-      queryKey: ["vacations"],
-      queryFn: getVacationAPI,
+      // 💡 queryKey에 page를 포함해야 페이지 이동 시 데이터가 새로고침됩니다.
+      queryKey: ["vacations", page],
+      // 💡 API 함수에 page를 전달합니다.
+      queryFn: () => getVacationAPI(page),
       staleTime: 1000 * 60 * 5,
       select: (response: VacationResponse) => ({
         list: response.data,
         summary: response.summary,
-        meta: response.meta,
+        // 💡 response.meta가 있다면 그대로 사용하거나 매핑
+        metadata: response.meta,
       }),
     });
 
-  // 2. 결재권자 목록 조회 (Axios 적용)
+  //  결재권자 목록 조회 (Axios 적용)
   const useApprovers = () =>
     useQuery<Approver[]>({
       queryKey: ["approvers"],
