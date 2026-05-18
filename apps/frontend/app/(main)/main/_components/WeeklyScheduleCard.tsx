@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import UserProfileItem from "@/components/UserProfileItem";
-import { Clock, Video, Users, MapPin } from "lucide-react";
+import { Clock, Users, MapPin } from "lucide-react";
 
 // 1. 타입 정의
 interface EventItem {
@@ -36,7 +36,7 @@ interface DayDetail {
   meetings: MeetingItem[];
 }
 
-// 2. Mock Data에 타입 적용
+// 2. Mock Data
 export const WEEKLY_MOCK_DATA: WeeklyData[] = [
   { date: 22, day: "일", color: "text-red-500", events: [] },
   { date: 23, day: "월", events: [] },
@@ -93,14 +93,13 @@ const DAILY_DETAILS: Record<number, DayDetail> = {
 export default function WeeklyScheduleCard() {
   const [selectedDate, setSelectedDate] = useState<number>(26);
 
-  // 데이터가 없을 경우를 대비한 기본값 설정
   const currentDetail: DayDetail = DAILY_DETAILS[selectedDate] || {
     vacations: [],
     meetings: [],
   };
 
   return (
-    <div className="bg-white rounded-[32px] border border-gray-100 p-[30px] w-full shadow-sm">
+    <div className="@container bg-white rounded-[32px] border border-gray-100 p-[30px] w-full shadow-sm">
       <h2 className="text-[18px] font-bold text-gray-900 mb-6 px-1 font-sans">
         주간 스케줄
       </h2>
@@ -118,13 +117,13 @@ export default function WeeklyScheduleCard() {
         </div>
       </div>
 
-      {/* 7일 달력 영역 */}
-      <div className="flex gap-3 mb-[30px]">
+      {/* 7일 달력 영역: 가로 스크롤 추가 */}
+      <div className="flex gap-3 mb-[30px] overflow-x-auto pb-2 scrollbar-hide">
         {WEEKLY_MOCK_DATA.map((item) => (
           <button
             key={item.date}
             onClick={() => setSelectedDate(item.date)}
-            className={`relative flex-1 border rounded-[20px] flex flex-col items-center pt-6 pb-4 gap-3 transition-all
+            className={`relative flex-1 min-w-[80px] border rounded-[20px] flex flex-col items-center pt-6 pb-4 gap-3 transition-all
               ${selectedDate === item.date ? "border-[#0029C0] bg-[#F5F8FF] ring-1 ring-[#0029C0]" : "border-gray-100 bg-white hover:border-gray-300"}`}
           >
             {item.isToday && (
@@ -146,7 +145,7 @@ export default function WeeklyScheduleCard() {
               {item.events.map((event, idx) => (
                 <div
                   key={idx}
-                  className={`${event.bgColor} ${event.textColor} text-[10px] font-bold py-1 rounded-[6px] text-center`}
+                  className={`${event.bgColor} ${event.textColor} text-[10px] font-bold py-1 rounded-[6px] text-center whitespace-nowrap`}
                 >
                   {event.label}
                 </div>
@@ -156,8 +155,8 @@ export default function WeeklyScheduleCard() {
         ))}
       </div>
 
-      {/* 하단 상세 섹션 */}
-      <div className="grid grid-cols-2 gap-[30px]">
+      {/* 하단 상세 섹션: 컨테이너 너비에 따른 1열/2열 분기 */}
+      <div className="grid grid-cols-1 @md:grid-cols-2 gap-[30px]">
         {/* 오늘의 휴가자 영역 */}
         <div className="bg-[#F8FAFC] rounded-[24px] p-6 flex flex-col border border-gray-50">
           <div className="flex items-center justify-between mb-6">

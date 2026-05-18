@@ -14,7 +14,6 @@ interface ApiErrorResponse {
   code?: string;
 }
 
-// WORKING 스타일 정의 유지
 const STATUS_STYLE: Record<
   AttendanceStatus,
   { label: string; color: string; dot: string; pulse: string }
@@ -88,12 +87,11 @@ export default function WorkStatusCard() {
     refetchInterval: 60_000,
   });
 
-  // ✅ 상단 UI 상태 결정
   const displayStatus = useMemo(() => {
     if (!attendance) return "NOT_STARTED";
     if (attendance.isClockedIn) return "WORKING";
     return attendance.status;
-  }, [attendance?.isClockedIn, attendance?.status]); // 선택적 체이닝 사용
+  }, [attendance?.isClockedIn, attendance?.status]);
 
   const config =
     STATUS_STYLE[displayStatus as AttendanceStatus] ?? STATUS_STYLE.NORMAL;
@@ -105,25 +103,20 @@ export default function WorkStatusCard() {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }, [attendance?.workMinutes]);
 
-  // ✅ [수정 2] 지각 뱃지 - 컴파일러 경고 해결을 위해 의존성 최적화
   const checkInBadge = useMemo(() => {
     const clockIn = attendance?.clockIn;
     const status = attendance?.status;
-
     if (!clockIn) return null;
-
     const isLate = status === "LATE" || status === "LATE_EARLY";
     return isLate
       ? { label: "지각", color: "text-red-500" }
       : { label: "정상 출근", color: "text-[#2357E5]" };
-  }, [attendance?.clockIn, attendance?.status]); // 내부 변수로 한 번 빼서 처리
+  }, [attendance?.clockIn, attendance?.status]);
 
   const checkOutBadge = useMemo(() => {
     const clockOut = attendance?.clockOut;
     const status = attendance?.status;
-
     if (!clockOut || !status) return null;
-
     const isInsufficient = [
       "EARLY_LEAVE",
       "LATE_EARLY",
@@ -146,11 +139,11 @@ export default function WorkStatusCard() {
   });
 
   if (isLoading)
-    return <CardSkeleton className="max-w-[380px] h-[524px] mx-auto" />;
+    return <CardSkeleton className="w-full h-full min-h-[500px]" />;
 
   if (isError || !attendance) {
     return (
-      <div className="p-[30px] bg-white rounded-[32px] border border-red-50 w-full max-w-[380px] h-[524px] mx-auto flex flex-col items-center justify-center text-center">
+      <article className="p-8 bg-white rounded-[32px] border border-red-50 w-full flex-1 flex flex-col items-center justify-center text-center">
         <p className="text-red-400 font-bold mb-4">
           근태 정보를 불러올 수 없습니다.
         </p>
@@ -160,13 +153,14 @@ export default function WorkStatusCard() {
             queryClient.invalidateQueries({ queryKey: ["todayAttendance"] })
           }
         />
-      </div>
+      </article>
     );
   }
 
   return (
-    <div className="p-[30px] bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full max-w-[380px] h-fit font-sans mx-auto flex flex-col">
-      <div className="flex items-center gap-[8px] mb-[10px]">
+    <article className="p-[30px] bg-white rounded-[32px] shadow-sm border border-gray-100 w-full flex-1 flex flex-col transition-all hover:shadow-md">
+      {/* 1. 상태 칩 */}
+      <div className="flex items-center gap-[8px] mb-[12px]">
         <span
           className={`w-[10px] h-[10px] rounded-full ${config.dot} ${config.pulse}`}
         />
@@ -175,14 +169,14 @@ export default function WorkStatusCard() {
         </span>
       </div>
 
+      {/* 2. 메인 시간 표시 */}
       <div className="mb-[24px]">
-        <div className="text-[48px] font-black tracking-tighter text-gray-950 leading-none mb-3">
+        <div className="text-[44px] md:text-[48px] font-black tracking-tighter text-gray-950 leading-tight">
           {displayTime}
         </div>
-        <div className="flex items-center text-[#999] text-[14px] gap-[6px] font-medium">
+        <div className="flex items-center text-gray-400 text-[14px] gap-[6px] mt-1 font-medium">
           <Calendar size={14} strokeWidth={2.5} />
           {new Date().toLocaleDateString("ko-KR", {
-            year: "numeric",
             month: "long",
             day: "numeric",
             weekday: "long",
@@ -190,33 +184,37 @@ export default function WorkStatusCard() {
         </div>
       </div>
 
-      <div className="relative flex items-center p-[12px] rounded-[24px] bg-[#F5F8FF] border border-[#DDE7FF] mb-[32px]">
-        <div className="w-[44px] h-[44px] rounded-[14px] bg-white flex items-center justify-center shadow-sm mr-[14px] border border-gray-100">
+      {/* 3. 근무 정책 (카드 형태) */}
+      <div className="relative flex items-center p-[16px] rounded-[24px] bg-[#F5F8FF] border border-[#DDE7FF] mb-[32px]">
+        <div className="w-[44px] h-[44px] rounded-[14px] bg-white flex items-center justify-center shadow-sm mr-[14px] border border-gray-100 flex-shrink-0">
           <Briefcase size={20} className="text-[#2357E5]" />
         </div>
-        <div className="flex flex-col flex-1">
-          <span className="text-[11px] font-black text-[#2357E5] uppercase">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[11px] font-black text-[#2357E5] uppercase truncate">
             {attendance.policy?.workType ?? "-"}
           </span>
-          <span className="text-[18px] font-black text-gray-950">
+          <span className="text-[17px] md:text-[18px] font-black text-gray-950 truncate">
             {attendance.policy?.workStartTime ?? "--:--"} -{" "}
             {attendance.policy?.workEndTime ?? "--:--"}
           </span>
         </div>
       </div>
 
-      <div className="relative space-y-[24px] mb-[32px] pl-[26px]">
+      {/* 4. 출퇴근 타임라인 (내용에 따라 늘어남) */}
+      <div className="relative space-y-[28px] mb-[32px] pl-[26px] flex-1">
         <div className="absolute left-[9px] top-[10px] bottom-[10px] w-[2px] bg-gray-50" />
+
+        {/* 출근 정보 */}
         <div className="relative flex items-center justify-between">
           <div
             className={`absolute left-[-26px] w-[20px] h-[20px] rounded-full bg-white border-[5px] ${attendance.clockIn ? "border-[#2357E5]" : "border-gray-100"} z-10`}
           />
           <div className="flex flex-col">
-            <span className="text-[11px] font-extrabold text-[#CCC] uppercase">
+            <span className="text-[11px] font-extrabold text-gray-300 uppercase">
               Check-In
             </span>
             <span
-              className={`text-[19px] font-black ${attendance.clockIn ? "text-gray-900" : "text-gray-300"}`}
+              className={`text-[19px] font-black ${attendance.clockIn ? "text-gray-900" : "text-gray-200"}`}
             >
               {attendance.clockIn
                 ? attendance.clockIn.split("-")[3].slice(0, 5)
@@ -225,13 +223,14 @@ export default function WorkStatusCard() {
           </div>
           {checkInBadge && (
             <span
-              className={`text-[12px] font-bold ${checkInBadge.color} bg-white px-2 py-1 rounded-full shadow-sm border border-gray-50`}
+              className={`text-[12px] font-bold ${checkInBadge.color} bg-white px-2.5 py-1 rounded-full shadow-sm border border-gray-50`}
             >
               {checkInBadge.label}
             </span>
           )}
         </div>
 
+        {/* 퇴근 정보 */}
         <div
           className={`relative flex items-center justify-between ${!attendance.clockOut ? "opacity-40" : ""}`}
         >
@@ -239,10 +238,10 @@ export default function WorkStatusCard() {
             className={`absolute left-[-26px] w-[20px] h-[20px] rounded-full bg-white border-[5px] ${attendance.clockOut ? "border-red-500" : "border-gray-100"} z-10`}
           />
           <div className="flex flex-col">
-            <span className="text-[11px] font-extrabold text-[#CCC] uppercase">
+            <span className="text-[11px] font-extrabold text-gray-300 uppercase">
               Check-Out
             </span>
-            <span className="text-[19px] font-black">
+            <span className="text-[19px] font-black text-gray-900">
               {attendance.clockOut
                 ? attendance.clockOut.split("-")[3].slice(0, 5)
                 : "-- : --"}
@@ -250,7 +249,7 @@ export default function WorkStatusCard() {
           </div>
           {checkOutBadge && (
             <span
-              className={`text-[12px] font-bold ${checkOutBadge.color} bg-white px-2 py-1 rounded-full shadow-sm border border-gray-50`}
+              className={`text-[12px] font-bold ${checkOutBadge.color} bg-white px-2.5 py-1 rounded-full shadow-sm border border-gray-50`}
             >
               {checkOutBadge.label}
             </span>
@@ -258,22 +257,25 @@ export default function WorkStatusCard() {
         </div>
       </div>
 
-      <Button
-        text={
-          !attendance.clockIn
-            ? "출근하기"
-            : attendance.isClockedIn
-              ? "퇴근하기"
-              : "업무 종료"
-        }
-        disabled={
-          (!attendance.isClockedIn && !!attendance.clockIn) ||
-          mutation.isPending
-        }
-        onClick={() =>
-          mutation.mutate(!attendance.clockIn ? "CLOCK_IN" : "CLOCK_OUT")
-        }
-      />
-    </div>
+      {/* 5. 버튼 영역 (하단 고정) */}
+      <div className="mt-auto">
+        <Button
+          text={
+            !attendance.clockIn
+              ? "출근하기"
+              : attendance.isClockedIn
+                ? "퇴근하기"
+                : "업무 종료"
+          }
+          disabled={
+            (!attendance.isClockedIn && !!attendance.clockIn) ||
+            mutation.isPending
+          }
+          onClick={() =>
+            mutation.mutate(!attendance.clockIn ? "CLOCK_IN" : "CLOCK_OUT")
+          }
+        />
+      </div>
+    </article>
   );
 }

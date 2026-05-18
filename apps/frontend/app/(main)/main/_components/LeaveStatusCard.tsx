@@ -7,29 +7,30 @@ import { useVacation } from "@/hooks/useVacation";
 import { VacationItem } from "@/types/vacation";
 
 export default function LeaveStatusCard() {
-  // 1. useVacation()에서 필요한 훅(useVacationList)을 먼저 꺼냅니다.
   const { useVacationList } = useVacation();
-
-  // 2. 꺼내온 훅을 호출하여 실제 데이터와 상태를 가져옵니다.
   const { data, isLoading, isError } = useVacationList();
 
   if (isLoading)
-    return <div className="p-8 bg-white rounded-[32px]">로딩 중...</div>;
+    return (
+      <div className="p-8 bg-white rounded-[32px] w-full flex-1 min-h-[500px] flex items-center justify-center">
+        로딩 중...
+      </div>
+    );
+
   if (isError || !data)
     return (
-      <div className="p-8 bg-white rounded-[32px]">
+      <div className="p-8 bg-white rounded-[32px] w-full flex-1 min-h-[500px] flex items-center justify-center">
         데이터를 불러올 수 없습니다.
       </div>
     );
 
   const { list, summary } = data;
 
-  // 0으로 나누는 오류 방지 (total이 0일 경우 대비)
   const usedPercentage =
     summary.total > 0 ? (summary.used / summary.total) * 100 : 0;
 
   return (
-    <div className="p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm max-w-[450px] w-full flex flex-col">
+    <article className="p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm w-full flex flex-col flex-1 transition-all hover:shadow-md">
       {/* 상단: 남은 연차 정보 */}
       <div className="flex justify-between items-start mb-6">
         <div className="flex flex-col">
@@ -50,8 +51,6 @@ export default function LeaveStatusCard() {
 
       {/* 중간: 프로그레스 바 영역 */}
       <div className="mb-8">
-        {" "}
-        {/* mb-18이 너무 커서 mb-8로 조정했습니다 */}
         <p className="text-[15px] font-medium text-gray-500 mb-[12px]">
           전체 {summary.total}일 중 {summary.used}일을 사용했습니다.
         </p>
@@ -67,8 +66,8 @@ export default function LeaveStatusCard() {
         </div>
       </div>
 
-      {/* 하단: 최근 신청 내역 리스트 */}
-      <div className="flex flex-col gap-2 mb-[20px]">
+      {/* 하단: 최근 신청 내역 리스트 - flex-1을 주어 남은 공간을 차지하게 함 */}
+      <div className="flex flex-col gap-2 mb-[20px] flex-1">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[18px] font-bold text-gray-900">
             최근 신청 내역
@@ -78,20 +77,16 @@ export default function LeaveStatusCard() {
           </button>
         </div>
 
-        <div className="flex flex-col">
-          {list.map(
-            (
-              item: VacationItem, // 여기서 item에 타입을 지정합니다.
-            ) => (
-              <LeaveHistoryItem
-                key={item.id}
-                startDate={item.startDate}
-                type={item.type}
-                timeRange={item.timeRange}
-                status={item.status}
-              />
-            ),
-          )}
+        <div className="flex flex-col overflow-y-auto custom-scrollbar">
+          {list.map((item: VacationItem) => (
+            <LeaveHistoryItem
+              key={item.id}
+              startDate={item.startDate}
+              type={item.type}
+              timeRange={item.timeRange}
+              status={item.status}
+            />
+          ))}
           {list.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-4">
               신청 내역이 없습니다.
@@ -100,7 +95,10 @@ export default function LeaveStatusCard() {
         </div>
       </div>
 
-      <Button text="신청하기" />
-    </div>
+      {/* 버튼 영역: mt-auto로 항상 최하단 고정 */}
+      <div className="mt-auto">
+        <Button text="신청하기" />
+      </div>
+    </article>
   );
 }

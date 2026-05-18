@@ -8,8 +8,8 @@ import { Approver } from "@/types/user";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  approvers: Approver[]; // 공통 타입을 사용
-  onSelect: (approver: Approver) => void; // 공통 타입을 사용
+  approvers: Approver[];
+  onSelect: (approver: Approver) => void;
   selectedId?: string;
 }
 
@@ -44,7 +44,7 @@ export default function ApproverModal({
             <button
               key={person.id}
               onClick={() => {
-                onSelect(person); // 이제 타입이 일치합니다!
+                onSelect(person);
                 onClose();
               }}
               className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${

@@ -46,7 +46,7 @@ export default function AttendanceCorrectionPage() {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-[#F8F9FA] p-6 md:p-10 font-sans text-[#1B254B]">
+    <div className="w-full min-h-screen bg-[#F8F9FA] p-4 md:p-6 lg:p-10  font-sans text-[#1B254B]">
       <div className="max-w-[1600px] mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <div>
@@ -89,7 +89,7 @@ export default function AttendanceCorrectionPage() {
           searchPlaceholder={isListView ? "날짜 검색..." : "사유 검색..."}
         />
 
-        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-50">
+        <div className="bg-white p-4 md:p-8 rounded-[32px] shadow-sm border border-gray-50">
           <div className="flex items-center justify-end mb-6">
             <span className="text-sm text-[#A3AED0] font-medium">
               총 {meta?.totalCount || 0}건

@@ -8,7 +8,7 @@ import { Approver } from "@/types/user";
 import ApproverModal from "@/app/(main)/vacation/_components/ApproverModal";
 import { useVacation } from "@/hooks/useVacation";
 import Input from "@/components/Input";
-import { toast } from "react-hot-toast"; // 또는 'sonner'
+import { toast } from "react-hot-toast";
 
 export default function AttendanceCorrectionCreatePage() {
   const router = useRouter();
@@ -53,13 +53,12 @@ export default function AttendanceCorrectionCreatePage() {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. reason 값을 확정적 string으로 변환 (|| 연산자 사용)
     const fallbackReason =
       FIX_TYPES.find((t) => t.value === fixType)?.label || "근태 정정 신청";
 
     const requestData = {
       type: fixType,
-      reason: reason || fallbackReason, // undefined가 절대 발생하지 않음
+      reason: reason || fallbackReason,
       fixClockIn: new Date(`${today}T${fixClockIn}:00`).toISOString(),
       fixClockOut: new Date(`${today}T${fixClockOut}:00`).toISOString(),
       approverId: selectedApprover.id,
@@ -72,7 +71,6 @@ export default function AttendanceCorrectionCreatePage() {
           toast.success("정정 신청이 완료되었습니다.");
           router.push("/attendance?tab=STATISTICS");
         },
-        // 2. err: any 대신 err: Error 또는 unknown 사용 (ESLint 에러 해결)
         onError: (err: Error) =>
           toast.error(err.message || "신청 중 오류가 발생했습니다."),
       },
@@ -81,8 +79,9 @@ export default function AttendanceCorrectionCreatePage() {
 
   return (
     <div className="w-full min-h-screen bg-[#F8F9FA] p-6 md:p-10 font-sans text-[#1B254B]">
-      <div className="max-w-[1000px] mx-auto space-y-8">
-        {/* 헤더 */}
+      {/* 최상위 대형 컨테이너를 flex flex-col 구조로 정의 */}
+      <div className="max-w-[1000px] mx-auto flex flex-col gap-6 md:gap-8">
+        {/* 헤더 영역 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <button
@@ -92,7 +91,7 @@ export default function AttendanceCorrectionCreatePage() {
               <ArrowLeft size={20} className="text-[#A3AED0]" />
             </button>
             <div>
-              <h1 className="text-[28px] font-black tracking-tight">
+              <h1 className="text-[24px] md:text-[28px] font-black tracking-tight">
                 근태 정정 신청
               </h1>
               <div className="flex items-center gap-2 mt-1">
@@ -103,18 +102,21 @@ export default function AttendanceCorrectionCreatePage() {
               </div>
             </div>
           </div>
+
+          {/* PC 데스크톱 버전(lg 이상)에서만 상단 우측에 유지되는 버튼 공간 */}
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-9 py-3.5 text-sm font-bold text-white bg-[#4318FF] hover:bg-[#3311CC] rounded-[18px] shadow-lg shadow-indigo-200 transition-all disabled:opacity-50 active:scale-95"
+            className="hidden lg:block px-9 py-3.5 text-sm font-bold text-white bg-[#4318FF] hover:bg-[#3311CC] rounded-[18px] shadow-lg shadow-indigo-200 transition-all disabled:opacity-50 active:scale-95"
           >
-            {isSubmitting ? "요청 중..." : "정정 요청하기"}
+            {isSubmitting ? "요청 중..." : "정정 요청"}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
+        {/* 입력 및 정보 영역 Wrap */}
+        <div className="flex flex-col gap-6">
           {/* 1. 정정 정보 입력 */}
-          <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-50">
+          <div className="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-50">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
               <div className="lg:col-span-4 space-y-3">
                 <label className="text-[13px] font-bold text-[#A3AED0] ml-1 uppercase tracking-wider">
@@ -191,7 +193,7 @@ export default function AttendanceCorrectionCreatePage() {
           </div>
 
           {/* 2. 정정 사유 */}
-          <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-50 space-y-4">
+          <div className="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-50 space-y-4">
             <div className="flex items-center justify-between mb-1">
               <label className="text-[13px] font-bold text-[#A3AED0] ml-1 uppercase tracking-wider">
                 정정 사유{" "}
@@ -211,14 +213,14 @@ export default function AttendanceCorrectionCreatePage() {
                   ? "구체적인 사유를 작성해주세요 (예: 단말기 고장으로 인한 기록 누락)"
                   : "추가 전달 사항이 있다면 입력하세요."
               }
-              className="w-full h-32 bg-[#F4F7FE] border-2 border-transparent focus:border-[#4318FF] rounded-[24px] px-8 py-6 text-base font-medium outline-none transition-all resize-none placeholder:text-[#A3AED0]/60"
+              className="w-full h-32 bg-[#F4F7FE] border-2 border-transparent focus:border-[#4318FF] rounded-[24px] px-6 md:px-8 py-5 md:py-6 text-base font-medium outline-none transition-all resize-none placeholder:text-[#A3AED0]/60"
             />
           </div>
 
           {/* 3. 결재권자 */}
-          <div className="bg-white px-8 py-6 rounded-[32px] shadow-sm border border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-[#F4F7FE] flex items-center justify-center text-[#4318FF] border border-indigo-50">
+          <div className="bg-white px-6 md:px-8 py-6 rounded-[32px] shadow-sm border border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-5 w-full md:w-auto">
+              <div className="w-14 h-14 rounded-2xl bg-[#F4F7FE] flex items-center justify-center text-[#4318FF] border border-indigo-50 shrink-0">
                 <User size={24} />
               </div>
               <div>
@@ -237,11 +239,22 @@ export default function AttendanceCorrectionCreatePage() {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="w-full md:w-auto px-10 py-3 text-sm font-bold text-[#4318FF] bg-[#F4F7FE] border border-indigo-50 rounded-xl hover:bg-[#E0E5F2] transition-all active:scale-95"
+              className="w-full md:w-auto px-10 py-3.5 text-sm font-bold text-[#4318FF] bg-[#F4F7FE] border border-indigo-50 rounded-xl hover:bg-[#E0E5F2] transition-all active:scale-95"
             >
               승인자 변경
             </button>
           </div>
+        </div>
+
+        {/* 💡 PC 제외 모든 반응형(모바일, 태블릿 이하) 전용 최하단 정정 요청 버튼 */}
+        <div className="flex lg:hidden w-full mt-2 order-last">
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full py-4 text-sm font-bold text-white bg-[#4318FF] hover:bg-[#3311CC] rounded-[18px] shadow-lg shadow-indigo-100 transition-all disabled:opacity-50 text-center active:scale-[0.98]"
+          >
+            {isSubmitting ? "요청 중..." : "정정 요청하기"}
+          </button>
         </div>
       </div>
 

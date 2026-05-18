@@ -1,191 +1,9 @@
-// "use client";
-
-// import React from "react";
-// import { CombinedStatus, AttendanceWorkLog } from "@/types/attendance";
-// import { useRouter } from "next/navigation";
-
-// interface AttendanceTableProps {
-//   data: AttendanceWorkLog[];
-//   type: "view" | "correction";
-//   onItemClick: (item: AttendanceWorkLog) => void;
-// }
-
-// export const AttendanceTable = ({
-//   data,
-//   type,
-//   onItemClick,
-// }: AttendanceTableProps) => {
-//   const router = useRouter();
-
-//   // "사유" 헤더 추가 및 중앙 정렬 반영
-//   const headers =
-//     type === "view"
-//       ? ["날짜", "출근", "퇴근", "근무시간", "상태", "사유", "신청"]
-//       : ["신청일", "대상날짜", "정정 사유", "상태", "승인자"];
-
-//   const getStatusStyle = (status: CombinedStatus) => {
-//     const styles: Record<string, string> = {
-//       NORMAL: "bg-[#EFFFF6] text-[#05CD99]",
-//       APPROVED: "bg-[#EFFFF6] text-[#05CD99]",
-//       PENDING: "bg-[#FFF8E7] text-[#FFA800]",
-//       WORKING: "bg-[#FFF8E7] text-[#FFA800]",
-//       REJECTED: "bg-[#FFEEF2] text-[#EE5D50]",
-//       LATE: "bg-[#FFEEF2] text-[#EE5D50]",
-//       ABSENT: "bg-[#FFEEF2] text-[#EE5D50]",
-//       MISSING_OUT: "bg-[#FFEEF2] text-[#EE5D50]",
-//       LATE_EARLY: "bg-[#FFEEF2] text-[#EE5D50]",
-//       EARLY_LEAVE: "bg-[#FFEEF2] text-[#EE5D50]",
-//     };
-//     return styles[status] || "bg-gray-50 text-gray-400";
-//   };
-
-//   const getStatusText = (status: CombinedStatus) => {
-//     const statusMap: Record<string, string> = {
-//       NORMAL: "정상",
-//       WORKING: "근무 중",
-//       LATE: "지각",
-//       ABSENT: "결근",
-//       APPROVED: "완료",
-//       PENDING: "대기",
-//       REJECTED: "반려",
-//       MISSING_OUT: "퇴근 누락",
-//       LATE_EARLY: "지각/조퇴",
-//       EARLY_LEAVE: "조퇴",
-//     };
-//     return statusMap[status] || status;
-//   };
-
-//   const formatDate = (dateStr: string) => {
-//     if (!dateStr) return "-";
-//     const d = new Date(dateStr);
-//     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-//   };
-
-//   const formatTime = (dateStr: string | null, status: CombinedStatus) => {
-//     if (!dateStr || status === "ABSENT") return "--:--";
-//     const d = new Date(dateStr);
-//     return d.toLocaleTimeString("ko-KR", {
-//       hour: "2-digit",
-//       minute: "2-digit",
-//       hour12: false,
-//     });
-//   };
-
-//   return (
-//     <div className="overflow-x-auto">
-//       <table className="w-full min-w-[1000px] border-separate border-spacing-y-3">
-//         <thead>
-//           <tr className="bg-transparent">
-//             {headers.map((head, idx) => (
-//               <th
-//                 key={idx}
-//                 className="px-6 py-2 text-[13px] font-bold text-[#A3AED0] text-center first:pl-10 last:pr-10"
-//               >
-//                 {head}
-//               </th>
-//             ))}
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {data.length === 0 ? (
-//             <tr>
-//               <td
-//                 colSpan={headers.length}
-//                 className="py-20 text-center text-[#A3AED0] bg-white rounded-[24px]"
-//               >
-//                 근무 기록이 없습니다.
-//               </td>
-//             </tr>
-//           ) : (
-//             data.map((item) => (
-//               <tr
-//                 key={item.id}
-//                 onClick={() => onItemClick(item)}
-//                 className="group bg-white hover:shadow-md transition-all duration-200 cursor-pointer text-center"
-//               >
-//                 {type === "view" ? (
-//                   <>
-//                     <td className="px-6 py-6 first:rounded-l-[24px] text-sm font-bold text-[#707EAE] border-y border-l border-transparent">
-//                       {formatDate(item.date)}
-//                     </td>
-//                     <td className="px-6 py-6 text-sm font-bold text-[#1B254B] border-y border-transparent">
-//                       {formatTime(item.clockIn, item.status)}
-//                     </td>
-//                     <td className="px-6 py-6 text-sm font-bold text-[#1B254B] border-y border-transparent">
-//                       {formatTime(item.clockOut, item.status)}
-//                     </td>
-//                     <td className="px-6 py-6 text-sm font-medium text-[#707EAE] border-y border-transparent">
-//                       {item.workMinutes !== null
-//                         ? `${item.workMinutes}분`
-//                         : "0분"}
-//                     </td>
-//                     {/* 1. 상태 컬럼 */}
-//                     <td className="px-6 py-6 border-y border-transparent">
-//                       <span
-//                         className={`px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getStatusStyle(item.status)}`}
-//                       >
-//                         {getStatusText(item.status)}
-//                       </span>
-//                     </td>
-//                     {/* 2. 비고(사유) 컬럼 추가 - 이 부분이 빠져있어서 밀렸던 것! */}
-//                     <td className="px-6 py-6 text-sm text-[#A3AED0] border-y border-transparent">
-//                       {item.isFix ? "정정됨" : "-"}
-//                     </td>
-//                     {/* 3. 신청 버튼 컬럼 */}
-//                     <td className="px-6 py-6 last:rounded-r-[24px] border-y border-r border-transparent last:pr-10">
-//                       <button
-//                         onClick={(e) => {
-//                           e.stopPropagation();
-//                           router.push(
-//                             `/attendance/correction/create?id=${item.id}`,
-//                           );
-//                         }}
-//                         className="inline-block px-5 py-2.5 bg-[#4318FF] text-white rounded-xl text-[13px] font-bold shadow-md shadow-indigo-100 hover:bg-[#3311CC] transition-all active:scale-95"
-//                       >
-//                         정정 요청
-//                       </button>
-//                     </td>
-//                   </>
-//                 ) : (
-//                   <>
-//                     {/* 정정 신청 내역(STATISTICS) 탭용 레이아웃 (기존 유지) */}
-//                     <td className="px-6 py-6 first:rounded-l-[24px] text-sm font-bold text-[#707EAE] border-y border-l border-transparent">
-//                       {formatDate(item.createdAt)}
-//                     </td>
-//                     <td className="px-6 py-6 text-sm font-bold text-[#1B254B] border-y border-transparent">
-//                       {formatDate(item.date)}
-//                     </td>
-//                     <td className="px-6 py-6 text-sm text-[#707EAE] border-y border-transparent truncate max-w-[200px]">
-//                       {item.fixReason || "사유 미입력"}
-//                     </td>
-//                     <td className="px-6 py-6 border-y border-transparent">
-//                       <span
-//                         className={`px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getStatusStyle(item.status)}`}
-//                       >
-//                         {getStatusText(item.status)}
-//                       </span>
-//                     </td>
-//                     <td className="px-6 py-6 last:rounded-r-[24px] border-y border-r border-transparent last:pr-10">
-//                       <span className="text-sm font-bold text-[#1B254B]">
-//                         {item.approverName || "미승인"}
-//                       </span>
-//                     </td>
-//                   </>
-//                 )}
-//               </tr>
-//             ))
-//           )}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// };
-
 "use client";
 
 import React from "react";
 import { CombinedStatus, AttendanceWorkLog } from "@/types/attendance";
 import { useRouter } from "next/navigation";
+import { AttendanceMobileCard } from "./AttendanceMobileCard";
 
 interface AttendanceTableProps {
   data: AttendanceWorkLog[];
@@ -200,20 +18,16 @@ export const AttendanceTable = ({
 }: AttendanceTableProps) => {
   const router = useRouter();
 
-  const headers =
-    type === "view"
-      ? ["날짜", "출근", "퇴근", "근무시간", "출결", "정정 신청"]
-      : ["신청일", "대상날짜", "정정 사유", "결재 상태", "승인자"];
-
+  // ─── 스타일 헬퍼 ───────────────────────────────────────────
   const getStatusStyle = (status: CombinedStatus) => {
     const styles: Record<string, string> = {
-      NORMAL: "bg-[#EFFFF6] text-[#05CD99]",
+      NORMAL: "bg-[#E6F4EA] text-[#137333]",
       WORKING: "bg-[#FFF8E7] text-[#FFA800]",
-      LATE: "bg-[#FFEEF2] text-[#EE5D50]",
-      ABSENT: "bg-[#FFEEF2] text-[#EE5D50]",
-      MISSING_OUT: "bg-[#FFEEF2] text-[#EE5D50]",
-      LATE_EARLY: "bg-[#FFEEF2] text-[#EE5D50]",
-      EARLY_LEAVE: "bg-[#FFEEF2] text-[#EE5D50]",
+      LATE: "bg-[#FCE8E6] text-[#C5221F]",
+      ABSENT: "bg-[#FCE8E6] text-[#C5221F]",
+      MISSING_OUT: "bg-[#FCE8E6] text-[#C5221F]",
+      LATE_EARLY: "bg-[#FCE8E6] text-[#C5221F]",
+      EARLY_LEAVE: "bg-[#FCE8E6] text-[#C5221F]",
     };
     return styles[status] || "bg-gray-50 text-gray-400";
   };
@@ -253,75 +67,190 @@ export const AttendanceTable = ({
     return `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${String(d.getUTCDate()).padStart(2, "0")}`;
   };
 
+  // 💡 테이블 공간 확보를 위해 년도를 제외하고 'MM.DD'만 반환하는 함수
+  const formatTableDate = (dateStr: string) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    return `${String(d.getUTCMonth() + 1).padStart(2, "0")}.${String(d.getUTCDate()).padStart(2, "0")}`;
+  };
+
   const formatTime = (dateStr: string | null, status: CombinedStatus) => {
     if (!dateStr || status === "ABSENT") return "--:--";
     const d = new Date(dateStr);
     return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
   };
 
+  // ─── 빈 데이터 ─────────────────────────────────────────────
+  if (data.length === 0) {
+    return (
+      <div className="py-20 text-center text-[#A3AED0]">기록이 없습니다.</div>
+    );
+  }
+
+  // ─── 모바일 카드 JSX: correction 타입 ──────────────────────
+  const mobileCorrectionCards = (
+    <div className="sm:hidden flex flex-col gap-4">
+      {data.map((item, index) => {
+        const displayId = `NO. ${String(index + 1).padStart(3, "0")}`;
+
+        return (
+          <div
+            key={item.id}
+            className="bg-white border border-gray-50 rounded-[28px] p-6 shadow-sm flex flex-col gap-3"
+          >
+            <div className="flex justify-between items-center">
+              <span className="font-extrabold text-xs text-[#4318FF]">
+                {displayId}
+              </span>
+              <span className="font-bold text-xs text-[#707EAE]">
+                {formatDate(item.createdAt)}
+              </span>
+              <span
+                className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-black ${getApprStatusStyle(
+                  item.apprStatus,
+                )}`}
+              >
+                {approvalStatusMap[item.apprStatus as string] || "처리 중"}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1.5 text-sm text-[#A3AED0]">
+              <span>
+                대상 날짜{" "}
+                <b className="text-[#1B254B]">{formatDate(item.date)}</b>
+              </span>
+              <span className="truncate">
+                사유{" "}
+                <b className="text-[#707EAE]">
+                  {item.fixReason || "사유 미입력"}
+                </b>
+              </span>
+              {item.approverName && (
+                <span>
+                  승인자{" "}
+                  <b className="text-[#1B254B]">
+                    {item.approverName}{" "}
+                    <span className="font-normal text-[#A3AED0]">
+                      ({item.approverPosition || "팀장"})
+                    </span>
+                  </b>
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <div className="overflow-x-auto scrollbar-hide">
-      <table className="w-full min-w-[1000px] border-collapse">
-        <thead>
-          <tr className="border-b border-gray-100">
-            {headers.map((head, idx) => (
-              <th
-                key={idx}
-                className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-center"
-              >
-                {head}
+    <>
+      {/* ── 모바일 카드 출력부 ── */}
+      {type === "view" ? (
+        <div className="sm:hidden flex flex-col gap-4">
+          {data.map((item, index) => {
+            const enhancedItem = {
+              ...item,
+              displayId: `NO. ${String(index + 1).padStart(3, "0")}`,
+            };
+            return (
+              <AttendanceMobileCard
+                key={item.id}
+                item={enhancedItem}
+                getStatusStyle={getStatusStyle}
+                attendanceTypeMap={attendanceTypeMap}
+                formatDate={formatDate}
+                formatTime={formatTime}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        mobileCorrectionCards
+      )}
+
+      {/* ── 데스크탑/태블릿 테이블 뷰 (sm 이상) ── */}
+      <div className="hidden sm:block overflow-x-auto scrollbar-hide">
+        <table className="w-full min-w-[550px] md:min-w-[800px] lg:min-w-[900px]">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                번호
               </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <tr>
-              <td
-                colSpan={headers.length}
-                className="py-20 text-center text-[#A3AED0]"
-              >
-                기록이 없습니다.
-              </td>
+              <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                {type === "view" ? "날짜" : "신청일"}
+              </th>
+              <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                {type === "view" ? "출근" : "대상날짜"}
+              </th>
+              <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                {type === "view" ? "퇴근" : "정정 사유"}
+              </th>
+              {/* 💡 근무시간 헤더: md(768px) 이상일 때만 노출 (view 타입 전용) */}
+              {type === "view" && (
+                <th className="hidden md:table-cell px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                  근무시간
+                </th>
+              )}
+              <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                {type === "view" ? "출결" : "결재 상태"}
+              </th>
+              <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
+                {type === "view" ? "정정 신청" : "승인자"}
+              </th>
             </tr>
-          ) : (
-            data.map((item) => {
+          </thead>
+          <tbody>
+            {data.map((item, index) => {
               const isDisabled =
                 item.isFix ||
                 item.apprStatus === "PENDING" ||
                 item.status === "NORMAL";
 
+              const rawDisplayId = String(index + 1).padStart(3, "0");
+
               return (
                 <tr
                   key={item.id}
                   onClick={() => !isDisabled && onItemClick(item)}
-                  className={`group transition-colors duration-200 text-center border-b border-gray-50 last:border-none
-                    ${isDisabled ? "bg-white cursor-default" : "bg-white hover:bg-[#F7F9FF] cursor-pointer"}`}
+                  className={`transition-colors duration-200 text-center border-b border-gray-50 last:border-none
+                    ${
+                      isDisabled
+                        ? "bg-white cursor-default"
+                        : "bg-white hover:bg-[#F7F9FF] cursor-pointer"
+                    }`}
                 >
                   {type === "view" ? (
                     <>
-                      <td className="px-6 py-5 text-sm font-bold text-[#707EAE]">
-                        {formatDate(item.date)}
+                      <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
+                        {rawDisplayId}
                       </td>
-                      <td className="px-6 py-5 text-sm font-bold text-[#1B254B]">
+                      {/* 💡 년도를 제거한 좁은 화면 최적화 날짜 포맷 적용 */}
+                      <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
+                        {formatTableDate(item.date)}
+                      </td>
+                      <td className="px-4 py-5 text-sm font-bold text-[#1B254B]">
                         {formatTime(item.clockIn, item.status)}
                       </td>
-                      <td className="px-6 py-5 text-sm font-bold text-[#1B254B]">
+                      <td className="px-4 py-5 text-sm font-bold text-[#1B254B]">
                         {formatTime(item.clockOut, item.status)}
                       </td>
-                      <td className="px-6 py-5 text-sm font-medium text-[#707EAE]">
+                      {/* 💡 근무시간 데이터 셀: md 이상일 때만 노출 */}
+                      <td className="hidden md:table-cell px-4 py-5 text-sm font-medium text-[#707EAE]">
                         {item.workMinutes !== null
                           ? `${item.workMinutes}분`
                           : "0분"}
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-4 py-5">
                         <span
-                          className={`px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getStatusStyle(item.status)}`}
+                          className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getStatusStyle(
+                            item.status,
+                          )}`}
                         >
                           {attendanceTypeMap[item.status] || "기타"}
                         </span>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-4 py-5">
                         {item.status === "NORMAL" ? (
                           <span className="text-[#A3AED0] text-[13px] font-medium">
                             정상 기록
@@ -336,8 +265,12 @@ export const AttendanceTable = ({
                                   `/attendance/correction/create?id=${item.id}`,
                                 );
                             }}
-                            className={`inline-block px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all
-                              ${isDisabled ? "bg-[#E0E5F2] text-[#A3AED0] cursor-not-allowed" : "bg-[#4318FF] text-white hover:bg-[#3311CC] active:scale-95"}`}
+                            className={`inline-block px-4 py-2 rounded-xl text-[13px] font-bold transition-all
+                              ${
+                                isDisabled
+                                  ? "bg-[#E0E5F2] text-[#A3AED0] cursor-not-allowed"
+                                  : "bg-[#4318FF] text-white hover:bg-[#3311CC] active:scale-95"
+                              }`}
                           >
                             {item.isFix
                               ? "정정 완료"
@@ -350,32 +283,36 @@ export const AttendanceTable = ({
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-5 text-sm font-bold text-[#707EAE]">
-                        {formatDate(item.createdAt)}
+                      <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
+                        {rawDisplayId}
                       </td>
-                      <td className="px-6 py-5 text-sm font-bold text-[#1B254B]">
-                        {formatDate(item.date)}
+                      {/* 💡 정정 신청 내역 탭에서도 년도 제외 적용 */}
+                      <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
+                        {formatTableDate(item.createdAt)}
                       </td>
-                      <td className="px-6 py-5 text-sm text-[#707EAE] truncate max-w-[200px]">
+                      <td className="px-4 py-5 text-sm font-bold text-[#1B254B]">
+                        {formatTableDate(item.date)}
+                      </td>
+                      <td className="px-4 py-5 text-sm text-[#707EAE] truncate max-w-[120px] md:max-w-[200px]">
                         {item.fixReason || "사유 미입력"}
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-4 py-5">
                         <span
-                          className={`px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getApprStatusStyle(item.apprStatus)}`}
+                          className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getApprStatusStyle(
+                            item.apprStatus,
+                          )}`}
                         >
                           {approvalStatusMap[item.apprStatus as string] ||
                             "처리 중"}
                         </span>
                       </td>
-                      {/* 💡 승인자: 이름과 직급을 가로로 나란히 배치 */}
-                      <td className="px-6 py-5 text-center">
+                      <td className="px-4 py-5 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <span className="text-sm font-bold text-[#1B254B]">
                             {item.approverName || "미정"}
                           </span>
                           {item.approverName && (
                             <span className="text-[12px] font-medium text-[#A3AED0]">
-                              {/* 괄호 안에 직급 표시 (데이터 없을 시 기본값 설정 가능) */}
                               ({item.approverPosition || "팀장"})
                             </span>
                           )}
@@ -385,10 +322,10 @@ export const AttendanceTable = ({
                   )}
                 </tr>
               );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };

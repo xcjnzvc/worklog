@@ -1,112 +1,9 @@
-// "use client";
-
-// import { useUserStore } from "@/store/useUserStore";
-// import { useRouter } from "next/navigation";
-// import WorkStatusCard from "./_components/WorkStatusCard";
-// import AttendanceSummaryCard from "./_components/AttendanceSummaryCard";
-// import LeaveStatusCard from "./_components/LeaveStatusCard";
-// import WeeklyScheduleCard from "./_components/WeeklyScheduleCard";
-
-// export default function Main() {
-//   const { user, isLoggedIn } = useUserStore();
-//   const router = useRouter();
-
-//   if (!isLoggedIn || !user) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen text-gray-400 font-medium bg-[#F8F9FA]">
-//         로그인이 필요한 서비스입니다.
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-[#F8F9FA] p-[40px]">
-//       <div className="max-w-[1600px] mx-auto">
-//         {/* [상단 헤더] */}
-//         <header className="mb-[40px]">
-//           <h2 className="text-[28px] font-bold text-[#222] flex items-center gap-2">
-//             <span className="text-[#0029C0] font-black">
-//               {user.companyName}
-//             </span>
-//             <span className="font-bold text-gray-800">{user.name}님</span>
-//             <span className="text-gray-500 font-medium">안녕하세요!</span>
-//           </h2>
-//         </header>
-
-//         {/* [메인 레이아웃] 사이 간격 30px 고정 */}
-//         <div className="grid grid-cols-12 gap-[30px] items-start">
-//           {/* 1. 왼쪽 메인 영역 (9/12 차지) */}
-//           <div className="col-span-9 flex flex-col gap-[30px]">
-//             {/* 상단: 출근 상태(3) + 근태 요약(6) = 총 9컬럼 */}
-//             <div className="grid grid-cols-9 gap-[30px]">
-//               <div className="col-span-3 w-full">
-//                 <WorkStatusCard />
-//               </div>
-//               <div className="col-span-6 w-full">
-//                 <AttendanceSummaryCard />
-//               </div>
-//             </div>
-
-//             {/* 하단: 주간 스케줄 (위의 두 카드 너비 합과 정확히 일치) */}
-//             <div className="w-full">
-//               <WeeklyScheduleCard />
-//             </div>
-
-//             {/* OWNER 전용 섹션 */}
-//             {user.role === "OWNER" && (
-//               <section className="p-[30px] border border-gray-100 rounded-[32px] bg-white flex justify-between items-center shadow-sm">
-//                 <div>
-//                   <h3 className="font-bold text-[#0023A1] text-xl">
-//                     관리자 초대하기
-//                   </h3>
-//                   <p className="text-gray-400 mt-1">
-//                     팀원을 초대하여 근태 관리를 시작하세요.
-//                   </p>
-//                 </div>
-//                 <button
-//                   onClick={() => router.push("/invite")}
-//                   className="bg-[#0029C0] text-white px-8 py-3 rounded-[16px] font-bold hover:bg-[#0023A1] transition-all active:scale-95"
-//                 >
-//                   초대 링크 생성
-//                 </button>
-//               </section>
-//             )}
-//           </div>
-
-//           {/* 2. 오른쪽 사이드바 영역 (3/12 차지) */}
-//           <aside className="col-span-3 flex flex-col gap-[30px]">
-//             {/* 연차 현황 */}
-//             <LeaveStatusCard />
-
-//             {/* 진행 중인 프로젝트 */}
-//             <article className="bg-white rounded-[32px] border border-gray-100 p-[30px] min-h-[380px] shadow-sm flex flex-col">
-//               <h3 className="font-bold text-[18px] text-gray-950 mb-6">
-//                 진행 중인 프로젝트
-//               </h3>
-//               <div className="flex-grow flex flex-col items-center justify-center text-center opacity-40">
-//                 <div className="text-[40px] mb-2">📂</div>
-//                 <p className="text-[14px] text-gray-500">
-//                   진행 중인 프로젝트가
-//                   <br />
-//                   없습니다.
-//                 </p>
-//               </div>
-//             </article>
-//           </aside>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import WorkStatusCard from "./_components/WorkStatusCard";
-// import AttendanceSummaryCard from "./_components/AttendanceSummaryCard";
-
 import LeaveStatusCard from "./_components/LeaveStatusCard";
 import WeeklyScheduleCard from "./_components/WeeklyScheduleCard";
 import QuickActionCard from "./_components/QuickActionCard";
@@ -125,44 +22,34 @@ export default function Main() {
     );
   }
 
+  // 로그인 안 된 경우 (심플한 안내 페이지)
   if (!isLoggedIn || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F8F9FA] p-6">
-        <div className="max-w-[480px] w-full bg-white rounded-[40px] p-[60px] border border-gray-100 shadow-[0_20px_50px_rgba(0,41,192,0.05)] text-center">
-          {/* 그래픽 영역: 원 하나로 더 심플하게 변경 */}
+        <div className="max-w-[480px] w-full bg-white rounded-[40px] p-[40px] md:p-[60px] border border-gray-100 shadow-[0_20px_50px_rgba(0,41,192,0.05)] text-center">
           <div className="relative w-[110px] h-[110px] mx-auto mb-10">
-            {/* 단일 배경 원: 브랜드 컬러의 아주 연한 농도 */}
             <div className="absolute inset-0 bg-[#0029C0] opacity-[0.05] rounded-full" />
-
-            {/* 메인 아이콘 */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-10 h-12">
-                {/* 자물쇠 몸통 */}
                 <div className="absolute bottom-0 w-full h-8 bg-[#0029C0] rounded-lg shadow-sm" />
-                {/* 자물쇠 고리 */}
                 <div
                   className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-7 border-[3.5px] border-[#0029C0] rounded-full"
                   style={{ clipPath: "inset(0 0 50% 0)" }}
                 />
-                {/* 열쇠 구멍 포인트 */}
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full" />
               </div>
             </div>
           </div>
-
-          {/* 텍스트 영역 */}
-          <h2 className="text-[26px] font-bold text-gray-950 mb-4 tracking-tight">
+          <h2 className="text-[24px] md:text-[26px] font-bold text-gray-950 mb-4 tracking-tight">
             서비스 이용 안내
           </h2>
-          <p className="text-gray-400 text-[16px] leading-relaxed mb-10">
+          <p className="text-gray-400 text-[15px] md:text-[16px] leading-relaxed mb-10">
             안전한 서비스 이용을 위해
             <br />
             <span className="text-gray-600 font-semibold">
               로그인이 필요합니다.
             </span>
           </p>
-
-          {/* 버튼 영역 */}
           <div className="flex flex-col">
             <Button
               text="로그인하러 가기"
@@ -174,22 +61,21 @@ export default function Main() {
     );
   }
 
-  // 1. 대표 전용 대시보드
+  // 1. 대표 전용 대시보드 (반응형 적용)
   if (user.role === "OWNER") {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] p-[40px]">
+      <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
         <div className="max-w-[1600px] mx-auto">
-          <header className="mb-[40px]">
-            <h2 className="text-[28px] font-bold text-[#222]">
+          <header className="mb-8 md:mb-[40px]">
+            <h2 className="text-[24px] md:text-[28px] font-bold text-[#222]">
               <span className="text-[#0029C0]">{user.companyName}</span> 관리자
               모드
             </h2>
           </header>
 
-          {/* 관리자용 레이아웃 (초대하기 섹션 포함) */}
-          <section className="bg-white p-[40px] rounded-[32px] border border-gray-100 shadow-sm flex justify-between items-center mb-[30px]">
-            <div>
-              <h3 className="font-bold text-[#0023A1] text-2xl">
+          <section className="bg-white p-6 md:p-[40px] rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 mb-[30px]">
+            <div className="text-center md:text-left">
+              <h3 className="font-bold text-[#0023A1] text-xl md:text-2xl">
                 관리자 대시보드
               </h3>
               <p className="text-gray-400 mt-2">
@@ -198,7 +84,7 @@ export default function Main() {
             </div>
             <button
               onClick={() => router.push("/invite")}
-              className="bg-[#0029C0] text-white px-8 py-4 rounded-[16px] font-bold hover:bg-[#0023A1]"
+              className="w-full md:w-auto bg-[#0029C0] text-white px-8 py-4 rounded-[16px] font-bold hover:bg-[#0023A1]"
             >
               초대 링크 생성
             </button>
@@ -208,28 +94,39 @@ export default function Main() {
     );
   }
 
-  // 2.직원 전용 대시보드(초대하기 섹션 없음)
+  // 2. 직원 전용 대시보드 (반응형 레이아웃)
   return (
-    <div className="min-h-screen bg-[#F8F9FA] p-[40px]">
+    <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
       <div className="max-w-[1600px] mx-auto">
-        <header className="mb-[40px]">
-          <h2 className="text-[28px] font-bold text-[#222]">
-            <span className="text-[#0029C0]">{user.companyName}회사의</span>{" "}
-            {user.name}님 환영합니다!
+        <header className="mb-8 md:mb-[40px]">
+          <h2 className="text-[24px] md:text-[28px] font-bold text-[#222] leading-snug">
+            <span className="text-[#0029C0]">{user.companyName}</span>{" "}
+            <span className="">회사의</span>
+            <span className="text-[#0029C0]"> {user.name}</span>님 환영합니다!
           </h2>
         </header>
 
-        <div className="grid grid-cols-12 gap-[30px] items-stretch">
-          <div className="col-span-3 flex flex-col gap-[30px]">
+        <div className="grid grid-cols-12 gap-6 md:gap-[30px] items-start">
+          {/* [왼쪽 섹션]: 
+              모바일(12) - 세로 쌓임 
+              태블릿(12) - grid-cols-2로 나란히 배치 
+              데스크탑(3) - 다시 세로로 쌓여서 한 줄 점유 */}
+          <div className="col-span-12 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 md:gap-[30px]">
             <WorkStatusCard />
             <LeaveStatusCard />
           </div>
-          <div className="col-span-6 flex flex-col gap-[30px]">
-            {/* <AttendanceSummaryCard /> */}
+
+          {/* [중앙 섹션]: 태블릿과 모바일에서 전체 너비 사용 */}
+          <div className="col-span-12 lg:col-span-6 flex flex-col gap-6 md:gap-[30px] min-w-0">
             <AttendanceSummaryCard />
             <WeeklyScheduleCard />
           </div>
-          <aside className="col-span-3 flex flex-col gap-[30px]">
+
+          {/* [오른쪽 섹션]: 
+              모바일(12) - 세로 쌓임
+              태블릿(12) - grid-cols-2로 나란히 배치
+              데스크탑(3) - 세로 쌓임 */}
+          <aside className="col-span-12 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 md:gap-[30px]">
             <QuickActionCard />
             <TodoListCard />
           </aside>

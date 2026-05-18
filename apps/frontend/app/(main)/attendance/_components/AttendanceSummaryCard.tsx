@@ -3,7 +3,6 @@
 import React, { useMemo } from "react";
 import { AttendanceStatus } from "@/types/attendance";
 
-// 상단에 선언했던 인터페이스 재사용
 interface WeeklyAttendanceResponse {
   weeklySummary: {
     period: string;
