@@ -42,9 +42,9 @@ export default function DownloadPage() {
           </p>
         </div>
 
-        {/* 실제 파일 다운로드 버튼 */}
+        {/* 실제 파일 다운로드 버튼 (폴더 링크로 수정됨) */}
         <a
-          href="https://drive.google.com/file/d/18QnPkrE_sC31uM8ups-lQNUdzNa3xNqS/view?usp=sharing"
+          href="https://drive.google.com/drive/folders/1kgRmq7NZsrL3T_riU-Fz4OV92_e-wSZt?usp=drive_link"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full mt-10 bg-[#0029C0] text-white py-4 rounded-[16px] flex items-center justify-center gap-3 font-bold text-[16px] shadow-[0_8px_25px_rgba(0,41,192,0.3)] hover:bg-[#0022a0] active:scale-[0.98] transition-all"
@@ -65,12 +65,14 @@ export default function DownloadPage() {
             </div>
             <div>
               <p className="font-bold text-[16px] text-[#333]">
-                01. 구글 드라이브 이동 및 다운로드
+                01. 구글 드라이브 폴더 이동 및 파일 선택
               </p>
               <p className="text-[13px] text-[#888] mt-1.5 leading-relaxed">
-                위 버튼을 누르면 구글 드라이브 화면으로 이동합니다. 화면 중앙의{" "}
-                <strong className="text-[#333]">[다운로드]</strong> 버튼을 다시
-                한 번 눌러주세요.
+                버튼을 누르면 다운로드 폴더로 이동합니다. 목록에서 최신 APK
+                파일을 찾은 뒤, 파일명 우측의{" "}
+                <strong className="text-[#333]">점 세 개(⋮) 아이콘</strong>을
+                누르고 <strong className="text-[#333]">[다운로드]</strong>를
+                선택해 주세요.
               </p>
             </div>
           </div>
