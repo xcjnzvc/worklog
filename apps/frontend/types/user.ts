@@ -1,5 +1,3 @@
-// src/types/user.ts
-
 export type UserRole = "ADMIN" | "OWNER" | "USER" | "SUPER_ADMIN";
 
 export interface Approver {

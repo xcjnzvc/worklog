@@ -1,241 +1,184 @@
 "use client";
 
-import { useState } from "react";
-import UserProfileItem from "@/components/UserProfileItem";
-import { Clock, Users, MapPin } from "lucide-react";
-
-// 1. 타입 정의
-interface EventItem {
-  label: string;
-  bgColor: string;
-  textColor: string;
-}
-
-interface WeeklyData {
-  date: number;
-  day: string;
-  color?: string;
-  isToday?: boolean;
-  events: EventItem[];
-}
-
-interface VacationUser {
-  name: string;
-  role: string;
-}
-
-interface MeetingItem {
-  title: string;
-  time: string;
-  location: string;
-  isOnline: boolean;
-}
-
-interface DayDetail {
-  vacations: VacationUser[];
-  meetings: MeetingItem[];
-}
-
-// 2. Mock Data
-export const WEEKLY_MOCK_DATA: WeeklyData[] = [
-  { date: 22, day: "일", color: "text-red-500", events: [] },
-  { date: 23, day: "월", events: [] },
-  { date: 24, day: "화", events: [] },
-  {
-    date: 25,
-    day: "수",
-    events: [
-      { label: "연차 3", bgColor: "bg-[#D6E4FF]", textColor: "text-[#0029C0]" },
-      { label: "회의 1", bgColor: "bg-[#FFF2E8]", textColor: "text-[#FA541C]" },
-      { label: "반차 2", bgColor: "bg-[#FFFBE6]", textColor: "text-[#FAAD14]" },
-    ],
-  },
-  { date: 26, day: "목", isToday: true, events: [] },
-  { date: 27, day: "금", events: [] },
-  { date: 28, day: "토", color: "text-blue-600", events: [] },
-];
-
-const DAILY_DETAILS: Record<number, DayDetail> = {
-  25: {
-    vacations: [{ name: "김철수", role: "기획팀" }],
-    meetings: [
-      {
-        title: "주간 정기 회의",
-        time: "10:00 - 11:00",
-        location: "회의실 A",
-        isOnline: false,
-      },
-    ],
-  },
-  26: {
-    vacations: [
-      { name: "강수정", role: "프론트엔드" },
-      { name: "강수정", role: "디자이너" },
-      { name: "강수정", role: "디자이너" },
-    ],
-    meetings: [
-      {
-        title: "프론트 기획 리뷰",
-        time: "13:00 - 14:00",
-        location: "Google Meet",
-        isOnline: true,
-      },
-      {
-        title: "디자인 싱크 세션",
-        time: "15:30 - 16:30",
-        location: "회의실 B",
-        isOnline: false,
-      },
-    ],
-  },
-};
+import React, { useState } from "react";
 
 export default function WeeklyScheduleCard() {
   const [selectedDate, setSelectedDate] = useState<number>(26);
 
-  const currentDetail: DayDetail = DAILY_DETAILS[selectedDate] || {
-    vacations: [],
-    meetings: [],
-  };
+  // 2026년 3월 4주차 데이터 샘플
+  const days = [
+    { dayName: "일", date: 22, isWeekend: true, isSunday: true },
+    { dayName: "월", date: 23 },
+    { dayName: "화", date: 24 },
+    {
+      dayName: "수",
+      date: 25,
+      tags: [
+        { text: "연차 3", bg: "bg-blue-50 text-blue-600" },
+        { text: "회의 1", bg: "bg-orange-50 text-orange-600" },
+        { text: "반차 2", bg: "bg-amber-50 text-amber-600" },
+      ],
+    },
+    { dayName: "목", date: 26, isToday: true },
+    { dayName: "금", date: 27 },
+    { dayName: "토", date: 28, isWeekend: true },
+  ];
 
   return (
-    <div className="@container bg-white rounded-[32px] border border-gray-100 p-[30px] w-full shadow-sm">
-      <h2 className="text-[18px] font-bold text-gray-900 mb-6 px-1 font-sans">
-        주간 스케줄
-      </h2>
-
-      {/* 날짜 컨트롤러 */}
-      <div className="flex items-center gap-4 mb-6 px-1">
-        <div className="flex items-center gap-3">
-          <button className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400 text-lg">
+    <div className="w-full bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-sm overflow-visible">
+      {/* 헤더 구역 */}
+      <div className="mb-6">
+        <h3 className="text-gray-900 font-bold text-lg mb-4">주간 스케줄</h3>
+        <div className="flex items-center gap-4 text-gray-800">
+          <button className="text-gray-400 hover:text-gray-600 font-bold">
             &lt;
           </button>
-          <span className="text-[18px] font-bold">2026년 3월 4주</span>
-          <button className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400 text-lg">
+          <span className="font-bold text-[16px]">2026년 3월 4주</span>
+          <button className="text-gray-400 hover:text-gray-600 font-bold">
             &gt;
           </button>
         </div>
       </div>
 
-      {/* 7일 달력 영역: 가로 스크롤 추가 */}
-      <div className="flex gap-3 mb-[30px] overflow-x-auto pb-2 scrollbar-hide">
-        {WEEKLY_MOCK_DATA.map((item) => (
-          <button
-            key={item.date}
-            onClick={() => setSelectedDate(item.date)}
-            className={`relative flex-1 min-w-[80px] border rounded-[20px] flex flex-col items-center pt-6 pb-4 gap-3 transition-all
-              ${selectedDate === item.date ? "border-[#0029C0] bg-[#F5F8FF] ring-1 ring-[#0029C0]" : "border-gray-100 bg-white hover:border-gray-300"}`}
-          >
-            {item.isToday && (
-              <div className="absolute -top-3 px-3 py-1 bg-[#0029C0] text-white text-[11px] font-bold rounded-full shadow-sm">
-                오늘
-              </div>
-            )}
-            <div className="flex flex-col items-center gap-1">
+      {/* 📅 주간 요일 그리드 구역 */}
+      {/* 💡 해결 포인트 1: '오늘' 배지가 마음껏 튀어나올 수 있도록 상단 마진/패딩 여백을 pt-8로 넓히고 overflow-visible 처리 */}
+      <div className="grid grid-cols-7 gap-2 md:gap-3 pt-8 pb-2 overflow-visible">
+        {days.map((item) => {
+          const isSelected = selectedDate === item.date;
+
+          return (
+            <div
+              key={item.date}
+              onClick={() => setSelectedDate(item.date)}
+              className={`relative flex flex-col items-center justify-start min-h-[160px] rounded-[20px] border p-3 cursor-pointer transition-all select-none
+                ${item.isToday ? "border-[#0029C0] bg-white shadow-sm" : isSelected ? "border-gray-300 bg-gray-50" : "border-gray-100 bg-white hover:border-gray-200"}
+                overflow-visible /* 💡 해결 포인트 2: 개별 요일 카드에도 overflow-visible을 명시하여 브라우저 클리핑 방지 */
+              `}
+            >
+              {/*  '오늘' 배지 위치 및 레이어 보정 (음수 top 마진 조정) */}
+              {item.isToday && (
+                <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 bg-[#0029C0] px-3 py-0.5 rounded-full z-20 shadow-sm">
+                  <span className="text-white text-[11px] font-black tracking-tight">
+                    오늘
+                  </span>
+                </div>
+              )}
+
+              {/* 요일 이름 */}
               <span
-                className={`text-[14px] font-bold ${item.color || "text-gray-400"}`}
+                className={`text-xs font-bold mb-3 
+                ${item.isSunday ? "text-red-500" : item.isWeekend ? "text-blue-500" : "text-gray-400"}
+              `}
               >
-                {item.day}
+                {item.dayName}
               </span>
-              <span className="text-[22px] font-black text-gray-900">
+
+              {/* 날짜 숫자 */}
+              <span
+                className={`text-[20px] font-bold tracking-tight mb-3
+                ${item.isSunday ? "text-red-500" : item.isWeekend ? "text-blue-500" : "text-gray-900"}
+              `}
+              >
                 {item.date}
               </span>
-            </div>
-            <div className="flex flex-col gap-1 w-full px-2 mt-auto">
-              {item.events.map((event, idx) => (
-                <div
-                  key={idx}
-                  className={`${event.bgColor} ${event.textColor} text-[10px] font-bold py-1 rounded-[6px] text-center whitespace-nowrap`}
-                >
-                  {event.label}
+
+              {/* 일정 태그 목록 */}
+              {item.tags && (
+                <div className="w-full flex flex-col gap-1 mt-auto">
+                  {item.tags.map((tag, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-full py-1 px-1.5 rounded-md text-center text-[10px] font-bold ${tag.bg}`}
+                    >
+                      {tag.text}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          </button>
-        ))}
+          );
+        })}
       </div>
 
-      {/* 하단 상세 섹션: 컨테이너 너비에 따른 1열/2열 분기 */}
-      <div className="grid grid-cols-1 @md:grid-cols-2 gap-[30px]">
-        {/* 오늘의 휴가자 영역 */}
-        <div className="bg-[#F8FAFC] rounded-[24px] p-6 flex flex-col border border-gray-50">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-bold text-gray-900 flex items-center gap-2">
-              <Users size={18} className="text-blue-600" /> 휴가자
-            </h3>
-            <span className="text-blue-600 font-bold text-xs">
-              {currentDetail.vacations.length}명
-            </span>
+      {/* 하단 상세 레이아웃 (휴가자 / 회의 일정) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        {/* 휴가자 카드 */}
+        <div className="bg-[#F8F9FA] rounded-[24px] p-5 flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[#0029C0]">👥</span>
+              <h4 className="font-bold text-sm text-gray-800">휴가자</h4>
+            </div>
+            <span className="text-[#0029C0] text-xs font-bold">3명</span>
           </div>
-          <div className="flex flex-col gap-5 flex-grow min-h-[160px]">
-            {currentDetail.vacations.length > 0 ? (
-              currentDetail.vacations.map((user, idx) => (
-                <UserProfileItem
-                  key={idx}
-                  name={user.name}
-                  description={user.role}
-                />
-              ))
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-10 italic font-sans">
-                휴가자가 없습니다.
-              </p>
-            )}
+
+          <div className="flex flex-col gap-3 mb-5">
+            {["프론트엔드", "디자이너", "디자이너"].map((dept, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                  강
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-gray-900 font-bold text-sm">
+                    강수정
+                  </span>
+                  <span className="text-gray-400 text-[11px] font-medium">
+                    {dept}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-          <button className="mt-4 w-full bg-white border border-gray-200 py-3 rounded-[16px] text-[13px] font-bold text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1 shadow-sm font-sans">
-            <span className="text-[18px]">+</span> 추가 정보 확인
+
+          <button className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl text-xs font-bold hover:bg-gray-50 mt-auto">
+            + 추가 정보 확인
           </button>
         </div>
 
-        {/* 회의 일정 영역 */}
-        <div className="bg-[#F8FAFC] rounded-[24px] p-6 flex flex-col border border-gray-50">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-bold text-gray-900 flex items-center gap-2">
-              <Clock size={18} className="text-orange-500" /> 회의 일정
-            </h3>
-            <span className="text-orange-500 font-bold text-xs">
-              {currentDetail.meetings.length}건
-            </span>
+        {/* 회의 일정 카드 */}
+        <div className="bg-[#F8F9FA] rounded-[24px] p-5 flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-orange-500">🕒</span>
+              <h4 className="font-bold text-sm text-gray-800">회의 일정</h4>
+            </div>
+            <span className="text-orange-600 text-xs font-bold">2건</span>
           </div>
-          <div className="flex flex-col gap-3 flex-grow min-h-[160px]">
-            {currentDetail.meetings.length > 0 ? (
-              currentDetail.meetings.map((meeting, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white p-4 rounded-[16px] border border-gray-100 shadow-sm group cursor-pointer hover:border-orange-200 transition-all font-sans"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-orange-50 text-orange-600 text-[11px] font-bold px-2 py-1 rounded flex items-center gap-1">
-                      <Clock size={12} /> {meeting.time.split(" - ")[0]}
-                    </span>
-                    <h4 className="text-[14px] font-bold text-gray-800 flex-1 truncate">
-                      {meeting.title}
-                    </h4>
-                  </div>
-                  <div className="flex items-center gap-3 text-[11px] text-gray-400 ml-1">
-                    <span className="flex items-center gap-1">
-                      <MapPin size={12} /> {meeting.location}
-                    </span>
-                    <span
-                      className={
-                        meeting.isOnline
-                          ? "text-blue-500 font-bold"
-                          : "text-emerald-500 font-bold"
-                      }
-                    >
-                      {meeting.isOnline ? "비대면" : "대면"}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-10 italic font-sans">
-                예정된 일정이 없습니다.
-              </p>
-            )}
+
+          <div className="flex flex-col gap-3 mb-5">
+            <div className="bg-white p-3.5 rounded-xl border border-gray-100">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="bg-orange-50 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                  🕒 13:00
+                </span>
+                <span className="text-blue-600 text-[10px] font-bold">
+                  비대면
+                </span>
+              </div>
+              <h5 className="text-gray-900 font-bold text-xs">
+                프론트 기획 리뷰
+              </h5>
+              <p className="text-gray-400 text-[10px] mt-0.5">📍 Google Meet</p>
+            </div>
+
+            <div className="bg-white p-3.5 rounded-xl border border-gray-100">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="bg-orange-50 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                  🕒 15:30
+                </span>
+                <span className="text-emerald-600 text-[10px] font-bold">
+                  대면
+                </span>
+              </div>
+              <h5 className="text-gray-900 font-bold text-xs">
+                디자인 싱크 세션
+              </h5>
+              <p className="text-gray-400 text-[10px] mt-0.5">📍 회의실 B</p>
+            </div>
           </div>
-          <button className="mt-4 w-full bg-white border border-gray-200 py-3 rounded-[16px] text-[13px] font-bold text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1 shadow-sm font-sans">
-            <span className="text-[18px]">+</span> 전체 회의실 예약
+
+          <button className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl text-xs font-bold hover:bg-gray-50 mt-auto">
+            + 전체 회의실 예약
           </button>
         </div>
       </div>

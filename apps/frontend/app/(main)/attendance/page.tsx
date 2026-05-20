@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { Clock, AlertCircle, CheckCircle } from "lucide-react";
 import { AttendanceTable } from "./_components/AttendanceTable";
 import { PageTabs } from "@/components/PageTabs";
@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/Pagination";
 import { StatCard } from "@/components/StatCard";
 
-export default function AttendanceCorrectionPage() {
+function AttendanceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -125,5 +125,13 @@ export default function AttendanceCorrectionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AttendanceCorrectionPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">로딩 중...</div>}>
+      <AttendanceContent />
+    </Suspense>
   );
 }

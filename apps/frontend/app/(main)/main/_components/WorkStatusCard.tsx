@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Briefcase, Calendar } from "lucide-react";
 import { AxiosError } from "axios";
 import Button from "@/components/Button";
@@ -171,7 +171,7 @@ export default function WorkStatusCard() {
 
       {/* 2. 메인 시간 표시 */}
       <div className="mb-[24px]">
-        <div className="text-[44px] md:text-[48px] font-black tracking-tighter text-gray-950 leading-tight">
+        <div className="text-[44px] md:text-[48px] font-black  text-gray-950 leading-none">
           {displayTime}
         </div>
         <div className="flex items-center text-gray-400 text-[14px] gap-[6px] mt-1 font-medium">

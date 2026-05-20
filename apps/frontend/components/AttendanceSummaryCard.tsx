@@ -279,7 +279,7 @@ export default function AttendanceSummaryCard({ showStats = true }: Props) {
   if (isLoading || isError || !data) return null;
 
   return (
-    <div className="@container p-6 md:p-[30px] bg-white rounded-[32px] border border-gray-100 shadow-sm w-full flex flex-col gap-[30px] h-fit font-sans">
+    <div className="@container p-6 md:p-[30px] bg-white rounded-[32px] border border-gray-100 shadow-sm w-full flex flex-col gap-[30px] h-fit ">
       {/* 상단 섹션: 컨테이너 너비에 따른 분기 (@lg 기준) */}
       <div className="flex flex-col @lg:flex-row justify-between items-stretch @lg:items-start gap-8 @lg:gap-[40px]">
         {/* 왼쪽 정보 영역 */}
