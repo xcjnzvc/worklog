@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Clock, User, AlertCircle, ChevronDown } from "lucide-react";
 import { useCreateFixRequest } from "@/hooks/useAttendance";
@@ -10,7 +10,7 @@ import { useVacation } from "@/hooks/useVacation";
 import Input from "@/components/Input";
 import { toast } from "react-hot-toast";
 
-export default function AttendanceCorrectionCreatePage() {
+function AttendanceCorrectionCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const targetId = searchParams.get("id");
@@ -266,5 +266,19 @@ export default function AttendanceCorrectionCreatePage() {
         selectedId={selectedApprover?.id}
       />
     </div>
+  );
+}
+
+export default function AttendanceCorrectionCreatePageWithSuspense() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full min-h-screen bg-[#F8F9FA] flex items-center justify-center font-sans">
+          <p className="text-[#A3AED0] font-bold">로딩 중...</p>
+        </div>
+      }
+    >
+      <AttendanceCorrectionCreatePage />
+    </Suspense>
   );
 }
