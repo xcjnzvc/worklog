@@ -1,14 +1,17 @@
 model User {
-  id        String  @id @default(uuid())
-  email     String  @unique
-  password  String
-  name      String
-  phone     String?
-  role      Role    @default(USER)
-  position  String?
-  companyId String
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String
+  phone    String?
+  role     Role    @default(USER)
 
-  teamId String?
+  // position String? ← 제거
+  positionId String? // ← 교체
+  position   Position? @relation(fields: [positionId], references: [id]) // ← 교체
+
+  companyId String
+  teamId    String?
 
   workPolicyId String
   totalLeave   Int       @default(15)
@@ -18,24 +21,22 @@ model User {
 
   company    Company    @relation(fields: [companyId], references: [id])
   workPolicy WorkPolicy @relation(fields: [workPolicyId], references: [id])
-
-  team Team? @relation(fields: [teamId], references: [id])
+  team       Team?      @relation(fields: [teamId], references: [id])
 
   workLogs         WorkLog[]
   approvedWorkLogs WorkLog[]      @relation("WorkLogApprover")
   leaveRequests    LeaveRequest[]
-
-  approvedLeaves LeaveRequest[] @relation("approver_relation")
+  approvedLeaves   LeaveRequest[] @relation("approver_relation")
 
   @@map("User")
 }
 
 model Team {
   id        String  @id @default(uuid())
-  name      String // 팀 이름 (예: 인사팀, 개발1팀)
+  name      String
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
-  users     User[] // 이 팀에 속한 유저들
+  users     User[]
 
   @@map("Team")
 }

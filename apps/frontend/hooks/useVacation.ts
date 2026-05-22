@@ -3,6 +3,9 @@ import {
   getVacationAPI,
   getApproversAPI,
   createVacationAPI,
+  getApprovalsAPI,
+  approveVacationAPI,
+  rejectVacationAPI,
 } from "@/api/vacation";
 import { VacationResponse } from "@/types/vacation";
 import { Approver, CreateVacationPayload } from "@/types/user";
@@ -10,38 +13,69 @@ import { Approver, CreateVacationPayload } from "@/types/user";
 export const useVacation = () => {
   const queryClient = useQueryClient();
 
-  //  휴가 내역 목록 조회
   const useVacationList = (page: number = 1) =>
     useQuery({
-      // 💡 queryKey에 page를 포함해야 페이지 이동 시 데이터가 새로고침됩니다.
       queryKey: ["vacations", page],
-      // 💡 API 함수에 page를 전달합니다.
       queryFn: () => getVacationAPI(page),
       staleTime: 1000 * 60 * 5,
       select: (response: VacationResponse) => ({
         list: response.data,
         summary: response.summary,
-        // 💡 response.meta가 있다면 그대로 사용하거나 매핑
         metadata: response.meta,
       }),
     });
 
-  //  결재권자 목록 조회 (Axios 적용)
   const useApprovers = () =>
     useQuery<Approver[]>({
       queryKey: ["approvers"],
       queryFn: getApproversAPI,
     });
 
-  // 3. 휴가 신청하기 (Mutation)
   const useCreateVacation = () =>
     useMutation<unknown, Error, CreateVacationPayload>({
       mutationFn: createVacationAPI,
       onSuccess: () => {
-        // 성공 시 휴가 목록과 요약 데이터를 무효화하여 새로고침
         queryClient.invalidateQueries({ queryKey: ["vacations"] });
       },
     });
 
-  return { useVacationList, useApprovers, useCreateVacation };
+  const useApprovalList = (page: number, status?: string) =>
+    useQuery({
+      queryKey: ["vacation", "approvals", page, status],
+      queryFn: () => getApprovalsAPI({ page, limit: 10, status }),
+    });
+
+  const useApproveVacation = () =>
+    useMutation({
+      mutationFn: (id: string) => approveVacationAPI(id),
+      onSuccess: () => {
+        // ✅ 둘 다 무효화
+        queryClient.invalidateQueries({ queryKey: ["vacation", "approvals"] });
+        queryClient.invalidateQueries({ queryKey: ["vacations"] }); // USER 목록도 갱신
+      },
+    });
+
+  const useRejectVacation = () =>
+    useMutation({
+      mutationFn: ({
+        id,
+        rejectReason,
+      }: {
+        id: string;
+        rejectReason: string;
+      }) => rejectVacationAPI(id, { rejectReason }), // API 함수에도 사유 객체 전달
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["vacation", "approvals"] });
+        queryClient.invalidateQueries({ queryKey: ["vacations"] });
+      },
+    });
+
+  return {
+    useVacationList,
+    useApprovers,
+    useCreateVacation,
+    useApprovalList,
+    useApproveVacation,
+    useRejectVacation,
+  };
 };

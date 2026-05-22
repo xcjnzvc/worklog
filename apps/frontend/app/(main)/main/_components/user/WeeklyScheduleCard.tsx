@@ -40,8 +40,7 @@ export default function WeeklyScheduleCard() {
         </div>
       </div>
 
-      {/* 📅 주간 요일 그리드 구역 */}
-      {/* 💡 해결 포인트 1: '오늘' 배지가 마음껏 튀어나올 수 있도록 상단 마진/패딩 여백을 pt-8로 넓히고 overflow-visible 처리 */}
+      {/* 주간 요일 그리드 구역 */}
       <div className="grid grid-cols-7 gap-2 md:gap-3 pt-8 pb-2 overflow-visible">
         {days.map((item) => {
           const isSelected = selectedDate === item.date;

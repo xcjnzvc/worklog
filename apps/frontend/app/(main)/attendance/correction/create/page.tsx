@@ -115,7 +115,7 @@ function AttendanceCorrectionCreatePage() {
 
         {/* 입력 및 정보 영역 Wrap */}
         <div className="flex flex-col gap-6">
-          {/* 1. 정정 정보 입력 */}
+          {/*  정정 정보 입력 */}
           <div className="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-50">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
               <div className="lg:col-span-4 space-y-3">
@@ -192,7 +192,7 @@ function AttendanceCorrectionCreatePage() {
             </div>
           </div>
 
-          {/* 2. 정정 사유 */}
+          {/*  정정 사유 */}
           <div className="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-50 space-y-4">
             <div className="flex items-center justify-between mb-1">
               <label className="text-[13px] font-bold text-[#A3AED0] ml-1 uppercase tracking-wider">
@@ -217,7 +217,7 @@ function AttendanceCorrectionCreatePage() {
             />
           </div>
 
-          {/* 3. 결재권자 */}
+          {/* 결재권자 */}
           <div className="bg-white px-6 md:px-8 py-6 rounded-[32px] shadow-sm border border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-5 w-full md:w-auto">
               <div className="w-14 h-14 rounded-2xl bg-[#F4F7FE] flex items-center justify-center text-[#4318FF] border border-indigo-50 shrink-0">
@@ -246,7 +246,7 @@ function AttendanceCorrectionCreatePage() {
           </div>
         </div>
 
-        {/* 💡 PC 제외 모든 반응형(모바일, 태블릿 이하) 전용 최하단 정정 요청 버튼 */}
+        {/*  PC 제외 모든 반응형(모바일, 태블릿 이하) 전용 최하단 정정 요청 버튼 */}
         <div className="flex lg:hidden w-full mt-2 order-last">
           <button
             onClick={handleSubmit}

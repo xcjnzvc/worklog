@@ -41,29 +41,42 @@ export class WorkLogRepository {
    */
   // work-log.repository.ts
 
+  /**
+   * [사용자] 본인 근태 대시보드 통계 조회
+   */
   async dashboard(userId: string) {
     return this.prisma.$transaction(async (tx) => {
       const now = new Date();
+      // 💡 한국 시간(KST) 기준 이번 달 시작일과 다음 달 시작일을 정확히 계산합니다.
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-      // 💡 1. 상태별 카운트를 위해 groupBy 실행
+      // 💡 [개선] 승인 완료(APPROVED)된 건은 isFix가 false로 바뀌므로,
+      // 이번 달 날짜 범위 안에서 apprStatus가 PENDING이거나 APPROVED인 것을 모두 집계합니다.
       const fixStatsRaw = await tx.workLog.groupBy({
         by: ['apprStatus'],
         where: {
           userId,
-          isFix: true, // 정정 신청 중이거나 신청했던 기록 대상
+          date: {
+            gte: monthStart,
+            lt: nextMonthStart,
+          },
+          OR: [
+            { isFix: true }, // 대기 중인 상태 (PENDING)
+            { apprStatus: 'APPROVED' }, // 승인 완료된 상태 (이때는 isFix가 false임)
+            { apprStatus: 'REJECTED' }, // 반려된 상태까지 포함하고 싶다면 유지
+          ],
         },
         _count: { id: true },
       });
 
-      // 💡 2. 가공 (변수명 fixStats 정의)
+      // 상태별 카운트 가공
       const pendingCount =
         fixStatsRaw.find((s) => s.apprStatus === 'PENDING')?._count.id || 0;
       const approvedCount =
         fixStatsRaw.find((s) => s.apprStatus === 'APPROVED')?._count.id || 0;
 
-      // 💡 3. 이번 달 총 근무 시간 (이미지의 160h 부분)
+      // 이번 달 총 근무 시간 계산 (기존 유지)
       const monthlyWork = await tx.workLog.aggregate({
         where: {
           userId,
@@ -80,8 +93,34 @@ export class WorkLogRepository {
       return {
         pendingCount, // "정정 요청 중" 카드용
         approvedCount, // "정정 완료" 카드용
-        totalWorkHours: Math.floor(totalMinutes / 60), // "이번 달 총 근무" 시간만 계산
+        totalWorkHours: Math.floor(totalMinutes / 60), // "이번 달 총 근무" 시간
         totalWorkMinutes: totalMinutes,
+      };
+    });
+  }
+
+  /**
+   * [관리자용] 회사 전체의 정정 신청 통계 집계
+   */
+  async dashboardMgmt(companyId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const fixStatsRaw = await tx.workLog.groupBy({
+        by: ['apprStatus'],
+        where: {
+          companyId,
+          isFix: true,
+        },
+        _count: { id: true },
+      });
+
+      const pendingCount =
+        fixStatsRaw.find((s) => s.apprStatus === 'PENDING')?._count.id || 0;
+      const approvedCount =
+        fixStatsRaw.find((s) => s.apprStatus === 'APPROVED')?._count.id || 0;
+
+      return {
+        pendingCount,
+        approvedCount,
       };
     });
   }
@@ -102,20 +141,38 @@ export class WorkLogRepository {
   }
 
   /**
-   * [관리자] 근태 기록 목록 조회
+   * [관리자] 팀원들이 보낸 근태 정정 신청 대기 목록 조회
    */
   async findWorkLogMgmt(query: WorkLogHistoryFindListMgmtDto) {
-    const { page, limit, userId } = query;
-    const options = Prisma.validator<Prisma.WorkLogFindManyArgs>()({
-      where: { userId },
-      omit: { userId: true, companyId: true } as any, // Prisma 버전에 따라 필드 제외 설정
-      skip: (page - 1) * limit,
-      take: Number(limit),
-      orderBy: { createdAt: 'desc' },
-    });
-    const workLogHistory = await this.prisma.workLog.findMany(options);
+    const { page, limit } = query;
+    const skip = (page - 1) * limit;
+    const take = Number(limit);
 
-    const total = await this.prisma.workLog.count({ where: options.where });
+    // 💡 [핵심] 정정 요청 중(isFix: true)이면서 대기 상태(PENDING)인 조건만 필터링
+    const whereCondition: Prisma.WorkLogWhereInput = {
+      isFix: true,
+      apprStatus: 'PENDING',
+    };
+
+    const [workLogHistory, total] = await this.prisma.$transaction([
+      this.prisma.workLog.findMany({
+        where: whereCondition,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        // 💡 대표 화면 테이블에 '요청자 이름'과 '부서명'이 출력되도록 연관 데이터를 함께 로드합니다.
+        include: {
+          user: {
+            include: {
+              team: true,
+              position: true,
+            },
+          },
+        },
+      }),
+      this.prisma.workLog.count({ where: whereCondition }),
+    ]);
+
     return { result: workLogHistory, total };
   }
 

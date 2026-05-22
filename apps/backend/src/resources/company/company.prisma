@@ -8,6 +8,19 @@ model Company {
   workPolicies WorkPolicy[]
   users        User[]
   invites      Invite[]
+  positions    Position[]
 
   @@map("Company")
+}
+
+model Position {
+  id        String  @id @default(uuid())
+  name      String // "부장", "차장", "대리" 등
+  level     Int // 정렬용: 1이 높은 직급 (부장=1, 차장=2, 대리=3...)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+  users     User[]
+
+  @@unique([companyId, name]) // 같은 회사에 같은 직급명 중복 방지
+  @@map("Position")
 }

@@ -16,6 +16,8 @@ model LeaveRequest {
   approverId String?
   approver   User?   @relation("approver_relation", fields: [approverId], references: [id])
 
+  rejectReason String?
+
   @@map("LeaveRequest")
 }
 

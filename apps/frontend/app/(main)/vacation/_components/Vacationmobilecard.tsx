@@ -7,8 +7,7 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { VacationTableRow } from "./VacationTable";
-import { VacationData } from "@/types/vacation";
+import { VacationData, VacationTableRow } from "@/types/vacation";
 
 interface VacationMobileCardProps {
   data: VacationTableRow[];

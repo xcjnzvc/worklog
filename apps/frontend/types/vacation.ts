@@ -1,5 +1,3 @@
-// @/types/vacation.ts
-
 export type UserRole = "OWNER" | "ADMIN" | "USER";
 
 export interface VacationItem {
@@ -25,11 +23,10 @@ export interface VacationItem {
   };
 }
 
-export interface VacationTableRow extends VacationItem {
+export interface VacationTableRow extends VacationData {
   formattedPeriod: string;
+  approverPosition?: string;
 }
-
-// types/vacation.ts (파일 위치를 확인해보세요!)
 
 export interface VacationResponse {
   summary: {
@@ -61,3 +58,17 @@ export type VacationTabType = "LIST" | "STATISTICS";
 //   searchKeyword: string;
 //   onSearchChange: (value: string) => void;
 // }
+
+export interface ApprovalItem {
+  id: string;
+  displayId: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: string;
+  durationText: string;
+  applicant: { name: string; position: string };
+  approver: string;
+  createdAt: string;
+}

@@ -119,7 +119,7 @@ export class InviteService {
         phone: dto.phone,
         role: invite.role,
         companyId: invite.companyId,
-        workPolicyId: policy.id, // ✅ 여기서 정책을 연결해줍니다!
+        workPolicyId: policy.id,
       },
     });
 

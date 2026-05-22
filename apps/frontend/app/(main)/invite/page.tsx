@@ -6,7 +6,6 @@ import Input from "@/components/Input";
 import Title from "../../(auth)/signup/_components/Title";
 import Button from "@/components/Button";
 import { inviteSchema, InviteForm } from "@/types/auth";
-import { useUserStore } from "@/store/useUserStore";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { inviteAPI } from "@/api/auth";
@@ -20,7 +19,6 @@ interface InviteResponse {
 }
 
 export default function Invite() {
-  const { user } = useUserStore();
   const [inviteResult, setInviteResult] = useState<InviteResponse | null>(null);
 
   const {
@@ -38,7 +36,6 @@ export default function Invite() {
   const roleValue = watch("role");
 
   const onSubmit = async (data: InviteForm) => {
-    console.log("data", data);
     try {
       const response = await toast.promise(inviteAPI(data), {
         loading: "초대중 입니다...",

@@ -11,11 +11,12 @@ model WorkLog {
   createdAt   DateTime         @default(now())
 
   // --- 정정 신청 관련 필드 ---
-  isFix       Boolean   @default(false)
-  fixType     String? // 정정 분류 (LATE, ABSENT, EARLY, OTHER)
-  fixReason   String? // 정정 사유
-  fixClockIn  DateTime? // 수정 요청 출근 시간
-  fixClockOut DateTime? // 수정 요청 퇴근 시간
+  isFix        Boolean   @default(false)
+  fixType      String? // 정정 분류 (LATE, ABSENT, EARLY, OTHER)
+  fixReason    String? // 정정 사유
+  fixClockIn   DateTime? // 수정 요청 출근 시간
+  fixClockOut  DateTime? // 수정 요청 퇴근 시간
+  rejectReason String?
 
   approverId String? // 결재권자 ID
   apprStatus ApprStatus? // 승인 상태 (PENDING, APPROVED, REJECTED)

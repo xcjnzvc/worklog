@@ -8,13 +8,17 @@ import { AttendanceMobileCard } from "./AttendanceMobileCard";
 interface AttendanceTableProps {
   data: AttendanceWorkLog[];
   type: "view" | "correction";
-  onItemClick: (item: AttendanceWorkLog) => void;
+  onItemClick?: (item: AttendanceWorkLog) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
 }
 
 export const AttendanceTable = ({
   data,
   type,
   onItemClick,
+  onApprove,
+  onReject,
 }: AttendanceTableProps) => {
   const router = useRouter();
 
@@ -67,7 +71,6 @@ export const AttendanceTable = ({
     return `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${String(d.getUTCDate()).padStart(2, "0")}`;
   };
 
-  // 💡 테이블 공간 확보를 위해 년도를 제외하고 'MM.DD'만 반환하는 함수
   const formatTableDate = (dateStr: string) => {
     if (!dateStr) return "-";
     const d = new Date(dateStr);
@@ -80,7 +83,6 @@ export const AttendanceTable = ({
     return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
   };
 
-  // ─── 빈 데이터 ─────────────────────────────────────────────
   if (data.length === 0) {
     return (
       <div className="py-20 text-center text-[#A3AED0]">기록이 없습니다.</div>
@@ -92,6 +94,8 @@ export const AttendanceTable = ({
     <div className="sm:hidden flex flex-col gap-4">
       {data.map((item, index) => {
         const displayId = `NO. ${String(index + 1).padStart(3, "0")}`;
+        const showActionButtons =
+          onApprove && onReject && item.apprStatus === "PENDING";
 
         return (
           <div
@@ -137,6 +141,24 @@ export const AttendanceTable = ({
                 </span>
               )}
             </div>
+
+            {/*  모바일 뷰에서도 대표 모드이고 대기 중일 때 승인/반려 기능 버튼 제공 */}
+            {showActionButtons && (
+              <div className="flex gap-2 pt-2 border-t border-gray-50">
+                <button
+                  onClick={() => onReject?.(item.id)}
+                  className="flex-1 py-2 bg-[#FFEEF2] text-[#EE5D50] font-bold text-xs rounded-xl"
+                >
+                  반려
+                </button>
+                <button
+                  onClick={() => onApprove?.(item.id)}
+                  className="flex-1 py-2 bg-[#4318FF] text-white font-bold text-xs rounded-xl"
+                >
+                  승인
+                </button>
+              </div>
+            )}
           </div>
         );
       })}
@@ -145,7 +167,6 @@ export const AttendanceTable = ({
 
   return (
     <>
-      {/* ── 모바일 카드 출력부 ── */}
       {type === "view" ? (
         <div className="sm:hidden flex flex-col gap-4">
           {data.map((item, index) => {
@@ -186,7 +207,6 @@ export const AttendanceTable = ({
               <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
                 {type === "view" ? "퇴근" : "정정 사유"}
               </th>
-              {/* 💡 근무시간 헤더: md(768px) 이상일 때만 노출 (view 타입 전용) */}
               {type === "view" && (
                 <th className="hidden md:table-cell px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
                   근무시간
@@ -196,23 +216,30 @@ export const AttendanceTable = ({
                 {type === "view" ? "출결" : "결재 상태"}
               </th>
               <th className="px-4 py-4 text-[13px] font-bold text-[#A3AED0] text-center">
-                {type === "view" ? "정정 신청" : "승인자"}
+                {type === "view"
+                  ? "정정 신청"
+                  : onApprove
+                    ? "관리 액션"
+                    : "승인자"}
               </th>
             </tr>
           </thead>
           <tbody>
             {data.map((item, index) => {
               const isDisabled =
-                item.isFix ||
-                item.apprStatus === "PENDING" ||
-                item.status === "NORMAL";
+                type === "view" &&
+                (item.isFix ||
+                  item.apprStatus === "PENDING" ||
+                  item.status === "NORMAL");
 
               const rawDisplayId = String(index + 1).padStart(3, "0");
+              const isOwnerCorrectionMode =
+                type === "correction" && onApprove && onReject;
 
               return (
                 <tr
                   key={item.id}
-                  onClick={() => !isDisabled && onItemClick(item)}
+                  onClick={() => !isDisabled && onItemClick?.(item)}
                   className={`transition-colors duration-200 text-center border-b border-gray-50 last:border-none
                     ${
                       isDisabled
@@ -225,7 +252,6 @@ export const AttendanceTable = ({
                       <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
                         {rawDisplayId}
                       </td>
-                      {/* 💡 년도를 제거한 좁은 화면 최적화 날짜 포맷 적용 */}
                       <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
                         {formatTableDate(item.date)}
                       </td>
@@ -235,7 +261,6 @@ export const AttendanceTable = ({
                       <td className="px-4 py-5 text-sm font-bold text-[#1B254B]">
                         {formatTime(item.clockOut, item.status)}
                       </td>
-                      {/* 💡 근무시간 데이터 셀: md 이상일 때만 노출 */}
                       <td className="hidden md:table-cell px-4 py-5 text-sm font-medium text-[#707EAE]">
                         {item.workMinutes !== null
                           ? `${item.workMinutes}분`
@@ -286,7 +311,6 @@ export const AttendanceTable = ({
                       <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
                         {rawDisplayId}
                       </td>
-                      {/* 💡 정정 신청 내역 탭에서도 년도 제외 적용 */}
                       <td className="px-4 py-5 text-sm font-bold text-[#707EAE]">
                         {formatTableDate(item.createdAt)}
                       </td>
@@ -306,17 +330,49 @@ export const AttendanceTable = ({
                             "처리 중"}
                         </span>
                       </td>
+
+                      {/* 💡 3. 대표(Owner) 모드인지 일반 유저 정정내역 조회모드인지 분기합니다. */}
                       <td className="px-4 py-5 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <span className="text-sm font-bold text-[#1B254B]">
-                            {item.approverName || "미정"}
-                          </span>
-                          {item.approverName && (
-                            <span className="text-[12px] font-medium text-[#A3AED0]">
-                              ({item.approverPosition || "팀장"})
+                        {isOwnerCorrectionMode ? (
+                          item.apprStatus === "PENDING" ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onReject?.(item.id);
+                                }}
+                                className="px-3 py-1.5 bg-[#FFEEF2] hover:bg-[#FDD8E0] text-[#EE5D50] text-[12px] font-black rounded-xl transition"
+                              >
+                                반려
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onApprove?.(item.id);
+                                }}
+                                className="px-3 py-1.5 bg-[#4318FF] hover:bg-[#3311CC] text-white text-[12px] font-black rounded-xl transition shadow-sm"
+                              >
+                                승인
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[#A3AED0] text-[13px] font-medium">
+                              결재 완료
                             </span>
-                          )}
-                        </div>
+                          )
+                        ) : (
+                          // 일반유저용 승인자 표시란
+                          <div className="flex items-center justify-center gap-1.5">
+                            <span className="text-sm font-bold text-[#1B254B]">
+                              {item.approverName || "미정"}
+                            </span>
+                            {item.approverName && (
+                              <span className="text-[12px] font-medium text-[#A3AED0]">
+                                ({item.approverPosition || "팀장"})
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                     </>
                   )}

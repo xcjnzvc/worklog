@@ -24,6 +24,7 @@ import {
 } from './dto/res/work-log.find-list.dto';
 import { WorkLogUpdateDto } from './dto/work-log.update.dto';
 import { WorkLogDashboardResponseDto } from './dto/res/work-log.dashboard.dto';
+import { RejectVacationDto } from '../vacation/dto/reject-vacation.dto';
 
 type UserWithPolicy = {
   id: string;
@@ -32,11 +33,13 @@ type UserWithPolicy = {
   leaveRequests: LeaveRequest[];
 };
 
-// 💡 1. 런타임 에러와 타입 에러를 동시에 잡기 위한 Payload 타입 정의
 type WorkLogWithApprover = Prisma.WorkLogGetPayload<{
   include: {
     approver: {
-      include: { team: true };
+      include: {
+        team: true;
+        position: true;
+      };
     };
   };
 }>;
@@ -47,6 +50,27 @@ export class WorkLogService {
 
   async dashboard(userId: string): Promise<WorkLogDashboardResponseDto> {
     return this.repo.dashboard(userId);
+  }
+
+  /**
+   * [관리자/대표 전용] 회사 전체 팀원 근태 정정 대시보드 통계
+   */
+  async dashboardMgmt(
+    adminUserId: string,
+  ): Promise<WorkLogDashboardResponseDto> {
+    // 1. 관리자의 회사 ID를 조회합니다.
+    const adminUser = await this.repo.findUserWithPolicy(adminUserId);
+    const companyId = adminUser.companyId;
+
+    // 💡 레포지토리의 정식 메서드를 호출하여 any 캐스팅 및 Unused 변수 에러를 완벽히 해결합니다.
+    const stats = await this.repo.dashboardMgmt(companyId);
+
+    return {
+      pendingCount: stats.pendingCount,
+      approvedCount: stats.approvedCount,
+      totalWorkHours: 0,
+      totalWorkMinutes: 0,
+    };
   }
 
   async findListMgmtWorkLog(query: WorkLogHistoryFindListMgmtDto) {
@@ -117,7 +141,6 @@ export class WorkLogService {
       isShort,
     );
 
-    // 💡 2. update 시 타입을 WorkLogWithApprover로 캐스팅하여 ESLint 통과
     const updatedLog = (await this.repo.updateMgmtWorkLog(id, {
       clockIn,
       clockOut,
@@ -135,10 +158,14 @@ export class WorkLogService {
   /**
    * [관리자용] 정정 신청 반려
    */
-  async rejectMgmtWorkLog(id: string): Promise<WorkLogDataDto> {
+  async rejectMgmtWorkLog(
+    id: string,
+    dto: RejectVacationDto,
+  ): Promise<WorkLogDataDto> {
     const updatedLog = (await this.repo.updateMgmtWorkLog(id, {
       isFix: false,
       apprStatus: 'REJECTED' as ApprStatus,
+      rejectReason: dto.rejectReason?.trim() || '사유 없음',
     })) as WorkLogWithApprover;
 
     return this.toWorkLogDataDto(updatedLog);
@@ -574,14 +601,15 @@ export class WorkLogService {
     let formattedApprover: string | null = null;
 
     if (log.approver) {
-      const { name, position, role, team } = log.approver; // 💡 2. team을 바로 구조분해할당
+      const { name, role, team } = log.approver; // ← position 제거
+      const positionName = log.approver.position?.name; // ← 별도로 꺼내기
 
       const dept = team?.name || '';
 
       if (role === 'OWNER') {
         formattedApprover = `${name} 대표`;
       } else {
-        const displayPosition = position || '사원';
+        const displayPosition = positionName || '사원';
         formattedApprover = dept
           ? `${dept} ${name} ${displayPosition}`
           : `${name} ${displayPosition}`;

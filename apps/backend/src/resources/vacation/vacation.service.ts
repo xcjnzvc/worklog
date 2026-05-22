@@ -4,9 +4,10 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { WorkPolicy, LeaveType, Role } from '@prisma/client';
+import { WorkPolicy, LeaveType, Role, RequestStatus } from '@prisma/client';
 import { differenceInDays } from 'date-fns';
 import { CreateVacationDto } from './dto/create-vacation.dto';
+import { RejectVacationDto } from './dto/reject-vacation.dto';
 
 @Injectable()
 export class VacationService {
@@ -76,7 +77,7 @@ export class VacationService {
     const [user, totalCount, requests] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, totalLeave: true, usedLeave: true },
+        select: { id: true, totalLeave: true, usedLeave: true, role: true },
       }),
       this.prisma.leaveRequest.count({ where: { userId } }),
       this.prisma.leaveRequest.findMany({
@@ -93,6 +94,10 @@ export class VacationService {
 
     if (!user) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.role === Role.OWNER) {
+      throw new ForbiddenException('OWNER는 승인 목록을 이용하세요.');
     }
 
     const data = requests.map((req) => {
@@ -128,12 +133,11 @@ export class VacationService {
         remaining: user.totalLeave - user.usedLeave,
       },
       data,
-      // 💡 요청하신 구조로 meta 데이터 구성
       meta: {
-        currentPage: page, // 현재 페이지
-        limit: limit, // 페이지당 개수
-        totalCount: totalCount, // 전체 아이템 수
-        totalPages: Math.ceil(totalCount / limit), // 전체 페이지 수
+        currentPage: page,
+        limit: limit,
+        totalCount: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
       },
     };
   }
@@ -219,5 +223,125 @@ export class VacationService {
       default:
         return '-';
     }
+  }
+
+  /**
+   * 승인자용 - 회사 전체 휴가 신청 목록 조회 (💡 통계 데이터 추가 반영)
+   */
+  async findAllForApprover(
+    approverId: string,
+    status: RequestStatus | undefined,
+    order: 'asc' | 'desc',
+    page: number,
+    limit: number,
+  ) {
+    const approver = await this.prisma.user.findUnique({
+      where: { id: approverId },
+      select: { companyId: true, role: true },
+    });
+
+    if (!approver) throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    if (approver.role === Role.USER)
+      throw new ForbiddenException('승인 권한이 없습니다.');
+
+    // 리스트 조회 필터 조건
+    const where = {
+      companyId: approver.companyId,
+      ...(status ? { status } : {}),
+    };
+
+    const skip = (page - 1) * limit;
+
+    // 💡 통계 집계를 위해 각각의 카운트 쿼리를 분리하여 Promise.all에 통합
+    const [totalCount, requests, pendingCount, approvedCount, rejectedCount] =
+      await Promise.all([
+        this.prisma.leaveRequest.count({ where }),
+        this.prisma.leaveRequest.findMany({
+          where,
+          include: {
+            user: { select: { name: true, position: true, role: true } },
+            approver: { select: { name: true } },
+          },
+          orderBy: { startDate: order },
+          skip,
+          take: limit,
+        }),
+        // 💡 탭 상태와 독립적으로 상단 카드의 값을 채워주기 위한 전체 카운트 쿼리들
+        this.prisma.leaveRequest.count({
+          where: { companyId: approver.companyId, status: 'PENDING' },
+        }),
+        this.prisma.leaveRequest.count({
+          where: { companyId: approver.companyId, status: 'APPROVED' },
+        }),
+        this.prisma.leaveRequest.count({
+          where: { companyId: approver.companyId, status: 'REJECTED' },
+        }),
+      ]);
+
+    const data = requests.map((req) => {
+      const days =
+        req.type === 'ANNUAL'
+          ? differenceInDays(req.endDate, req.startDate) + 1
+          : 0.5;
+
+      return {
+        id: req.id,
+        displayId: req.id.substring(req.id.length - 6).toUpperCase(),
+        type: req.type,
+        startDate: req.startDate.toISOString().split('T')[0].replace(/-/g, '.'),
+        endDate: req.endDate.toISOString().split('T')[0].replace(/-/g, '.'),
+        reason: req.reason,
+        status: req.status,
+        createdAt: req.createdAt,
+        durationText: `${days.toFixed(1)}일`,
+        applicant: {
+          name: req.user.name,
+          position: req.user.position || '-',
+        },
+        approver: req.approver?.name || '미처리',
+      };
+    });
+
+    return {
+      // 💡 프론트엔드가 요청한 통계 요약 데이터 추가 제공
+      summary: {
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
+      },
+      data,
+      meta: {
+        currentPage: page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
+  }
+
+  /**
+   * 휴가 반려 처리
+   */
+  async rejectVacation(
+    requestId: string,
+    approverId: string,
+    dto: RejectVacationDto,
+  ) {
+    const request = await this.prisma.leaveRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!request) throw new NotFoundException('신청 내역을 찾을 수 없습니다.');
+    if (request.status !== 'PENDING')
+      throw new ForbiddenException('이미 처리된 신청 건입니다.');
+
+    return await this.prisma.leaveRequest.update({
+      where: { id: requestId },
+      data: {
+        status: 'REJECTED',
+        approverId,
+        rejectReason: dto.rejectReason?.trim() || '사유 없음',
+      },
+    });
   }
 }

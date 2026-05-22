@@ -2,7 +2,6 @@
 
 import React from "react";
 import { User, X } from "lucide-react";
-// 1. 공통 타입 임포트 (이게 핵심입니다!)
 import { Approver } from "@/types/user";
 
 interface Props {

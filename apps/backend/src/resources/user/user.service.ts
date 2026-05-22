@@ -10,7 +10,6 @@ export class UserService {
   async getApprovers(user: UserPayload) {
     const { companyId, userId } = user;
 
-    // Prisma가 리턴하는 타입을 명확히 정의 (ESLint 추론 에러 방지)
     const approvers = await this.prisma.user.findMany({
       where: {
         companyId,
@@ -21,7 +20,10 @@ export class UserService {
         id: true,
         name: true,
         role: true,
-        position: true,
+        position: {
+          // ← string 대신 relation으로
+          select: { name: true },
+        },
         team: {
           select: { name: true },
         },
@@ -29,24 +31,22 @@ export class UserService {
     });
 
     return approvers.map((approver) => {
-      // 1. 타입을 수동으로 지정하여 ESLint의 추론 문제를 해결합니다.
       const team = approver.team as { name: string } | null;
       const deptName = team?.name ?? '';
-
       const role = approver.role;
-      const position =
-        approver.position || (role === Role.ADMIN ? '팀장' : '사원');
+      const positionName =
+        approver.position?.name || (role === Role.ADMIN ? '팀장' : '사원'); // ← .name으로
 
       return {
         id: approver.id,
         name: approver.name,
         role: role,
         department: deptName,
-        position: position,
+        position: positionName,
         displayTitle: this.formatDisplayTitle({
           role,
           team,
-          position: approver.position,
+          position: positionName,
         }),
       };
     });

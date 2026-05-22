@@ -1,4 +1,3 @@
-// InviteLinkCard.tsx (또는 Invite.tsx 하단에 추가)
 "use client";
 
 import toast from "react-hot-toast";
