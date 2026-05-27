@@ -131,4 +131,49 @@ export class InviteService {
 
     return { userId: user.id, email: user.email };
   }
+
+  // src/invite/invite.service.ts
+
+  async getInvites(companyId: string) {
+    const invites = await this.prisma.invite.findMany({
+      where: { companyId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = new Date();
+
+    // 데이터를 가공해서 status를 추가하여 반환
+    return invites.map((invite) => {
+      let status = 'PENDING';
+      if (invite.used) {
+        status = 'ACCEPTED';
+      } else if (invite.expiresAt < now) {
+        status = 'EXPIRED';
+      }
+
+      return {
+        ...invite,
+        status, // 클라이언트가 바로 쓸 수 있게 상태값 추가
+      };
+    });
+  }
+
+  async resendInvite(email: string, companyId: string) {
+    // 1. 기존 초대 건 찾기 (만료되었거나 pending 중인 건)
+    const existingInvite = await this.prisma.invite.findFirst({
+      where: { email, companyId, used: false },
+    });
+
+    // 2. 만약 있다면, 기존 토큰을 '사용 불가' 처리하거나 삭제
+    if (existingInvite) {
+      await this.prisma.invite.delete({ where: { id: existingInvite.id } });
+    }
+
+    // 3. 다시 createInvite 호출 (이미 만들어둔 로직 재사용)
+    return this.createInvite({
+      email,
+      role: existingInvite?.role || 'USER', // 기존 권한 유지
+      companyId,
+    });
+  }
 }

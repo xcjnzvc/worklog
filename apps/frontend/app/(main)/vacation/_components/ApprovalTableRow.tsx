@@ -1,5 +1,6 @@
 "use client";
 
+import { ApprovalActionButtons } from "@/components/ApprovalActionButtons";
 import { ApprovalItem } from "@/types/vacation";
 
 interface ApprovalTableProps {
@@ -28,31 +29,32 @@ export const ApprovalTable = ({
 }: ApprovalTableProps) => {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[700px] border-collapse">
+      {/* table-fixed를 사용하여 컬럼 너비를 고정하고 정렬을 유지합니다 */}
+      <table className="w-full min-w-[700px] border-collapse table-fixed">
         <thead>
           <tr className="border-b border-gray-100">
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left pl-10">
+            <th className="w-[8%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               번호
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[12%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               신청자
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[10%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               직급
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[10%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               유형
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[20%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               휴가 기간
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[10%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               일수
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[12%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               상태
             </th>
-            <th className="px-6 py-4 text-[13px] font-bold text-[#A3AED0] text-left">
+            <th className="w-[18%] py-4 text-[13px] font-bold text-[#A3AED0] text-center">
               처리
             </th>
           </tr>
@@ -70,16 +72,17 @@ export const ApprovalTable = ({
                 key={item.id}
                 className="border-b border-gray-50 last:border-none bg-white hover:bg-[#F7F9FF] transition-colors"
               >
-                <td className="px-6 py-5 text-sm font-bold text-[#707EAE] pl-10">
+                {/* 각 셀에 text-center를 적용하여 가운데 정렬 */}
+                <td className="py-5 text-sm font-bold text-[#707EAE] text-center">
                   {String(index + 1).padStart(3, "0")}
                 </td>
-                <td className="px-6 py-5 text-sm font-bold text-[#1B254B]">
+                <td className="py-5 text-sm font-bold text-[#1B254B] text-center">
                   {item.applicant.name}
                 </td>
-                <td className="px-6 py-5 text-sm text-[#707EAE]">
+                <td className="py-5 text-sm text-[#707EAE] text-center">
                   {item.applicant.position || "-"}
                 </td>
-                <td className="px-6 py-5 text-[15px] font-extrabold">
+                <td className="py-5 text-[15px] font-extrabold text-center">
                   <span
                     className={
                       item.type === "ANNUAL"
@@ -90,15 +93,15 @@ export const ApprovalTable = ({
                     {item.type === "ANNUAL" ? "연차" : "반차"}
                   </span>
                 </td>
-                <td className="px-6 py-5 text-sm text-[#707EAE]">
+                <td className="py-5 text-sm text-[#707EAE] text-center">
                   {item.startDate === item.endDate
                     ? item.startDate
                     : `${item.startDate} - ${item.endDate}`}
                 </td>
-                <td className="px-6 py-5 text-sm font-bold text-[#1B254B]">
+                <td className="py-5 text-sm font-bold text-[#1B254B] text-center">
                   {item.durationText}
                 </td>
-                <td className="px-6 py-5">
+                <td className="py-5 text-center">
                   <span
                     className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[12px] font-black inline-block ${getStatusStyle(item.status)}`}
                   >
@@ -109,22 +112,12 @@ export const ApprovalTable = ({
                         : "반려됨"}
                   </span>
                 </td>
-                <td className="px-6 py-5">
+                <td className="py-5 text-center">
                   {item.status === "PENDING" && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => onApprove(item.id)}
-                        className="px-4 py-1.5 bg-[#0029C0] text-white rounded-lg text-sm font-bold hover:bg-[#002094] transition-colors"
-                      >
-                        승인
-                      </button>
-                      <button
-                        onClick={() => onReject(item.id)}
-                        className="px-4 py-1.5 bg-white text-[#EE5D50] border border-[#EE5D50] rounded-lg text-sm font-bold hover:bg-[#FFEEF2] transition-colors"
-                      >
-                        반려
-                      </button>
-                    </div>
+                    <ApprovalActionButtons
+                      onApprove={() => onApprove(item.id)}
+                      onReject={() => onReject(item.id)}
+                    />
                   )}
                 </td>
               </tr>

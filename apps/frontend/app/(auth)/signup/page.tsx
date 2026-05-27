@@ -12,7 +12,8 @@ import {
   invitedSignupSchema,
   InvitedSignupForm,
 } from "@/types/auth";
-import { inviteRegisterAPI, signupAPI, verifyInviteAPI } from "@/api/auth";
+import { signupAPI } from "@/api/auth";
+import { inviteRegisterAPI, verifyInviteAPI } from "@/api/invite";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AxiosError } from "axios";
 import { toast } from "react-hot-toast";

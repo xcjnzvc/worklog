@@ -33,4 +33,16 @@ export class InviteController {
   register(@Param('token') token: string, @Body() body: RegisterInviteDto) {
     return this.inviteService.registerWithToken({ token, ...body });
   }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  getInvites(@GetUser() user: UserPayload) {
+    return this.inviteService.getInvites(user.companyId);
+  }
+
+  @Post('resend')
+  @UseGuards(JwtAuthGuard)
+  resendInvite(@Body() body: { email: string }, @GetUser() user: UserPayload) {
+    return this.inviteService.resendInvite(body.email, user.companyId);
+  }
 }

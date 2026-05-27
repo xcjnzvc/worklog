@@ -16,24 +16,24 @@ export const signupAPI = async (data: SignupForm) => {
   return res.data;
 };
 
-export const inviteRegisterAPI = async (
-  token: string,
-  data: InvitedSignupForm,
-) => {
-  const res = await axiosInstance.post(`/invite/signup/${token}`, data);
-  return res.data;
-};
+// export const inviteRegisterAPI = async (
+//   token: string,
+//   data: InvitedSignupForm,
+// ) => {
+//   const res = await axiosInstance.post(`/invite/signup/${token}`, data);
+//   return res.data;
+// };
 
-export const inviteAPI = async (data: InviteForm) => {
-  const res = await axiosInstance.post("/invite", data);
-  return res.data;
-};
+// export const inviteAPI = async (data: InviteForm) => {
+//   const res = await axiosInstance.post("/invite", data);
+//   return res.data;
+// };
 
-export const verifyInviteAPI = async (token: string) => {
-  // GET /invite/verify/{token} 형태
-  const res = await axiosInstance.get(`/invite/verify/${token}`);
+// export const verifyInviteAPI = async (token: string) => {
+//   // GET /invite/verify/{token} 형태
+//   const res = await axiosInstance.get(`/invite/verify/${token}`);
 
-  // axiosInstance가 response.data를 반환하도록 설정되어 있다면 res를,
-  // 아니라면 res.data를 반환하세요.
-  return res.data;
-};
+//   // axiosInstance가 response.data를 반환하도록 설정되어 있다면 res를,
+//   // 아니라면 res.data를 반환하세요.
+//   return res.data;
+// };

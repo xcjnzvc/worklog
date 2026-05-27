@@ -1,6 +1,4 @@
-/**
- * 1. 상태 관련 타입 (근태 상태 + 결재 상태)
- */
+// 상태 관련 타입 (근태 상태 + 결재 상태)
 export type AttendanceStatus =
   | "NOT_STARTED"
   | "WORKING"
@@ -18,9 +16,7 @@ export type CorrectionStatus = "PENDING" | "APPROVED" | "REJECTED";
 // 테이블에서 사용할 통합 상태 타입
 export type CombinedStatus = AttendanceStatus | CorrectionStatus;
 
-/**
- * 2. 근태 기록 (WorkLog) 관련 인터페이스
- */
+//  근태 기록 (WorkLog) 관련 인터페이스
 export interface AttendanceWorkLog {
   id: string;
   date: string; // 근무 날짜
@@ -36,13 +32,10 @@ export interface AttendanceWorkLog {
   fixClockOut?: string; // 정정 요청 퇴근 시간
   approverName?: string; // 승인자 이름
   apprStatus: "PENDING" | "APPROVED" | "REJECTED" | null;
-  approverPosition?: string | null; // 💡 이 줄을 추가하세요!
+  approverPosition?: string | null;
 }
 
-/**
- * 3. API 응답 형식 (목록 조회용)
- */
-
+//  API 응답 형식 (목록 조회용)
 export interface AttendanceResponse {
   result: AttendanceWorkLog[];
   metadata: {
@@ -53,9 +46,7 @@ export interface AttendanceResponse {
   };
 }
 
-/**
- * 4. 주간 통계 및 대시보드 관련 타입
- */
+// 주간 통계 및 대시보드 관련 타입
 export interface AttendanceStat {
   label: string;
   value: string | number;
@@ -78,9 +69,7 @@ export interface WeeklyAttendanceResponse {
   }>;
 }
 
-/**
- * 5. 근무 정책 및 실시간 데이터 타입
- */
+//  근무 정책 및 실시간 데이터 타입
 export interface WorkPolicy {
   workType: string;
   workStartTime: string;

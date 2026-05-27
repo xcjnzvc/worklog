@@ -4,6 +4,7 @@ import React from "react";
 import { CombinedStatus, AttendanceWorkLog } from "@/types/attendance";
 import { useRouter } from "next/navigation";
 import { AttendanceMobileCard } from "./AttendanceMobileCard";
+import { ApprovalActionButtons } from "@/components/ApprovalActionButtons";
 
 interface AttendanceTableProps {
   data: AttendanceWorkLog[];
@@ -335,26 +336,10 @@ export const AttendanceTable = ({
                       <td className="px-4 py-5 text-center">
                         {isOwnerCorrectionMode ? (
                           item.apprStatus === "PENDING" ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onReject?.(item.id);
-                                }}
-                                className="px-3 py-1.5 bg-[#FFEEF2] hover:bg-[#FDD8E0] text-[#EE5D50] text-[12px] font-black rounded-xl transition"
-                              >
-                                반려
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onApprove?.(item.id);
-                                }}
-                                className="px-3 py-1.5 bg-[#4318FF] hover:bg-[#3311CC] text-white text-[12px] font-black rounded-xl transition shadow-sm"
-                              >
-                                승인
-                              </button>
-                            </div>
+                            <ApprovalActionButtons
+                              onApprove={() => onApprove?.(item.id)}
+                              onReject={() => onReject?.(item.id)}
+                            />
                           ) : (
                             <span className="text-[#A3AED0] text-[13px] font-medium">
                               결재 완료

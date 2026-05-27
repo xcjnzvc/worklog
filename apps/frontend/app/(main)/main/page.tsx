@@ -31,6 +31,7 @@ import MonthlyAttendanceSummaryCard from "./_components/owner/MonthlyAttendanceS
 import OwnerWeeklyScheduleCard from "./_components/owner/OwnerWeeklyScheduleCard";
 import ManagementMenuCard from "./_components/owner/ManagementMenuCard";
 import ActionCenterCard from "./_components/owner/ActionCenterCard";
+import InviteModal from "./_components/owner/InviteModal";
 
 interface Team {
   name: string;
@@ -115,6 +116,7 @@ export default function Main() {
 
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const { useApprovalList } = useVacation();
   const { data: vacationData } = useApprovalList(1);
@@ -211,7 +213,7 @@ export default function Main() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <ActionCenterCard
+              {/* <ActionCenterCard
                 holidayCount={serverPendingVacationCount}
                 attendanceCount={serverPendingAttendanceCount}
                 onHolidayClick={() => router.push("/vacation")}
@@ -219,6 +221,16 @@ export default function Main() {
                   router.push("/attendance?tab=APPROVALS")
                 }
                 onInviteClick={() => triggerToast("팀원 초대 모달 오픈")}
+              /> */}
+
+              <ActionCenterCard
+                holidayCount={serverPendingVacationCount}
+                attendanceCount={serverPendingAttendanceCount}
+                onHolidayClick={() => router.push("/vacation")}
+                onAttendanceClick={() =>
+                  router.push("/attendance?tab=APPROVALS")
+                }
+                onInviteClick={() => setIsInviteModalOpen(true)} // 💡 모달 오픈 액션 연결
               />
 
               <ManagementMenuCard
@@ -265,14 +277,18 @@ export default function Main() {
                     desc: "재직자 정보 및 접근 권한 관리",
                   },
                   {
-                    label: "부서 이동 및 직급 변경",
-                    desc: "인사 이동 및 직급 체계 관리",
+                    label: "전사 조직도 조회",
+                    desc: "부서별 조직 구조 및 계층도 한눈에 보기",
                   },
                 ]}
               />
             </div>
           </div>
         </div>
+        <InviteModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+        />
       </div>
     );
   }
