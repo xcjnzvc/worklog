@@ -27,6 +27,7 @@ model User {
   approvedWorkLogs WorkLog[]      @relation("WorkLogApprover")
   leaveRequests    LeaveRequest[]
   approvedLeaves   LeaveRequest[] @relation("approver_relation")
+  payments         Payment[]
 
   @@map("User")
 }

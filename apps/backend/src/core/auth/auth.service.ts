@@ -116,6 +116,8 @@ export class AuthService {
         role: user.role,
         companyId: user.companyId,
         companyName: user.company.name,
+        plan: user.company.plan,
+        maxMembers: user.company.maxMembers,
       },
     };
   }

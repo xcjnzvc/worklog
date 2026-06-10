@@ -1,14 +1,17 @@
 model Company {
-  id        String    @id @default(uuid())
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  id         String    @id @default(uuid())
+  name       String
+  plan       String    @default("FREE")
+  maxMembers Int       @default(3)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
 
   teams        Team[]
   workPolicies WorkPolicy[]
   users        User[]
   invites      Invite[]
   positions    Position[]
+  payments     Payment[]
 
   @@map("Company")
 }

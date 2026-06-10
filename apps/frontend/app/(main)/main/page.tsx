@@ -213,16 +213,6 @@ export default function Main() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* <ActionCenterCard
-                holidayCount={serverPendingVacationCount}
-                attendanceCount={serverPendingAttendanceCount}
-                onHolidayClick={() => router.push("/vacation")}
-                onAttendanceClick={() =>
-                  router.push("/attendance?tab=APPROVALS")
-                }
-                onInviteClick={() => triggerToast("팀원 초대 모달 오픈")}
-              /> */}
-
               <ActionCenterCard
                 holidayCount={serverPendingVacationCount}
                 attendanceCount={serverPendingAttendanceCount}
@@ -230,7 +220,7 @@ export default function Main() {
                 onAttendanceClick={() =>
                   router.push("/attendance?tab=APPROVALS")
                 }
-                onInviteClick={() => setIsInviteModalOpen(true)} // 💡 모달 오픈 액션 연결
+                onInviteClick={() => setIsInviteModalOpen(true)}
               />
 
               <ManagementMenuCard

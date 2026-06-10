@@ -27,6 +27,7 @@ import { Pagination } from "@/components/Pagination";
 import { ListPageLayout } from "@/components/ListPageLayout";
 import InviteLinkCard from "./_components/InviteLinkCard";
 import { InviteTable } from "./_components/InviteTable";
+import { UpgradeModal } from "./_components/UpgradeModal";
 
 export default function AdminInvitePage() {
   const [activeTab, setActiveTab] = useState<"CREATE" | "HISTORY">("CREATE");
@@ -47,6 +48,7 @@ export default function AdminInvitePage() {
     mode: "onTouched",
   });
 
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const emailValue = watch("email");
   const roleValue = watch("role");
 
@@ -73,8 +75,14 @@ export default function AdminInvitePage() {
         loading: "초대 링크를 생성 중입니다...",
         success: "초대 링크 발행 성공!",
         error: (err) => {
-          if (err instanceof AxiosError)
-            return err.response?.data?.message || "초대에 실패했습니다.";
+          if (err instanceof AxiosError) {
+            const msg = err.response?.data?.message || "";
+            if (msg.includes("최대 인원")) {
+              setShowUpgradeModal(true);
+              return null; // toast 안 띄우기
+            }
+            return msg || "초대에 실패했습니다.";
+          }
           return "알 수 없는 오류가 발생했습니다.";
         },
       });
@@ -338,6 +346,11 @@ export default function AdminInvitePage() {
           />
         </div>
       )}
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </ListPageLayout>
   );
 }

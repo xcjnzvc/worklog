@@ -1,0 +1,24 @@
+model Payment {
+    id        String @id @default(uuid())
+    paymentId String @unique // 포트원 결제 고유 ID
+
+    // 1. 결제 주체와의 관계 (필수 정보)
+    companyId String
+    company   Company @relation(fields: [companyId], references: [id])
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    // 2. 결제 시점의 스냅샷 (데이터 변동 방지용)
+    userName    String // 결제 당시 유저 이름
+    companyName String // 결제 당시 회사 이름
+
+    // 3. 결제 상세 정보
+    amount   Int // 결제 금액
+    planName String // "Basic" 또는 "Pro"
+    status   String // "PAID", "CANCELLED", "FAILED"
+
+    createdAt DateTime @default(now())
+
+    @@map("payments")
+}

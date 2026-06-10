@@ -14,6 +14,19 @@ export class InviteService {
 
   // 초대 링크 생성
   async createInvite(dto: { email: string; role: Role; companyId: string }) {
+    const company = await this.prisma.company.findUnique({
+      where: { id: dto.companyId },
+      include: { _count: { select: { users: true } } },
+    });
+
+    if (!company) throw new BadRequestException('회사를 찾을 수 없습니다.');
+
+    if (company._count.users >= company.maxMembers) {
+      throw new BadRequestException(
+        `현재 플랜(${company.plan})의 최대 인원(${company.maxMembers}명)에 도달했습니다. 플랜을 업그레이드해주세요.`,
+      );
+    }
+
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });

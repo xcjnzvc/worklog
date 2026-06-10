@@ -6,6 +6,7 @@ import { InviteModule } from './resources/invite/invite.module';
 import { WorkLogModule } from './resources/work-log/work-log.module';
 import { VacationModule } from './resources/vacation/vacation.module';
 import { UserModule } from './resources/user/user.module';
+import { PaymentModule } from './resources/payment/payment.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from './resources/user/user.module';
     WorkLogModule,
     VacationModule,
     UserModule,
+    PaymentModule,
   ],
   controllers: [AppController],
 })

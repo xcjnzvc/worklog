@@ -5,9 +5,11 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "OWNER" | "ADMIN" | "USER";
+  role: "OWNER" | "ADMIN" | "USER" | "SUPER_ADMIN";
   companyId: string;
   companyName: string;
+  plan: string; // "FREE" | "Basic" | "Pro"
+  maxMembers: number; // 3 | 50 | 999999
 }
 
 interface UserStore {

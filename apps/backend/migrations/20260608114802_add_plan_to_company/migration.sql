@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Company" ADD COLUMN     "maxMembers" INTEGER NOT NULL DEFAULT 3,
+ADD COLUMN     "plan" TEXT NOT NULL DEFAULT 'FREE';
