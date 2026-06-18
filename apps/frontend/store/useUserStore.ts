@@ -26,11 +26,18 @@ export const useUserStore = create<UserStore>()(
     (set) => ({
       user: null,
       isLoggedIn: false,
-      isLoading: true,
+      isLoading: false, // true → false
       setUser: (user) => set({ user, isLoggedIn: true, isLoading: false }),
       clearUser: () => set({ user: null, isLoggedIn: false, isLoading: false }),
       setIsLoading: (loading) => set({ isLoading: loading }),
     }),
-    { name: "user-storage" },
+    {
+      name: "user-storage",
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setIsLoading(false);
+        }
+      },
+    },
   ),
 );
