@@ -1,4 +1,3 @@
-// @/components/InviteModal.tsx 또는 @/app/_components/owner/InviteModal.tsx (구조에 맞게 위치 유지)
 "use client";
 
 import { useForm } from "react-hook-form";

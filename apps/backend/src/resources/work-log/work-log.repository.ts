@@ -246,9 +246,21 @@ export class WorkLogRepository {
     id: string,
     data: Prisma.WorkLogUpdateInput,
   ): Promise<WorkLog> {
+    // Prisma UpdateInput 타입에 존재하는 필드들만 안전하게 필터링하여 전달합니다.
+    // 특히 userId와 date는 제외하여 P2002 에러를 방지합니다.
+
     return this.prisma.workLog.update({
       where: { id },
-      data,
+      data: {
+        status: data.status,
+        apprStatus: data.apprStatus,
+        fixReason: data.fixReason,
+        fixClockIn: data.fixClockIn,
+        fixClockOut: data.fixClockOut,
+        rejectReason: data.rejectReason,
+        approver: data.approver,
+        isFix: data.isFix,
+      },
     });
   }
 

@@ -35,7 +35,7 @@ export default function RootLayout({
         {/* 2. 포트원 SDK 스크립트 추가 */}
         <Script
           src="https://cdn.portone.io/v2/browser-sdk.js"
-          strategy="beforeInteractive"
+          strategy="afterInteractive" // 페이지가 로드된 직후 실행
         />
 
         <ReactQueryProvider>{children}</ReactQueryProvider>
@@ -48,6 +48,9 @@ export default function RootLayout({
               borderRadius: "10px",
               background: "#333",
               color: "#fff",
+            },
+            error: {
+              duration: 4500,
             },
           }}
         />

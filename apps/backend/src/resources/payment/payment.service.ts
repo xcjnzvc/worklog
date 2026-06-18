@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
-// 포트원 응답 구조를 인터페이스로 정의
 interface PortOnePaymentResponse {
   amount: {
     total: number;
@@ -16,7 +15,6 @@ interface PortOneErrorResponse {
 
 @Injectable()
 export class PaymentService {
-  // PrismaService를 주입받아야 합니다.
   constructor(private readonly prisma: PrismaService) {}
 
   async verifyAndActivateSubscription(
@@ -65,25 +63,26 @@ export class PaymentService {
     // 3. 트랜잭션으로 DB 업데이트 (결제 기록 저장 + 회사 구독 활성화)
     // 두 작업이 모두 성공해야 하므로 트랜잭션($transaction) 사용 추천
     await this.prisma.$transaction([
-      // 결제 기록 저장
       this.prisma.payment.create({
         data: {
           paymentId: paymentId,
           userId: userId,
           companyId: user.companyId,
           userName: user.name,
-          companyName: user.company.name, // 조회한 회사 정보 활용
+          companyName: user.company.name,
           amount: paymentInfo.amount.total,
           planName: planName,
+          // 결제 타입을 구분하는 필드가 있다면 추가 권장
           status: 'PAID',
         },
       }),
-      // 회사 구독 상태 업데이트
       this.prisma.company.update({
         where: { id: user.companyId },
         data: {
-          plan: planName,
-          maxMembers: planName === 'Basic' ? 50 : 999999,
+          plan: planName, // 플랜명은 그대로 유지하거나 업그레이드
+          maxMembers: {
+            increment: seatCount, // 핵심: 기존 값에 seatCount만큼 더함
+          },
         },
       }),
     ]);
