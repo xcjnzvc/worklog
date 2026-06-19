@@ -25,16 +25,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<UserPayload> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
+      include: { company: true },
     });
 
     if (!user) throw new UnauthorizedException('존재하지 않는 유저입니다.');
 
     return {
+      sub: payload.sub,
       userId: payload.sub,
       email: payload.email,
       role: payload.role as Role,
       companyId: payload.companyId,
-      teamId: user.teamId, // 👈 여기서 user.teamId가 undefined면 에러가 날 수 있음
+      teamId: user.teamId,
+      name: user.name,
+      companyName: user.company.name,
     };
   }
 }

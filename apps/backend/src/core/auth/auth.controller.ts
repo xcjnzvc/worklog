@@ -25,13 +25,12 @@ export class AuthController {
 
   @Post('login')
   login(@Body() body: LoginDto) {
-    console.log('login_controller', body);
     return this.authService.login(body);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getMe(@Request() req: { user: UserPayload }): UserPayload {
-    return req.user;
+  async getMe(@Request() req: { user: UserPayload }): Promise<UserPayload> {
+    return await this.authService.getMe(req.user.sub);
   }
 }

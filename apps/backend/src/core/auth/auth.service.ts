@@ -7,6 +7,7 @@ import { PrismaService } from '../../core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Role, WorkType } from '@prisma/client';
+import { UserPayload } from './interfaces/user-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -119,6 +120,26 @@ export class AuthService {
         plan: user.company.plan,
         maxMembers: user.company.maxMembers,
       },
+    };
+  }
+
+  async getMe(userId: string): Promise<UserPayload> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { company: true },
+    });
+
+    if (!user) throw new UnauthorizedException('유저를 찾을 수 없습니다.');
+
+    return {
+      sub: user.id,
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      companyId: user.companyId,
+      companyName: user.company.name,
+      teamId: user.teamId,
     };
   }
 }
