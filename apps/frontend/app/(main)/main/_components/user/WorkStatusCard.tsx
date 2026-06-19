@@ -74,7 +74,11 @@ const STATUS_STYLE: Record<
   },
 };
 
-export default function WorkStatusCard() {
+export default function WorkStatusCard({
+  initialAttendance,
+}: {
+  initialAttendance: AttendanceData | null;
+}) {
   const queryClient = useQueryClient();
 
   const {
@@ -84,6 +88,7 @@ export default function WorkStatusCard() {
   } = useQuery<AttendanceData>({
     queryKey: ["todayAttendance"],
     queryFn: getTodayAttendanceAPI,
+    initialData: initialAttendance ?? undefined,
     refetchInterval: 60_000,
   });
 
@@ -141,12 +146,19 @@ export default function WorkStatusCard() {
   // if (isLoading)
   //   return <CardSkeleton className="w-full h-full min-h-[500px]" />;
 
-  if (isLoading)
+  // if (isLoading)
+  //   return (
+  //     <article className="p-[30px] bg-white rounded-[32px] shadow-sm border border-gray-100 w-full flex-1 flex flex-col min-h-[500px]">
+  //       <div className="text-[44px] md:text-[48px] font-black text-gray-950 leading-none">
+  //         --:--
+  //       </div>
+  //     </article>
+  //   );
+
+  if (isLoading && !initialAttendance)
     return (
-      <article className="p-[30px] bg-white rounded-[32px] shadow-sm border border-gray-100 w-full flex-1 flex flex-col min-h-[500px]">
-        <div className="text-[44px] md:text-[48px] font-black text-gray-950 leading-none">
-          --:--
-        </div>
+      <article className="...">
+        <div className="text-[44px] ...">--:--</div>
       </article>
     );
 

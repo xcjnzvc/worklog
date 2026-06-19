@@ -7,11 +7,14 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  compiler: {
-    // 모던 브라우저만 타겟
-  },
   experimental: {
-    optimizePackageImports: ["lucide-react", "@sentry/nextjs"],
+    optimizePackageImports: [
+      "lucide-react",
+      "@sentry/nextjs",
+      "date-fns", // 추가
+      "react-datepicker", // 추가
+    ],
+    optimizeCss: true,
   },
 };
 

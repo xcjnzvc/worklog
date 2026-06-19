@@ -8,8 +8,15 @@ import TodoListCard from "../_components/user/TodoListCard";
 import AttendanceSummaryCard from "@/components/AttendanceSummaryCard";
 import { Suspense } from "react";
 import CardSkeleton from "@/components/Skeleton/CardSkeleton";
+import { AttendanceData } from "@/types/attendance";
 
-export default function UserMain({ user }: { user: User }) {
+export default function UserMain({
+  user,
+  initialAttendance,
+}: {
+  user: User;
+  initialAttendance: AttendanceData | null;
+}) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
       <div className="max-w-[1600px] mx-auto">
@@ -23,7 +30,7 @@ export default function UserMain({ user }: { user: User }) {
             <Suspense
               fallback={<CardSkeleton className="w-full min-h-[500px]" />}
             >
-              <WorkStatusCard />
+              <WorkStatusCard initialAttendance={initialAttendance} />
             </Suspense>
             <Suspense
               fallback={<CardSkeleton className="w-full min-h-[200px]" />}
