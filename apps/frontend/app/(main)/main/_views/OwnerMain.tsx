@@ -23,7 +23,7 @@ import OwnerWeeklyScheduleCard from "../_components/owner/OwnerWeeklyScheduleCar
 import ManagementMenuCard from "../_components/owner/ManagementMenuCard";
 import ActionCenterCard from "../_components/owner/ActionCenterCard";
 import InviteModal from "../_components/owner/InviteModal";
-import MOCK_TEAMS from "../_components/MOCK/teams";
+import MOCK_TEAMS from "../_components/mock/teams";
 
 const getTeamIcon = (type: string) => {
   switch (type) {
