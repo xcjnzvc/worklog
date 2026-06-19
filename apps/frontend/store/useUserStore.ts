@@ -26,7 +26,7 @@ export const useUserStore = create<UserStore>()(
     (set) => ({
       user: null,
       isLoggedIn: false,
-      isLoading: false, // true → false
+      isLoading: true,
       setUser: (user) => set({ user, isLoggedIn: true, isLoading: false }),
       clearUser: () => set({ user: null, isLoggedIn: false, isLoading: false }),
       setIsLoading: (loading) => set({ isLoading: loading }),

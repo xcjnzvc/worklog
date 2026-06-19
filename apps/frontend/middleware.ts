@@ -1,84 +1,45 @@
-// import { NextResponse } from "next/server";
-// import type { NextRequest } from "next/server";
-
-// const AUTH_PAGES = ["/", "/signup"];
-
-// export async function proxy(request: NextRequest) {
-//   // 👈 middleware → proxy
-//   const token = request.cookies.get("accessToken")?.value;
-//   const { pathname, search } = request.nextUrl;
-
-//   if (pathname === "/signup" && search.includes("token=")) {
-//     return NextResponse.next();
-//   }
-
-//   if (AUTH_PAGES.includes(pathname) && token) {
-//     return NextResponse.redirect(new URL("/main", request.url));
-//   }
-
-//   if (!token && !AUTH_PAGES.includes(pathname)) {
-//     return NextResponse.redirect(new URL("/", request.url));
-//   }
-
-//   if (token && !AUTH_PAGES.includes(pathname)) {
-//     try {
-//       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
-
-//       if (res.status === 401) {
-//         const response = NextResponse.redirect(new URL("/", request.url));
-//         response.cookies.delete("accessToken");
-//         return response;
-//       }
-//     } catch {
-//       // 네트워크 오류 시 통과
-//     }
-//   }
-
-//   return NextResponse.next();
-// }
-
-// export const config = {
-//   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-// };
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const AUTH_PAGES = ["/", "/signup"];
 const PUBLIC_PAGES = ["/", "/signup", "/download"];
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
-  const { pathname, search } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
-  if (pathname === "/signup" && search.includes("token=")) {
+  // 1. 토큰이 없거나 퍼블릭 페이지면 바로 통과
+  if (!token || PUBLIC_PAGES.includes(pathname)) {
     return NextResponse.next();
   }
 
-  if (AUTH_PAGES.includes(pathname) && token) {
-    return NextResponse.redirect(new URL("/main", request.url));
-  }
+  // 2. 보호된 페이지 진입 시 유저 정보 조회
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  if (!token && !PUBLIC_PAGES.includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+    if (res.status === 401) {
+      const response = NextResponse.redirect(new URL("/", request.url));
+      response.cookies.delete("accessToken");
+      return response;
+    }
 
-  if (token && !PUBLIC_PAGES.includes(pathname)) {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) {
-        const response = NextResponse.redirect(new URL("/", request.url));
-        response.cookies.delete("accessToken");
-        return response;
-      }
-    } catch {}
-  }
+    const user = await res.json();
 
-  return NextResponse.next();
+    // 3. 헤더에 유저 정보 세팅 (인코딩 필수!)
+    // 한글이 포함될 경우를 대비해 encodeURIComponent 사용
+    const encodedUser = encodeURIComponent(JSON.stringify(user));
+
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-user", encodedUser);
+
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+  } catch (error) {
+    console.error("Middleware 인증 에러:", error);
+    return NextResponse.next();
+  }
 }
 
 export const config = {

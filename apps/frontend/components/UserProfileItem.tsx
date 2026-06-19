@@ -1,5 +1,3 @@
-// @/components/common/UserProfileItem.tsx (또는 _components 내)
-
 import React from "react";
 
 interface UserProfileItemProps {
