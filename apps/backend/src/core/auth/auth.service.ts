@@ -124,11 +124,12 @@ export class AuthService {
   }
 
   async getMe(userId: string): Promise<UserPayload> {
+    console.time('getMe-query-time');
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { company: true },
     });
-
+    console.timeEnd('getMe-query-time');
     if (!user) throw new UnauthorizedException('유저를 찾을 수 없습니다.');
 
     return {
