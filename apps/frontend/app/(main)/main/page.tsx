@@ -34,36 +34,85 @@
 //   return <UserMain user={user} />;
 // }
 
-import { headers } from "next/headers";
-import { Suspense } from "react"; // 추가
+// import { headers } from "next/headers";
+// import { Suspense } from "react"; // 추가
+// import { User } from "@/store/useUserStore";
+// import OwnerMain from "./_views/OwnerMain";
+// import UserMain from "./_views/UserMain";
+// import Loading from "@/components/loading";
+
+// export default async function MainPage() {
+//   const headersList = await headers();
+//   const userJson = headersList.get("x-user");
+
+//   let user: User | null = null;
+//   if (userJson) {
+//     try {
+//       const decodedUser = decodeURIComponent(userJson);
+//       user = JSON.parse(decodedUser);
+//     } catch (error) {
+//       console.error("유저 정보 파싱 에러:", error);
+//     }
+//   }
+
+//   if (!user) return null;
+
+//   // Suspense로 감싸주면, 하위 컴포넌트가 준비될 때까지 loading.tsx를 보여줍니다.
+//   return (
+//     <Suspense fallback={<Loading />}>
+//       {user.role === "OWNER" ? (
+//         <OwnerMain user={user} />
+//       ) : (
+//         <UserMain user={user} />
+//       )}
+//     </Suspense>
+//   );
+// }
+
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { User } from "@/store/useUserStore";
 import OwnerMain from "./_views/OwnerMain";
 import UserMain from "./_views/UserMain";
 import Loading from "@/components/loading";
 
 export default async function MainPage() {
-  const headersList = await headers();
-  const userJson = headersList.get("x-user");
+  // 1. 쿠키에서 토큰을 가져옵니다.
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
 
-  let user: User | null = null;
-  if (userJson) {
-    try {
-      const decodedUser = decodeURIComponent(userJson);
-      user = JSON.parse(decodedUser);
-    } catch (error) {
-      console.error("유저 정보 파싱 에러:", error);
-    }
+  // 2. 토큰이 없으면 즉시 로그인 페이지로 리다이렉트합니다.
+  if (!token) {
+    redirect("/");
   }
 
-  if (!user) return null;
+  // 3. 유저 정보를 서버에서 직접 가져옵니다.
+  let user: User | null = null;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Cache-Control": "no-store",
+      },
+      next: { revalidate: 0 },
+    });
 
-  // Suspense로 감싸주면, 하위 컴포넌트가 준비될 때까지 loading.tsx를 보여줍니다.
+    if (!res.ok) throw new Error("인증 실패");
+    user = await res.json();
+  } catch (error) {
+    console.error("유저 정보 로딩 에러:", error);
+    redirect("/");
+  }
+
+  // 4. 이제 user는 확실하게 null이 아닙니다.
+  // 3항 연산자를 사용하여 역할을 분기합니다.
   return (
     <Suspense fallback={<Loading />}>
-      {user.role === "OWNER" ? (
-        <OwnerMain user={user} />
+      {user!.role === "OWNER" ? (
+        <OwnerMain user={user!} />
       ) : (
-        <UserMain user={user} />
+        <UserMain user={user!} />
       )}
     </Suspense>
   );

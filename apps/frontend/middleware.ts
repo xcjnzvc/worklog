@@ -48,6 +48,52 @@
 //   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 // };
 
+// import { NextResponse } from "next/server";
+// import type { NextRequest } from "next/server";
+
+// const PUBLIC_PAGES = ["/", "/signup", "/download"];
+
+// export async function middleware(request: NextRequest) {
+//   const token = request.cookies.get("accessToken")?.value;
+//   const { pathname } = request.nextUrl;
+
+//   if (!token || PUBLIC_PAGES.includes(pathname)) {
+//     return NextResponse.next();
+//   }
+
+//   const controller = new AbortController();
+//   const timeout = setTimeout(() => controller.abort(), 2000);
+
+//   try {
+//     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+//       headers: { Authorization: `Bearer ${token}` },
+//       signal: controller.signal,
+//     });
+//     clearTimeout(timeout);
+
+//     if (res.status === 401) {
+//       const response = NextResponse.redirect(new URL("/", request.url));
+//       response.cookies.delete("accessToken");
+//       return response;
+//     }
+
+//     const user = await res.json();
+//     const encodedUser = encodeURIComponent(JSON.stringify(user));
+//     const requestHeaders = new Headers(request.headers);
+//     requestHeaders.set("x-user", encodedUser);
+
+//     return NextResponse.next({ request: { headers: requestHeaders } });
+//   } catch (error) {
+//     clearTimeout(timeout);
+//     console.error("Middleware 인증 에러:", error);
+//     return NextResponse.next();
+//   }
+// }
+
+// export const config = {
+//   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+// };
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -57,37 +103,18 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
   const { pathname } = request.nextUrl;
 
-  if (!token || PUBLIC_PAGES.includes(pathname)) {
+  // 1. 공개 페이지는 그냥 통과
+  if (PUBLIC_PAGES.includes(pathname)) {
     return NextResponse.next();
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 2000);
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (res.status === 401) {
-      const response = NextResponse.redirect(new URL("/", request.url));
-      response.cookies.delete("accessToken");
-      return response;
-    }
-
-    const user = await res.json();
-    const encodedUser = encodeURIComponent(JSON.stringify(user));
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-user", encodedUser);
-
-    return NextResponse.next({ request: { headers: requestHeaders } });
-  } catch (error) {
-    clearTimeout(timeout);
-    console.error("Middleware 인증 에러:", error);
-    return NextResponse.next();
+  // 2. 토큰이 없는데 보호된 페이지에 접근하면 로그인 페이지로 리다이렉트
+  if (!token) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
+
+  // 3. 토큰이 있다면 일단 통과 (인증 데이터는 MainPage에서 직접 가져옴)
+  return NextResponse.next();
 }
 
 export const config = {
