@@ -6,7 +6,6 @@ interface Team {
   overtimeMembers: string[];
   teamType: "dev" | "design" | "marketing" | "sales" | "hr";
 }
-
 const MOCK_TEAMS: Team[] = [
   {
     name: "개발팀",
@@ -57,5 +56,4 @@ const MOCK_TEAMS: Team[] = [
     teamType: "hr",
   },
 ];
-
 export default MOCK_TEAMS;
