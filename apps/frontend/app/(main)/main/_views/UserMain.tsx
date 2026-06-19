@@ -9,8 +9,6 @@ import TodoListCard from "../_components/user/TodoListCard";
 import AttendanceSummaryCard from "@/components/AttendanceSummaryCard";
 
 export default function UserMain({ user }: { user: User }) {
-  console.log("User 객체의 모든 키 확인:", Object.keys(user));
-  console.log("User 객체의 전체 내용:", JSON.stringify(user, null, 2));
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
       <div className="max-w-[1600px] mx-auto">
