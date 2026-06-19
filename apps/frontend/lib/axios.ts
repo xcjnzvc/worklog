@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as Sentry from "@sentry/nextjs"; // Sentry 임포트 추가!
+import * as Sentry from "@sentry/nextjs";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export const axiosInstance = axios.create({

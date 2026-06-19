@@ -1,4 +1,3 @@
-"use client";
 import { User } from "@/store/useUserStore";
 import Header from "../_components/Header";
 import WorkStatusCard from "../_components/user/WorkStatusCard";
@@ -7,12 +6,13 @@ import WeeklyScheduleCard from "../_components/user/WeeklyScheduleCard";
 import QuickActionCard from "../_components/user/QuickActionCard";
 import TodoListCard from "../_components/user/TodoListCard";
 import AttendanceSummaryCard from "@/components/AttendanceSummaryCard";
+import { Suspense } from "react";
+import CardSkeleton from "@/components/Skeleton/CardSkeleton";
 
 export default function UserMain({ user }: { user: User }) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
       <div className="max-w-[1600px] mx-auto">
-        {/* 이제 user.name, user.companyName 등을 안전하게 사용할 수 있습니다 */}
         <Header
           companyName={user.companyName ?? "회사 정보 없음"}
           userName={user.name ?? "사용자"}
@@ -20,12 +20,28 @@ export default function UserMain({ user }: { user: User }) {
         />
         <div className="grid grid-cols-12 gap-6 md:gap-[30px] items-start">
           <div className="col-span-12 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 md:gap-[30px]">
-            <WorkStatusCard />
-            <LeaveStatusCard />
+            <Suspense
+              fallback={<CardSkeleton className="w-full min-h-[500px]" />}
+            >
+              <WorkStatusCard />
+            </Suspense>
+            <Suspense
+              fallback={<CardSkeleton className="w-full min-h-[200px]" />}
+            >
+              <LeaveStatusCard />
+            </Suspense>
           </div>
           <div className="col-span-12 lg:col-span-6 flex flex-col gap-6 md:gap-[30px] min-w-0">
-            <AttendanceSummaryCard />
-            <WeeklyScheduleCard />
+            <Suspense
+              fallback={<CardSkeleton className="w-full min-h-[300px]" />}
+            >
+              <AttendanceSummaryCard />
+            </Suspense>
+            <Suspense
+              fallback={<CardSkeleton className="w-full min-h-[200px]" />}
+            >
+              <WeeklyScheduleCard />
+            </Suspense>
           </div>
           <aside className="col-span-12 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 md:gap-[30px]">
             <QuickActionCard />

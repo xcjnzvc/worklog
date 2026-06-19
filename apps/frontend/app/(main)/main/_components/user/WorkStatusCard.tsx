@@ -138,8 +138,17 @@ export default function WorkStatusCard() {
     },
   });
 
+  // if (isLoading)
+  //   return <CardSkeleton className="w-full h-full min-h-[500px]" />;
+
   if (isLoading)
-    return <CardSkeleton className="w-full h-full min-h-[500px]" />;
+    return (
+      <article className="p-[30px] bg-white rounded-[32px] shadow-sm border border-gray-100 w-full flex-1 flex flex-col min-h-[500px]">
+        <div className="text-[44px] md:text-[48px] font-black text-gray-950 leading-none">
+          --:--
+        </div>
+      </article>
+    );
 
   if (isError || !attendance) {
     return (
