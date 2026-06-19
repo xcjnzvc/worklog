@@ -22,6 +22,8 @@ export default function Home() {
   const [saveEmail, setSaveEmail] = useState(false);
   const [serverStatus, setServerStatus] = useState<ServerStatus>("checking");
 
+  console.log("환경변수 로드 확인:", process.env.NEXT_PUBLIC_API_URL);
+
   const {
     register,
     handleSubmit,
