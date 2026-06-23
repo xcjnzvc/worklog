@@ -5,6 +5,7 @@ import { CombinedStatus, AttendanceWorkLog } from "@/types/attendance";
 import { useRouter } from "next/navigation";
 import { AttendanceMobileCard } from "./AttendanceMobileCard";
 import { ApprovalActionButtons } from "@/components/ApprovalActionButtons";
+import Button from "@/components/Button";
 
 interface AttendanceTableProps {
   data: AttendanceWorkLog[];
@@ -146,18 +147,18 @@ export const AttendanceTable = ({
             {/*  모바일 뷰에서도 대표 모드이고 대기 중일 때 승인/반려 기능 버튼 제공 */}
             {showActionButtons && (
               <div className="flex gap-2 pt-2 border-t border-gray-50">
-                <button
+                <Button
+                  size="sm"
+                  text="반려"
                   onClick={() => onReject?.(item.id)}
-                  className="flex-1 py-2 bg-[#FFEEF2] text-[#EE5D50] font-bold text-xs rounded-xl"
-                >
-                  반려
-                </button>
-                <button
+                  className="bg-[#FFEEF2] text-[#EE5D50] hover:bg-[#FFDDE4]"
+                />
+                <Button
+                  size="sm"
+                  text="승인"
                   onClick={() => onApprove?.(item.id)}
-                  className="flex-1 py-2 bg-[#4318FF] text-white font-bold text-xs rounded-xl"
-                >
-                  승인
-                </button>
+                  className="bg-[#4318FF] text-white hover:bg-[#3311CC]"
+                />
               </div>
             )}
           </div>
@@ -282,28 +283,30 @@ export const AttendanceTable = ({
                             정상 기록
                           </span>
                         ) : (
-                          <button
+                          <Button
+                            size="sm"
                             disabled={isDisabled}
+                            text={
+                              item.isFix
+                                ? "정정 완료"
+                                : item.apprStatus === "PENDING"
+                                  ? "승인 대기"
+                                  : "정정 요청"
+                            }
                             onClick={(e) => {
-                              e.stopPropagation();
-                              if (!isDisabled)
+                              e?.stopPropagation();
+                              if (!isDisabled) {
                                 router.push(
                                   `/attendance/correction/create?id=${item.id}`,
                                 );
+                              }
                             }}
-                            className={`inline-block px-4 py-2 rounded-xl text-[13px] font-bold transition-all
-                              ${
-                                isDisabled
-                                  ? "bg-[#E0E5F2] text-[#A3AED0] cursor-not-allowed"
-                                  : "bg-[#4318FF] text-white hover:bg-[#3311CC] active:scale-95"
-                              }`}
-                          >
-                            {item.isFix
-                              ? "정정 완료"
-                              : item.apprStatus === "PENDING"
-                                ? "승인 대기"
-                                : "정정 요청"}
-                          </button>
+                            className={
+                              isDisabled
+                                ? "bg-[#E0E5F2] text-[#A3AED0]"
+                                : "bg-[#4318FF] hover:bg-[#3311CC]"
+                            }
+                          />
                         )}
                       </td>
                     </>

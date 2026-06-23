@@ -89,18 +89,38 @@ export const useApproveAttendance = () => {
 };
 
 // 관리자/대표용 정정 신청 반려 훅
-export const useRejectAttendance = () => {
+// export const useRejectAttendance = () => {
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+//       rejectAttendanceAPI(id, { rejectReason: reason }),
+//     onSuccess: () => {
+//       // 💡 반려되면 대표 화면의 팀원 목록("fixLogListMgmt")도 즉시 새로고침되도록 추가!
+//       queryClient.invalidateQueries({ queryKey: ["workLogDashboard"] });
+//       queryClient.invalidateQueries({ queryKey: ["fixLogListMgmt"] });
+//       queryClient.invalidateQueries({ queryKey: ["fixLogList"] });
+//       queryClient.invalidateQueries({ queryKey: ["workLogList"] });
+//     },
+//   });
+// };
+
+export const useRejectAttendance = (onSuccessCallback?: () => void) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       rejectAttendanceAPI(id, { rejectReason: reason }),
     onSuccess: () => {
-      // 💡 반려되면 대표 화면의 팀원 목록("fixLogListMgmt")도 즉시 새로고침되도록 추가!
       queryClient.invalidateQueries({ queryKey: ["workLogDashboard"] });
       queryClient.invalidateQueries({ queryKey: ["fixLogListMgmt"] });
       queryClient.invalidateQueries({ queryKey: ["fixLogList"] });
       queryClient.invalidateQueries({ queryKey: ["workLogList"] });
+
+      // 전달받은 콜백이 있다면 실행
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
     },
   });
 };

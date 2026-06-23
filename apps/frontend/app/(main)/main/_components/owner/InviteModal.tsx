@@ -11,6 +11,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import InviteLinkCard from "@/app/(main)/invite/_components/InviteLinkCard";
 import { inviteAPI } from "@/api/invite";
+import { twMerge } from "tailwind-merge";
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -119,34 +120,31 @@ export default function InviteModal({
                   직위
                 </label>
                 <div className="flex gap-[12px]">
-                  <button
-                    type="button"
+                  <Button
+                    text="관리자"
                     onClick={() =>
                       setValue("role", "ADMIN", { shouldValidate: true })
                     }
-                    className={`flex-1 h-[48px] rounded-[12px] border text-[15px] font-semibold transition-all
-                    ${
+                    className={twMerge(
+                      "flex-1 h-[48px] text-[15px] border",
                       roleValue === "ADMIN"
                         ? "bg-[#F6FAFF] text-[#0029C0] border-[#0029C0] shadow-[0_0_0_1px_#0029C0]"
-                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    관리자
-                  </button>
-                  <button
-                    type="button"
+                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50",
+                    )}
+                  />
+
+                  <Button
+                    text="직원"
                     onClick={() =>
                       setValue("role", "USER", { shouldValidate: true })
                     }
-                    className={`flex-1 h-[48px] rounded-[12px] border text-[15px] font-semibold transition-all
-                    ${
+                    className={twMerge(
+                      "flex-1 h-[48px] text-[15px] border",
                       roleValue === "USER"
                         ? "bg-[#F6FAFF] text-[#0029C0] border-[#0029C0] shadow-[0_0_0_1px_#0029C0]"
-                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    직원
-                  </button>
+                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50",
+                    )}
+                  />
                 </div>
                 {errors.role && (
                   <p className="text-sm text-red-500 font-medium mt-1">

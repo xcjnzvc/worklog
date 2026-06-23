@@ -4,6 +4,8 @@ import React from "react";
 import { Clock, CheckCircle2, AlertCircle, Edit3 } from "lucide-react";
 import { AttendanceWorkLog, CombinedStatus } from "@/types/attendance";
 import { useRouter } from "next/navigation";
+import Button from "@/components/Button";
+import { twMerge } from "tailwind-merge";
 
 interface AttendanceMobileCardProps {
   item: AttendanceWorkLog;
@@ -126,28 +128,35 @@ export const AttendanceMobileCard = ({
           </span>
         </div>
       ) : (
-        <button
+        <Button
+          size="sm"
           disabled={isDisabled}
           onClick={() => {
             if (!isDisabled)
               router.push(`/attendance/correction/create?id=${item.id}`);
           }}
-          className={`w-full py-3.5 rounded-[20px] text-[14px] font-bold flex items-center justify-center gap-1.5 transition-all
-            ${
-              isDisabled
-                ? "bg-[#E0E5F2] text-[#A3AED0] cursor-not-allowed"
-                : "bg-[#4318FF] hover:bg-[#3311CC] text-white active:scale-[0.98] shadow-md shadow-[#4318FF]/10"
-            }`}
-        >
-          {!item.isFix && item.apprStatus !== "PENDING" && <Edit3 size={14} />}
-          <span>
-            {item.isFix
+          // 정정 완료/대기 중일 때는 색상 변경을 위해 className 활용
+          className={twMerge(
+            "py-3.5",
+            isDisabled && "bg-[#E0E5F2] text-[#A3AED0] hover:bg-[#E0E5F2]",
+            !isDisabled &&
+              "bg-[#4318FF] hover:bg-[#3311CC] shadow-md shadow-[#4318FF]/10",
+          )}
+          // 아이콘이 필요한 경우에만 전달
+          icon={
+            !item.isFix && item.apprStatus !== "PENDING" ? (
+              <Edit3 size={14} />
+            ) : undefined
+          }
+          // 텍스트 로직
+          text={
+            item.isFix
               ? "정정 완료"
               : item.apprStatus === "PENDING"
                 ? "승인 대기"
-                : "정정 요청"}
-          </span>
-        </button>
+                : "정정 요청"
+          }
+        />
       )}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { X, Zap } from "lucide-react";
+import Button from "@/components/Button";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -41,18 +42,18 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 pt-2">
-          <button
+          <Button
+            size="sm"
+            text="취소"
             onClick={onClose}
-            className="py-3.5 rounded-2xl font-bold text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 transition"
-          >
-            취소
-          </button>
-          <button
+            className="bg-gray-100 hover:bg-gray-200 text-gray-600"
+          />
+          <Button
+            size="sm"
+            text="업그레이드하기"
             onClick={() => router.push("/payment")}
-            className="py-3.5 rounded-2xl font-bold text-sm bg-[#0029C0] hover:bg-[#001fa0] text-white transition shadow-sm"
-          >
-            업그레이드하기
-          </button>
+            className="bg-[#0029C0] hover:bg-[#001fa0]"
+          />
         </div>
       </div>
     </div>

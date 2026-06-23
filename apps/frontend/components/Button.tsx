@@ -1,16 +1,68 @@
+// import { twMerge } from "tailwind-merge";
+
+// interface ButtonProps {
+//   text: string;
+//   loadingText?: string; // 로딩 중 표시할 텍스트 (옵션)
+//   isLoading?: boolean; // 로딩 상태 제어
+//   width?: number;
+//   disabled?: boolean;
+//   type?: "button" | "submit" | "reset";
+//   onClick?: () => void;
+//   className?: string;
+// }
+
+// export default function Button({
+//   text,
+//   loadingText = "처리 중...", // 기본값
+//   isLoading = false,
+//   width,
+//   disabled,
+//   type = "button",
+//   onClick,
+//   className,
+// }: ButtonProps) {
+//   return (
+//     <button
+//       type={type}
+//       // 로딩 중이거나 disabled 상태면 클릭 불가
+//       disabled={disabled || isLoading}
+//       onClick={onClick}
+//       style={width ? { width: `${width}px` } : undefined}
+//       className={twMerge(
+//         "h-[58px] rounded-[12px] text-[18px] transition-colors flex items-center justify-center",
+//         !width && "w-full",
+//         disabled || isLoading
+//           ? "bg-[#CCCCCC] text-[#999999] cursor-not-allowed"
+//           : "bg-[#0029C0] text-white cursor-pointer hover:bg-[#0023a0]",
+//         className,
+//       )}
+//     >
+//       {isLoading ? loadingText : text}
+//     </button>
+//   );
+// }
+
 import { twMerge } from "tailwind-merge";
 
 interface ButtonProps {
-  text: string;
+  text?: string;
+  icon?: React.ReactNode;
+  loadingText?: string;
+  isLoading?: boolean;
+  size?: "default" | "sm" | "icon";
   width?: number;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
 }
 
 export default function Button({
   text,
+  icon,
+  loadingText = "처리 중...",
+  isLoading = false,
+  size = "default",
   width,
   disabled,
   type = "button",
@@ -20,21 +72,36 @@ export default function Button({
   return (
     <button
       type={type}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       onClick={onClick}
       style={width ? { width: `${width}px` } : undefined}
       className={twMerge(
-        // 기본 스타일
-        "h-[58px] rounded-[12px] text-[18px]  transition-colors flex items-center justify-center",
-        !width && "w-full",
-        disabled
+        // 핵심 수정: justify-between -> justify-center로 변경하고 gap-2 추가
+        "rounded-[12px] font-bold transition-all flex items-center justify-center gap-2 px-6 active:scale-[0.98]",
+
+        size === "default"
+          ? "h-[58px] text-[18px]"
+          : size === "sm"
+            ? "h-[36px] px-4 text-[13px]"
+            : "w-12 h-12",
+
+        !width && size === "default" && "w-full",
+
+        disabled || isLoading
           ? "bg-[#CCCCCC] text-[#999999] cursor-not-allowed"
-          : "bg-[#0029C0] text-white cursor-pointer",
-        // 외부에서 넘긴 className이 기본값을 덮어씀
+          : "bg-[#0029C0] text-white cursor-pointer hover:bg-[#0023a0]",
+
         className,
       )}
     >
-      {text}
+      {isLoading ? (
+        loadingText
+      ) : (
+        <>
+          {text && <span>{text}</span>}
+          {icon && <span className="flex items-center">{icon}</span>}
+        </>
+      )}
     </button>
   );
 }

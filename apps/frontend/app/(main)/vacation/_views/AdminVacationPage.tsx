@@ -12,6 +12,7 @@ import { VacationItem, VacationTableRow, ApprovalItem } from "@/types/vacation";
 import { ApprovalTable } from "../_components/ApprovalTableRow";
 import { ListPageLayout } from "@/components/ListPageLayout";
 import { RejectModal } from "@/components/RejectModal";
+import Button from "@/components/Button";
 
 export default function AdminVacationPage() {
   const [activeTab, setActiveTab] = useState<"MY" | "APPROVALS">("MY");
@@ -89,9 +90,11 @@ export default function AdminVacationPage() {
         description="팀원 휴가를 승인하고 나의 휴가를 신청할 수 있습니다."
         headerRight={
           <Link href="/vacation/create" className="hidden sm:block shrink-0">
-            <button className="flex items-center gap-2 bg-[#0029C0] text-white px-6 py-3.5 rounded-[20px] font-bold text-sm hover:bg-[#002094] transition-colors">
-              <Plus size={18} /> 새 휴가 신청하기
-            </button>
+            <Button
+              text="새 휴가 신청하기"
+              icon={<Plus size={18} />}
+              className="bg-[#0029C0] hover:bg-[#002094] rounded-[20px] px-6 py-3.5"
+            />
           </Link>
         }
         stats={

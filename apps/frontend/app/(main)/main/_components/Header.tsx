@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/Button";
 import { Download } from "lucide-react";
 
 interface HeaderProps {
@@ -35,13 +36,14 @@ export default function Header({
       </div>
 
       {isOwner && onDownloadClick && (
-        <button
+        <Button
+          size="sm"
+          text="월간 리포트 다운로드"
+          icon={<Download size={15} />}
           onClick={onDownloadClick}
-          className="flex items-center gap-2 bg-white px-5 py-3 rounded-2xl border border-gray-200/80 font-black text-xs hover:bg-gray-50 shadow-sm transition-all"
-        >
-          <Download size={15} />
-          월간 리포트 다운로드
-        </button>
+          // 기본 bg-blue 스타일을 덮어쓰고 테두리 스타일 적용
+          className="bg-white border border-gray-200/80 text-gray-700 hover:bg-gray-50 shadow-sm"
+        />
       )}
     </header>
   );

@@ -27,7 +27,7 @@ export default function Home() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isSubmitting },
     watch,
     setValue,
   } = useForm<LoginForm>({
@@ -109,13 +109,12 @@ export default function Home() {
           />
           <p className="flex-1 text-[14px] text-[#666]">{serverBanner.text}</p>
           {serverBanner.showRetry && (
-            <button
-              type="button"
+            <Button
+              size="sm"
+              text="재요청"
               onClick={pingServer}
-              className="text-[13px] text-[#0029C0] border border-[#0029C0] rounded-[6px] px-[10px] py-[5px] whitespace-nowrap hover:bg-[#F6FAFF]"
-            >
-              재요청
-            </button>
+              className="bg-transparent text-[#0029C0] border border-[#0029C0] hover:bg-[#F6FAFF] h-[30px] w-auto px-[10px]"
+            />
           )}
         </div>
 
@@ -153,6 +152,8 @@ export default function Home() {
             <Button
               type="submit"
               text="로그인"
+              loadingText="로그인 중..."
+              isLoading={isSubmitting}
               disabled={!isValid || serverStatus !== "ok"}
             />
             <div className="w-full text-[16px] flex gap-[16px] items-center justify-center">

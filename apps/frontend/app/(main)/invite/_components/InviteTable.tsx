@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/Button";
 import { InviteMobileCard } from "./InviteMobileCard";
 import { InviteHistoryItem } from "@/types/invite";
 
@@ -124,12 +125,12 @@ export const InviteTable = ({ data, onResend }: InviteTableProps) => {
                   </td>
                   <td className="px-6 py-5 text-center">
                     {item.status === "EXPIRED" ? (
-                      <button
+                      <Button
+                        size="sm"
+                        text="재발송"
                         onClick={() => onResend?.(item.email, item.role)}
-                        className="px-4 py-2 bg-[#F4F7FE] text-[#4318FF] text-[12px] font-bold rounded-lg hover:bg-[#E8EDFF] transition-all border border-[#4318FF]/20"
-                      >
-                        재발송
-                      </button>
+                        className="bg-[#F4F7FE] text-[#4318FF] border border-[#4318FF]/20 hover:bg-[#E8EDFF]"
+                      />
                     ) : (
                       <span className="text-[#A3AED0] text-[12px]">-</span>
                     )}

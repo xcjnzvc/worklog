@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/Button";
 import toast from "react-hot-toast";
 
 interface InviteLinkCardProps {
@@ -51,12 +52,12 @@ export default function InviteLinkCard({
             value={inviteLink}
             className="flex-1 bg-transparent text-[14px] text-[#333] outline-none truncate font-medium"
           />
-          <button
+          <Button
+            size="sm"
+            text="복사하기"
             onClick={handleCopy}
-            className="text-[13px] font-bold text-[#0029C0] hover:text-[#0023A1] transition-colors shrink-0"
-          >
-            복사하기
-          </button>
+            className="bg-transparent hover:bg-transparent text-[#0029C0] hover:text-[#0023A1] px-0 w-auto"
+          />
         </div>
       </div>
 
@@ -65,13 +66,7 @@ export default function InviteLinkCard({
         <span className="text-[#F44336] font-medium">{formattedDate}</span>까지
         유효합니다.
       </p>
-
-      <button
-        onClick={onReset}
-        className="w-full h-[56px] bg-[#0029C0] text-white rounded-[12px] font-bold text-[16px] hover:bg-[#0023A1] transition-all active:scale-[0.98]"
-      >
-        확인
-      </button>
+      <Button text="확인" onClick={onReset} />
     </div>
   );
 }

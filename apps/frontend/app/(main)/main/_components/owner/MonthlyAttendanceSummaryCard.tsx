@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ChevronRight } from "lucide-react";
+import Button from "@/components/Button";
 
 export interface Team {
   name: string;
@@ -131,12 +132,13 @@ export default function MonthlyAttendanceSummaryCard({
           </div>
         </div>
         {onDetailClick && (
-          <button
+          <Button
+            size="sm"
+            text="상세 보기"
+            icon={<ChevronRight size={14} />}
             onClick={onDetailClick}
-            className="text-xs font-bold text-gray-500 hover:text-gray-800 hover:underline flex items-center gap-0.5 px-3 py-1.5 rounded-xl transition"
-          >
-            상세 보기 <ChevronRight size={14} />
-          </button>
+            className="bg-transparent hover:bg-gray-100 text-gray-500 hover:text-gray-800 hover:underline px-3 w-auto"
+          />
         )}
       </div>
 

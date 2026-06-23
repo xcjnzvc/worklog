@@ -56,7 +56,7 @@ function SignupContent() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isSubmitting },
     watch,
     setValue,
   } = useForm<SignupForm & InvitedSignupForm>({
@@ -194,6 +194,7 @@ function SignupContent() {
             type="submit"
             width={450}
             text="가입하기"
+            isLoading={isSubmitting}
             disabled={!isValid}
           />
         </div>

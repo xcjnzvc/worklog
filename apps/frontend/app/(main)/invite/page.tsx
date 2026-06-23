@@ -29,6 +29,22 @@ import InviteLinkCard from "./_components/InviteLinkCard";
 import { InviteTable } from "./_components/InviteTable";
 import { UpgradeModal } from "./_components/UpgradeModal";
 
+const ROLE_OPTIONS = [
+  {
+    value: "USER",
+    label: "일반 직원 (USER)",
+    description: "출퇴근 로그 기록, 본인의 연차 신청 및 정정 대행용 기본 권한",
+    icon: User,
+  },
+  {
+    value: "ADMIN",
+    label: "관리자 (ADMIN)",
+    description:
+      "전사 출퇴근 최종 결재 승인 및 근무 시간 규칙 설정 최상위 권한",
+    icon: Shield,
+  },
+] as const;
+
 export default function AdminInvitePage() {
   const [activeTab, setActiveTab] = useState<"CREATE" | "HISTORY">("CREATE");
   const [currentPage, setCurrentPage] = useState(1);
@@ -215,50 +231,53 @@ export default function AdminInvitePage() {
                       부여할 시스템 권한 그룹
                     </label>
                     <div className="grid grid-cols-2 gap-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setValue("role", "USER", { shouldValidate: true })
-                        }
-                        className={`flex flex-col items-start p-5 rounded-[22px] border text-left transition-all duration-300 relative group/btn ${roleValue === "USER" ? "bg-white border-[#0029C0] shadow-[0_12px_24px_rgba(0,41,192,0.08)] ring-2 ring-[#0029C0]/10" : "bg-white border-gray-100 hover:border-gray-200"}`}
-                      >
-                        <div
-                          className={`p-2 rounded-xl mb-4 ${roleValue === "USER" ? "bg-[#0029C0]/5 text-[#0029C0]" : "bg-gray-50 text-[#707EAE]"}`}
-                        >
-                          <User size={18} />
-                        </div>
-                        <h4
-                          className={`text-[15px] font-black mb-1.5 ${roleValue === "USER" ? "text-[#0029C0]" : "text-[#1B254B]"}`}
-                        >
-                          일반 직원 (USER)
-                        </h4>
-                        <p className="text-[11px] text-[#A3AED0] font-semibold leading-relaxed">
-                          출퇴근 로그 기록, 본인의 연차 신청 및 정정 대행용 기본
-                          권한
-                        </p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setValue("role", "ADMIN", { shouldValidate: true })
-                        }
-                        className={`flex flex-col items-start p-5 rounded-[22px] border text-left transition-all duration-300 relative group/btn ${roleValue === "ADMIN" ? "bg-white border-[#0029C0] shadow-[0_12px_24px_rgba(0,41,192,0.08)] ring-2 ring-[#0029C0]/10" : "bg-white border-gray-100 hover:border-gray-200"}`}
-                      >
-                        <div
-                          className={`p-2 rounded-xl mb-4 ${roleValue === "ADMIN" ? "bg-purple-50 text-purple-600" : "bg-gray-50 text-[#707EAE]"}`}
-                        >
-                          <Shield size={18} />
-                        </div>
-                        <h4
-                          className={`text-[15px] font-black mb-1.5 ${roleValue === "ADMIN" ? "text-purple-600" : "text-[#1B254B]"}`}
-                        >
-                          관리자 (ADMIN)
-                        </h4>
-                        <p className="text-[11px] text-[#A3AED0] font-semibold leading-relaxed">
-                          전사 출퇴근 최종 결재 승인 및 근무 시간 규칙 설정
-                          최상위 권한
-                        </p>
-                      </button>
+                      {ROLE_OPTIONS.map((option) => {
+                        const Icon = option.icon;
+                        const isSelected = roleValue === option.value;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() =>
+                              setValue("role", option.value, {
+                                shouldValidate: true,
+                              })
+                            }
+                            className={`flex flex-col items-start p-5 rounded-[22px] border text-left transition-all duration-300 relative group/btn ${
+                              isSelected
+                                ? "bg-white border-[#0029C0] shadow-[0_12px_24px_rgba(0,41,192,0.08)] ring-2 ring-[#0029C0]/10"
+                                : "bg-white border-gray-100 hover:border-gray-200"
+                            }`}
+                          >
+                            <div
+                              className={`p-2 rounded-xl mb-4 ${
+                                isSelected
+                                  ? option.value === "ADMIN"
+                                    ? "bg-purple-50 text-purple-600"
+                                    : "bg-[#0029C0]/5 text-[#0029C0]"
+                                  : "bg-gray-50 text-[#707EAE]"
+                              }`}
+                            >
+                              <Icon size={18} />
+                            </div>
+                            <h4
+                              className={`text-[15px] font-black mb-1.5 ${
+                                isSelected
+                                  ? option.value === "ADMIN"
+                                    ? "text-purple-600"
+                                    : "text-[#0029C0]"
+                                  : "text-[#1B254B]"
+                              }`}
+                            >
+                              {option.label}
+                            </h4>
+                            <p className="text-[11px] text-[#A3AED0] font-semibold leading-relaxed">
+                              {option.description}
+                            </p>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

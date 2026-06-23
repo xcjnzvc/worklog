@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/Button";
 import { InviteMobileItem } from "@/types/invite";
 
 interface InviteMobileCardProps {
@@ -63,12 +64,12 @@ export const InviteMobileCard = ({
             </div>
           </div>
           {item.status === "EXPIRED" && (
-            <button
+            <Button
+              size="sm"
+              text="초대 재발송하기"
               onClick={() => onResend?.(item.email, item.role)}
-              className="w-full py-3 bg-[#4318FF] text-white text-xs font-black rounded-xl hover:bg-[#3311CC] transition-all shadow-md"
-            >
-              초대 재발송하기
-            </button>
+              className="w-full bg-[#4318FF] hover:bg-[#3311CC] shadow-md"
+            />
           )}
         </div>
       ))}

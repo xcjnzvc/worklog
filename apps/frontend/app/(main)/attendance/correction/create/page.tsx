@@ -9,6 +9,7 @@ import ApproverModal from "@/app/(main)/vacation/_components/ApproverModal";
 import { useVacation } from "@/hooks/useVacation";
 import Input from "@/components/Input";
 import { toast } from "react-hot-toast";
+import Button from "@/components/Button";
 
 function AttendanceCorrectionCreatePage() {
   const router = useRouter();
@@ -84,12 +85,12 @@ function AttendanceCorrectionCreatePage() {
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
-            <button
+            <Button
+              size="icon"
+              icon={<ArrowLeft size={20} className="text-[#A3AED0]" />}
               onClick={() => router.back()}
-              className="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition-all"
-            >
-              <ArrowLeft size={20} className="text-[#A3AED0]" />
-            </button>
+              className="bg-white border border-gray-100 shadow-sm hover:bg-gray-50"
+            />
             <div>
               <h1 className="text-[24px] md:text-[28px] font-black tracking-tight">
                 근태 정정 신청
@@ -104,13 +105,13 @@ function AttendanceCorrectionCreatePage() {
           </div>
 
           {/* PC 데스크톱 버전(lg 이상)에서만 상단 우측에 유지되는 버튼 공간 */}
-          <button
+          <Button
+            text="정정 요청"
+            loadingText="요청 중..."
+            isLoading={isSubmitting}
             onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="hidden lg:block px-9 py-3.5 text-sm font-bold text-white bg-[#4318FF] hover:bg-[#3311CC] rounded-[18px] shadow-lg shadow-indigo-200 transition-all disabled:opacity-50 active:scale-95"
-          >
-            {isSubmitting ? "요청 중..." : "정정 요청"}
-          </button>
+            className="hidden lg:block px-9 py-3.5 shadow-lg shadow-indigo-200 rounded-[18px] bg-[#4318FF] hover:bg-[#3311CC] active:scale-95"
+          />
         </div>
 
         {/* 입력 및 정보 영역 Wrap */}
@@ -123,19 +124,18 @@ function AttendanceCorrectionCreatePage() {
                   정정 분류
                 </label>
                 <div className="relative">
-                  <button
-                    type="button"
+                  <Button
+                    size="default" // h-[60px] 등을 적용하고 싶다면 별도 커스텀 클래스 필요
+                    text={FIX_TYPES.find((t) => t.value === fixType)?.label}
                     onClick={() => setIsDropdownOpen((prev) => !prev)}
-                    className="w-full h-[60px] bg-[#F4F7FE] border-2 border-transparent focus:border-[#4318FF] rounded-[22px] px-6 text-[16px] font-bold text-[#4318FF] outline-none cursor-pointer transition-all flex items-center justify-between"
-                  >
-                    <span>
-                      {FIX_TYPES.find((t) => t.value === fixType)?.label}
-                    </span>
-                    <ChevronDown
-                      size={20}
-                      className={`text-[#4318FF] transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                    className="w-full bg-[#F4F7FE] border-2 border-transparent focus:border-[#4318FF] rounded-[22px] text-[16px] text-[#4318FF] h-[60px]"
+                    icon={
+                      <ChevronDown
+                        size={20}
+                        className={`transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                      />
+                    }
+                  />
 
                   {isDropdownOpen && (
                     <>
@@ -237,24 +237,24 @@ function AttendanceCorrectionCreatePage() {
                 </div>
               </div>
             </div>
-            <button
+            <Button
+              size="sm"
+              text="승인자 변경"
               onClick={() => setIsModalOpen(true)}
-              className="w-full md:w-auto px-10 py-3.5 text-sm font-bold text-[#4318FF] bg-[#F4F7FE] border border-indigo-50 rounded-xl hover:bg-[#E0E5F2] transition-all active:scale-95"
-            >
-              승인자 변경
-            </button>
+              className="w-full md:w-auto px-10 bg-[#F4F7FE] text-[#4318FF] border border-indigo-50 hover:bg-[#E0E5F2]"
+            />
           </div>
         </div>
 
         {/*  PC 제외 모든 반응형(모바일, 태블릿 이하) 전용 최하단 정정 요청 버튼 */}
         <div className="flex lg:hidden w-full mt-2 order-last">
-          <button
+          <Button
+            text="정정 요청하기"
+            loadingText="요청 중..."
+            isLoading={isSubmitting}
             onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full py-4 text-sm font-bold text-white bg-[#4318FF] hover:bg-[#3311CC] rounded-[18px] shadow-lg shadow-indigo-100 transition-all disabled:opacity-50 text-center active:scale-[0.98]"
-          >
-            {isSubmitting ? "요청 중..." : "정정 요청하기"}
-          </button>
+            className="shadow-lg shadow-indigo-100 rounded-[18px] bg-[#4318FF] hover:bg-[#3311CC]"
+          />
         </div>
       </div>
 
