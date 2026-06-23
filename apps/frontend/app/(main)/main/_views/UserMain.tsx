@@ -17,12 +17,13 @@ export default function UserMain({
   user: User;
   initialAttendance: AttendanceData | null;
 }) {
+  console.log(user);
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
       <div className="max-w-[1600px] mx-auto">
         <Header
-          companyName={user.companyName ?? "회사 정보 없음"}
-          userName={user.name ?? "사용자"}
+          companyName={user.companyName || "회사 정보 없음"}
+          userName={user.name || "사용자"} // ?? 대신 || 사용
           userRole={user.role}
         />
         <div className="grid grid-cols-12 gap-6 md:gap-[30px] items-start">

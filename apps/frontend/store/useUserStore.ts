@@ -28,15 +28,21 @@ export const useUserStore = create<UserStore>()(
       isLoggedIn: false,
       isLoading: true,
       setUser: (user) => set({ user, isLoggedIn: true, isLoading: false }),
-      clearUser: () => set({ user: null, isLoggedIn: false, isLoading: false }),
+      clearUser: () => set({ user: null, isLoggedIn: false, isLoading: true }),
       setIsLoading: (loading) => set({ isLoading: loading }),
     }),
     {
       name: "user-storage",
+      partialize: (state) => ({
+        user: state.user,
+        isLoggedIn: state.isLoggedIn,
+        // isLoading은 저장 제외
+      }),
       onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.setIsLoading(false);
+        if (state && state.user) {
+          state.setIsLoading(false); // 유저 있을 때만 false
         }
+        // user가 null이면 isLoading: true 유지 → 로그인 전까지 PageLoading
       },
     },
   ),

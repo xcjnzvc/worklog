@@ -1,9 +1,10 @@
-import Cookies from "js-cookie"; // 설치 필요: npm install js-cookie
+import Cookies from "js-cookie";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useUserStore } from "./useUserStore";
 import { loginAPI } from "@/api/auth";
 import { LoginForm } from "@/types/auth";
+import { QueryClient } from "@tanstack/react-query";
 
 interface AuthStore {
   token: string | null;
@@ -11,26 +12,24 @@ interface AuthStore {
   logout: () => void;
 }
 
+export const queryClient = new QueryClient();
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       token: null,
       login: async (data: LoginForm) => {
+        useUserStore.getState().setIsLoading(true);
         const res = await loginAPI(data);
-
-        // 1. Zustand(localStorage)에 저장 (기존 방식)
         set({ token: res.token });
-
-        // 2. 중요! 미들웨어가 읽을 수 있게 쿠키에 저장
         Cookies.set("accessToken", res.token, { expires: 7 });
-
-        // 3. 유저 정보 저장
         useUserStore.getState().setUser(res.user);
       },
       logout: () => {
         set({ token: null });
-        Cookies.remove("accessToken"); // 쿠키 삭제
+        Cookies.remove("accessToken");
         useUserStore.getState().clearUser();
+        queryClient.clear();
       },
     }),
     { name: "auth-storage" },
