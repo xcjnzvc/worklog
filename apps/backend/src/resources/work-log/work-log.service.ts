@@ -213,7 +213,11 @@ export class WorkLogService {
   async getLiveWorkMinutes(userId: string) {
     const now = new Date();
     const today = this.getTodayStart();
-    const user = await this.repo.findUserWithPolicy(userId);
+    const [user, activeLog, finishedLog] = await Promise.all([
+      this.repo.findUserWithPolicy(userId),
+      this.repo.findOpenLog(userId),
+      this.repo.findTodayFinishedLog(userId, today),
+    ]);
 
     const formatKST = (date: Date | null): string | null => {
       if (!date) return null;
@@ -231,9 +235,6 @@ export class WorkLogService {
         .replace(/\. /g, '-')
         .replace('.', '');
     };
-
-    const activeLog: WorkLogWithUser | null =
-      await this.repo.findOpenLog(userId);
 
     if (activeLog) {
       const rawMin = Math.floor(
@@ -257,10 +258,6 @@ export class WorkLogService {
       };
     }
 
-    const finishedLog: WorkLog | null = await this.repo.findTodayFinishedLog(
-      userId,
-      today,
-    );
     if (finishedLog) {
       return {
         status: finishedLog.status,
@@ -380,10 +377,12 @@ export class WorkLogService {
     monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
     monday.setHours(0, 0, 0, 0);
 
-    const user: UserWithPolicy =
-      await this.repo.findUserWithPolicyAndTodayLeave(userId, monday);
-    const logs: WorkLog[] = await this.repo.findWeeklyLogs(userId, monday);
-    const activeLog: WorkLog | null = await this.repo.findOpenLog(userId);
+    // 순차 → 병렬로 변경
+    const [user, logs, activeLog] = await Promise.all([
+      this.repo.findUserWithPolicyAndTodayLeave(userId, monday),
+      this.repo.findWeeklyLogs(userId, monday),
+      this.repo.findOpenLog(userId),
+    ]);
 
     const policyMax = user.workPolicy?.workMinutes ?? 480;
     const counts = { normal: 0, late: 0, early: 0, absent: 0 };
