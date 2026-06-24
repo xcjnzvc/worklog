@@ -21,6 +21,7 @@ export default function Home() {
   const { login } = useAuthStore();
   const [saveEmail, setSaveEmail] = useState(false);
   const [serverStatus, setServerStatus] = useState<ServerStatus>("checking");
+  const [isNavigating, setIsNavigating] = useState(false);
 
   console.log("환경변수 로드 확인:", process.env.NEXT_PUBLIC_API_URL);
 
@@ -67,6 +68,7 @@ export default function Home() {
       } else {
         localStorage.removeItem("savedEmail");
       }
+      setIsNavigating(true);
       router.push("/main");
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -152,8 +154,8 @@ export default function Home() {
             <Button
               type="submit"
               text="로그인"
-              loadingText="로그인 중..."
-              isLoading={isSubmitting}
+              loadingText="잠시만요..."
+              isLoading={isSubmitting || isNavigating}
               disabled={!isValid || serverStatus !== "ok"}
             />
             <div className="w-full text-[16px] flex gap-[16px] items-center justify-center">
