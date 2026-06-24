@@ -19,8 +19,18 @@ export default function LeaveStatusCard() {
 
   if (isLoading)
     return (
-      <div className="p-8 bg-white rounded-[32px] w-full flex-1 min-h-[500px] flex items-center justify-center">
-        로딩 중...
+      <div className="p-8 bg-white rounded-[32px] w-full flex-1 min-h-[500px] animate-pulse">
+        {/* 연차 현황 헤더 */}
+        <div className="h-6 bg-gray-200 rounded-lg w-24 mb-4" />
+        <div className="h-10 bg-gray-200 rounded-lg w-32 mb-8" />
+        {/* 프로그레스 바 */}
+        <div className="h-3 bg-gray-200 rounded-full mb-8" />
+        {/* 리스트 */}
+        <div className="flex flex-col gap-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-12 bg-gray-200 rounded-xl" />
+          ))}
+        </div>
       </div>
     );
 

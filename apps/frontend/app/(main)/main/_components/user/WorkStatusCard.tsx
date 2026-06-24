@@ -145,9 +145,16 @@ export default function WorkStatusCard({
 
   if (isLoading && !initialAttendance)
     return (
-      <article className="...">
-        <div className="text-[44px] ...">--:--</div>
-      </article>
+      <div className="p-[30px] bg-white rounded-[32px] w-full flex-1 min-h-[500px] animate-pulse flex flex-col gap-6">
+        <div className="h-4 bg-gray-200 rounded-full w-20" />
+        <div className="h-12 bg-gray-200 rounded-xl w-36" />
+        <div className="h-[80px] bg-gray-200 rounded-[24px]" />
+        <div className="flex flex-col gap-4 flex-1">
+          <div className="h-8 bg-gray-200 rounded-lg" />
+          <div className="h-8 bg-gray-200 rounded-lg" />
+        </div>
+        <div className="h-[58px] bg-gray-200 rounded-[12px]" />
+      </div>
     );
 
   if (isError || !attendance) {
