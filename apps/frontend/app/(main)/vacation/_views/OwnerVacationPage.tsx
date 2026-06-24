@@ -10,6 +10,7 @@ import { ApprovalItem } from "@/types/vacation";
 import { ApprovalTable } from "../_components/ApprovalTableRow";
 import { ListPageLayout } from "@/components/ListPageLayout";
 import { RejectModal } from "@/components/RejectModal";
+import PageLoading from "@/components/PageLoading";
 
 export default function OwnerVacationPage() {
   const [approvalPage, setApprovalPage] = useState(1);
@@ -88,7 +89,7 @@ export default function OwnerVacationPage() {
         }
       >
         {isLoading ? (
-          <div className="py-20 text-center text-[#A3AED0]">로딩 중...</div>
+          <PageLoading />
         ) : (
           <>
             <ApprovalTable

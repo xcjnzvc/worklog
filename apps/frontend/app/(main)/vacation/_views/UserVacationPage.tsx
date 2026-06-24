@@ -10,6 +10,7 @@ import { VacationTable } from "../_components/VacationTable";
 import { useVacation } from "@/hooks/useVacation";
 import { VacationItem, VacationTableRow } from "@/types/vacation";
 import { ListPageLayout } from "@/components/ListPageLayout";
+import PageLoading from "@/components/PageLoading";
 
 export default function UserVacationPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,7 +37,7 @@ export default function UserVacationPage() {
       }));
   }, [data, searchKeyword]);
 
-  if (isLoading) return <div className="p-10">로딩 중...</div>;
+  if (isLoading) return <PageLoading />;
   if (isError || !data)
     return <div className="p-10 text-red-500">에러 발생</div>;
 

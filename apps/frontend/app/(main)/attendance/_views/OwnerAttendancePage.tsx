@@ -15,6 +15,7 @@ import {
   useRejectAttendance,
 } from "@/hooks/useAttendance";
 import Button from "@/components/Button";
+import PageLoading from "@/components/PageLoading";
 
 function OwnerAttendanceContent() {
   const [approvalPage, setApprovalPage] = useState(1);
@@ -146,7 +147,7 @@ function OwnerAttendanceContent() {
 
 export default function OwnerAttendancePage() {
   return (
-    <Suspense fallback={<div className="p-10 text-center">로딩 중...</div>}>
+    <Suspense fallback={<PageLoading />}>
       <OwnerAttendanceContent />
     </Suspense>
   );

@@ -14,6 +14,7 @@ import { Pagination } from "@/components/Pagination";
 import { StatCard } from "@/components/StatCard";
 import { ListPageLayout } from "@/components/ListPageLayout";
 import { AttendanceTable } from "../_components/AttendanceTable";
+import PageLoading from "@/components/PageLoading";
 
 function UserAttendancePage() {
   const router = useRouter();
@@ -125,7 +126,7 @@ function UserAttendancePage() {
 
 export default function AttendanceCorrectionPage() {
   return (
-    <Suspense fallback={<div className="p-10 text-center">로딩 중...</div>}>
+    <Suspense fallback={<PageLoading />}>
       <UserAttendancePage />
     </Suspense>
   );

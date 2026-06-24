@@ -13,6 +13,7 @@ import { ApprovalTable } from "../_components/ApprovalTableRow";
 import { ListPageLayout } from "@/components/ListPageLayout";
 import { RejectModal } from "@/components/RejectModal";
 import Button from "@/components/Button";
+import PageLoading from "@/components/PageLoading";
 
 export default function AdminVacationPage() {
   const [activeTab, setActiveTab] = useState<"MY" | "APPROVALS">("MY");
@@ -153,7 +154,7 @@ export default function AdminVacationPage() {
         {activeTab === "APPROVALS" && (
           <>
             {approvalLoading ? (
-              <div className="py-20 text-center text-[#A3AED0]">로딩 중...</div>
+              <PageLoading />
             ) : (
               <>
                 <ApprovalTable
