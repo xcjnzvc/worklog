@@ -4,11 +4,10 @@ import { useMemo } from "react";
 import { Briefcase, Calendar } from "lucide-react";
 import { AxiosError } from "axios";
 import Button from "@/components/Button";
-import CardSkeleton from "@/components/Skeleton/CardSkeleton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTodayAttendanceAPI, recordAttendanceAPI } from "@/api/attendance";
 import { AttendanceData, AttendanceStatus } from "@/types/attendance";
-
+import toast from "react-hot-toast";
 interface ApiErrorResponse {
   message?: string;
   code?: string;
@@ -136,10 +135,12 @@ export default function WorkStatusCard({
 
   const mutation = useMutation({
     mutationFn: recordAttendanceAPI,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["todayAttendance"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todayAttendance"] });
+      toast.success("근태 기록이 완료되었습니다.");
+    },
     onError: (error: AxiosError<ApiErrorResponse>) => {
-      alert(error.response?.data?.message ?? "에러가 발생했습니다.");
+      toast.error(error.response?.data?.message ?? "에러가 발생했습니다.");
     },
   });
 

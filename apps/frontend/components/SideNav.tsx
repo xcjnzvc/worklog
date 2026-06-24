@@ -27,7 +27,7 @@ interface MenuListProps {
 
 const MenuList = ({ pathname, userRole, onItemClick }: MenuListProps) => {
   const menus =
-    userRole !== "USER"
+    userRole === "OWNER"
       ? [
           ...baseMenus,
           { name: "직원 초대", href: "/invite", icon: "/vacation.svg" },

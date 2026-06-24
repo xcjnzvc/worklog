@@ -76,7 +76,7 @@ export default function PaymentPage() {
 
   const handlePayment = async () => {
     if (typeof window === "undefined" || !window.PortOne) {
-      alert("결제 시스템이 준비 중입니다. 잠시만 기다려주세요.");
+      toast.error("결제 시스템이 준비 중입니다. 잠시만 기다려주세요.");
       return;
     }
 

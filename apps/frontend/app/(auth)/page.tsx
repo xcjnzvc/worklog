@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { ChevronRight, Smartphone } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 type ServerStatus = "checking" | "ok" | "fail";
 
@@ -74,13 +75,12 @@ export default function Home() {
       if (error instanceof AxiosError) {
         const message =
           error.response?.data?.message || "로그인에 실패했습니다.";
-        alert(message);
+        toast.error(message);
       } else {
-        alert("알 수 없는 오류가 발생했습니다.");
+        toast.error("알 수 없는 오류가 발생했습니다.");
       }
     }
   };
-
   const serverBanner = {
     checking: {
       dot: "bg-amber-400 animate-pulse",

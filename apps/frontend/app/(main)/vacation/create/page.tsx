@@ -14,6 +14,8 @@ import {
 import ApproverModal from "../_components/ApproverModal";
 import { useVacation } from "@/hooks/useVacation";
 import { Approver, CreateVacationPayload } from "@/types/user";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 export default function VacationCreatePage() {
   const router = useRouter();
@@ -92,9 +94,18 @@ export default function VacationCreatePage() {
 
   // --- 신청 제출 함수 ---
   const handleSubmit = () => {
-    if (!rangeStart) return alert("날짜를 선택해주세요.");
-    if (!reason) return alert("사유를 입력해주세요.");
-    if (!selectedApprover) return alert("결재권자를 선택해주세요.");
+    if (!rangeStart) {
+      toast.error("날짜를 선택해주세요.");
+      return;
+    }
+    if (!reason) {
+      toast.error("사유를 입력해주세요.");
+      return;
+    }
+    if (!selectedApprover) {
+      toast.error("결재권자를 선택해주세요.");
+      return;
+    }
 
     console.log("눌리니?");
 
@@ -119,11 +130,17 @@ export default function VacationCreatePage() {
 
     createVacation(payload, {
       onSuccess: () => {
-        alert("휴가 신청이 완료되었습니다.");
+        toast.success("휴가 신청이 완료되었습니다.");
         router.push("/vacation");
       },
-      onError: (error) => {
-        alert(error.message || "신청 중 오류가 발생했습니다.");
+      onError: (error: unknown) => {
+        if (axios.isAxiosError(error)) {
+          const message =
+            error.response?.data?.message || "신청 중 오류가 발생했습니다.";
+          toast.error(message);
+        } else {
+          toast.error("알 수 없는 오류가 발생했습니다.");
+        }
       },
     });
   };
