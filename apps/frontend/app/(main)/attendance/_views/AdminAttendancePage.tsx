@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/Pagination";
 import { StatCard } from "@/components/StatCard";
 import { ListPageLayout } from "@/components/ListPageLayout";
+import PageLoading from "@/components/PageLoading";
 
 function AdminAttendanceContent() {
   const router = useRouter();
@@ -134,7 +135,7 @@ function AdminAttendanceContent() {
 
 export default function AdminAttendancePage() {
   return (
-    <Suspense fallback={<div className="p-10 text-center">로딩 중...</div>}>
+    <Suspense fallback={<PageLoading />}>
       <AdminAttendanceContent />
     </Suspense>
   );

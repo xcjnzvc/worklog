@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { User } from "@/store/useUserStore";
 import OwnerMain from "./_views/OwnerMain";
 import UserMain from "./_views/UserMain";
-import { getTodayAttendanceServer } from "@/api/attendance.server";
 
 export default async function MainPage() {
   const headersList = await headers();
@@ -17,17 +17,11 @@ export default async function MainPage() {
     }
   }
 
-  if (!user) return null;
+  if (!user) redirect("/");
 
-  if (user.role === "OWNER") return <OwnerMain user={user} />;
+  const validUser = user as User;
 
-  // OWNER가 아닐 때만 서버에서 미리 fetch
-  let initialAttendance = null;
-  try {
-    initialAttendance = await getTodayAttendanceServer();
-  } catch {
-    // 실패해도 클라이언트에서 재시도
-  }
+  if (validUser.role === "OWNER") return <OwnerMain user={validUser} />;
 
-  return <UserMain user={user} initialAttendance={initialAttendance} />;
+  return <UserMain user={validUser} initialAttendance={null} />;
 }

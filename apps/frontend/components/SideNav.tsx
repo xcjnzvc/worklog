@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUserStore, User } from "@/store/useUserStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import UserProfileItem from "./UserProfileItem";
@@ -35,7 +35,6 @@ const MenuList = ({ pathname, userRole, onItemClick }: MenuListProps) => {
       : baseMenus;
 
   return (
-    // mt-10을 mt-4로 변경하여 로고와 메뉴 사이의 간격을 좁혔습니다.
     <ul className="flex flex-col gap-2 flex-1 overflow-y-auto mt-4">
       {menus.map((menu) => {
         const isActive = pathname === menu.href;
@@ -76,6 +75,21 @@ interface UserProfileAreaProps {
 const UserProfileArea = ({ user, clearUser, logout }: UserProfileAreaProps) => {
   const router = useRouter();
   const [popupOpen, setPopupOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null); // 외부 클릭 감지용 Ref
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setPopupOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -93,7 +107,7 @@ const UserProfileArea = ({ user, clearUser, logout }: UserProfileAreaProps) => {
   const roleLabel = user?.role ? roleMap[user.role] : "직원";
 
   return (
-    <div className="relative mt-auto mb-[5px] w-full">
+    <div ref={containerRef} className="relative mt-auto mb-[5px] w-full">
       {popupOpen && (
         <div className="absolute bottom-full mb-2 right-0 w-full bg-white border border-[#EEEEEE] rounded-[20px] shadow-lg p-[20px] flex flex-col gap-[16px] animate-in fade-in slide-in-from-bottom-2 z-10">
           <div className="flex flex-col gap-2 pb-[16px] border-b border-[#EEEEEE]">
@@ -123,10 +137,10 @@ const UserProfileArea = ({ user, clearUser, logout }: UserProfileAreaProps) => {
         </div>
       )}
 
-      {/* hover:bg-[#F5F7FF] 제거하여 호버 시 배경색이 변하지 않도록 수정 */}
+      {/* hover:bg-[#F5F7FF] 클래스 복구하여 호버 효과 추가 */}
       <button
         onClick={() => setPopupOpen((prev) => !prev)}
-        className="w-full rounded-[16px] p-[12px] focus:outline-none"
+        className="w-full rounded-[16px] p-[12px] focus:outline-none hover:bg-[#F5F7FF] transition-colors"
       >
         <UserProfileItem
           name={user?.name ?? "사용자"}
@@ -147,7 +161,11 @@ export default function SideNav() {
     <>
       {/* 모바일 상단 헤더 */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-[60px] bg-white border-b border-[#EEEEEE] flex items-center justify-between px-6 z-[40]">
-        <h1 className="text-[20px] font-bold text-[#0023A1]">WorkLog</h1>
+        <Link href="/main">
+          <h1 className="text-[20px] font-bold text-[#0023A1] cursor-pointer">
+            WorkLog
+          </h1>
+        </Link>
         <button
           onClick={() => setIsMobileOpen(true)}
           className="p-2 text-[#666] hover:bg-[#F5F7FF] rounded-lg"
@@ -193,11 +211,11 @@ export default function SideNav() {
 
       {/* 데스크탑 사이드바 */}
       <nav className="hidden lg:flex fixed top-0 left-0 w-[240px] h-screen bg-white border-r border-[#EEEEEE] flex-col px-[20px] pt-[20px] pb-0 z-[30]">
-        <h1 className="text-[24px] font-bold text-[#0023A1] mb-[16px] px-4">
-          {" "}
-          {/* mb-10을 mb-[16px]로 줄여 로고 하단 여백도 축소 */}
-          WorkLog
-        </h1>
+        <Link href="/main" className="px-4 mb-[16px]">
+          <h1 className="text-[24px] font-bold text-[#0023A1] cursor-pointer">
+            WorkLog
+          </h1>
+        </Link>
 
         <MenuList pathname={pathname} userRole={user?.role} />
 

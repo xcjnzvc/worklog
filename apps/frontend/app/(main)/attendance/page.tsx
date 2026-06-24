@@ -9,8 +9,7 @@ import PageLoading from "@/components/PageLoading";
 export default function AttendancePage() {
   const { user, isLoading } = useUserStore();
 
-  if (isLoading) return <PageLoading />;
-  if (!user) return null;
+  if (isLoading || !user) return <PageLoading />;
   if (user.role === "OWNER") return <OwnerAttendancePage />;
   if (user.role === "ADMIN") return <AdminAttendancePage />;
   return <UserAttendancePage />;

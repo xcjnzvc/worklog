@@ -10,6 +10,7 @@ import { useVacation } from "@/hooks/useVacation";
 import Input from "@/components/Input";
 import { toast } from "react-hot-toast";
 import Button from "@/components/Button";
+import PageLoading from "@/components/PageLoading";
 
 function AttendanceCorrectionCreatePage() {
   const router = useRouter();
@@ -110,7 +111,7 @@ function AttendanceCorrectionCreatePage() {
             loadingText="요청 중..."
             isLoading={isSubmitting}
             onClick={handleSubmit}
-            className="hidden lg:block px-9 py-3.5 shadow-lg shadow-indigo-200 rounded-[18px] bg-[#4318FF] hover:bg-[#3311CC] active:scale-95"
+            className="hidden lg:flex w-[163px] rounded-[14px] bg-[#4318FF] hover:bg-[#3311CC] shadow-lg shadow-indigo-200"
           />
         </div>
 
@@ -247,13 +248,13 @@ function AttendanceCorrectionCreatePage() {
         </div>
 
         {/*  PC 제외 모든 반응형(모바일, 태블릿 이하) 전용 최하단 정정 요청 버튼 */}
-        <div className="flex lg:hidden w-full mt-2 order-last">
+        <div className="flex lg:hidden w-full mt-2">
           <Button
             text="정정 요청하기"
             loadingText="요청 중..."
             isLoading={isSubmitting}
             onClick={handleSubmit}
-            className="shadow-lg shadow-indigo-100 rounded-[18px] bg-[#4318FF] hover:bg-[#3311CC]"
+            className="rounded-[18px] bg-[#4318FF] hover:bg-[#3311CC] shadow-lg shadow-indigo-100"
           />
         </div>
       </div>
@@ -271,13 +272,7 @@ function AttendanceCorrectionCreatePage() {
 
 export default function AttendanceCorrectionCreatePageWithSuspense() {
   return (
-    <Suspense
-      fallback={
-        <div className="w-full min-h-screen bg-[#F8F9FA] flex items-center justify-center font-sans">
-          <p className="text-[#A3AED0] font-bold">로딩 중...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<PageLoading />}>
       <AttendanceCorrectionCreatePage />
     </Suspense>
   );

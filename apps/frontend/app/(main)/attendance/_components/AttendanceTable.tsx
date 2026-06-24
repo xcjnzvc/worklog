@@ -277,7 +277,7 @@ export const AttendanceTable = ({
                           {attendanceTypeMap[item.status] || "기타"}
                         </span>
                       </td>
-                      <td className="px-4 py-5">
+                      <td className="px-4 py-5 flex justify-center">
                         {item.status === "NORMAL" ? (
                           <span className="text-[#A3AED0] text-[13px] font-medium">
                             정상 기록

@@ -9,8 +9,7 @@ import PageLoading from "@/components/PageLoading";
 export default function VacationPage() {
   const { user, isLoading } = useUserStore();
 
-  if (isLoading) return <PageLoading />;
-  if (!user) return null;
+  if (isLoading || !user) return <PageLoading />;
   if (user.role === "OWNER") return <OwnerVacationPage />;
   if (user.role === "ADMIN") return <AdminVacationPage />;
   return <UserVacationPage />;
