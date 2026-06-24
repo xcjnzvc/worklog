@@ -51,11 +51,12 @@ const Input = forwardRef<
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              className="flex items-center justify-center"
             >
               {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           ) : (
-            icon // ✅ 전달받은 Clock 아이콘 등이 여기 뜸
+            icon
           )}
         </div>
       </div>

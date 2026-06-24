@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "lucide-react",
       "@sentry/nextjs",
-      "date-fns", // 추가
-      "react-datepicker", // 추가
+      "date-fns",
+      "react-datepicker",
     ],
     optimizeCss: true,
   },

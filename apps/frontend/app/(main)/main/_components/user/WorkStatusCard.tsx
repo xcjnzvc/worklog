@@ -143,18 +143,6 @@ export default function WorkStatusCard({
     },
   });
 
-  // if (isLoading)
-  //   return <CardSkeleton className="w-full h-full min-h-[500px]" />;
-
-  // if (isLoading)
-  //   return (
-  //     <article className="p-[30px] bg-white rounded-[32px] shadow-sm border border-gray-100 w-full flex-1 flex flex-col min-h-[500px]">
-  //       <div className="text-[44px] md:text-[48px] font-black text-gray-950 leading-none">
-  //         --:--
-  //       </div>
-  //     </article>
-  //   );
-
   if (isLoading && !initialAttendance)
     return (
       <article className="...">
@@ -288,10 +276,11 @@ export default function WorkStatusCard({
                 ? "퇴근하기"
                 : "업무 종료"
           }
-          disabled={
-            (!attendance.isClockedIn && !!attendance.clockIn) ||
-            mutation.isPending
+          loadingText={
+            !attendance.clockIn ? "출근 처리 중..." : "퇴근 처리 중..."
           }
+          isLoading={mutation.isPending}
+          disabled={!attendance.isClockedIn && !!attendance.clockIn}
           onClick={() =>
             mutation.mutate(!attendance.clockIn ? "CLOCK_IN" : "CLOCK_OUT")
           }
