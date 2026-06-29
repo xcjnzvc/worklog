@@ -206,6 +206,28 @@ export default function SideNav() {
           onItemClick={() => setIsMobileOpen(false)}
         />
 
+        <MenuList
+          pathname={pathname}
+          userRole={user?.role}
+          onItemClick={() => setIsMobileOpen(false)}
+        />
+
+        {/* [여기 추가] 모바일용 결제 안내 배너 */}
+        {user?.role !== "USER" && (
+          <Link
+            href="/payment"
+            onClick={() => setIsMobileOpen(false)}
+            className="flex items-center justify-between px-4 py-3 mb-4 rounded-[16px] bg-blue-50 border border-blue-100"
+          >
+            <span className="text-[13px] font-bold text-blue-600 truncate mr-2">
+              FREE 플랜 · 3명 제한
+            </span>
+            <span className="text-[13px] text-blue-400 font-medium shrink-0">
+              업그레이드 →
+            </span>
+          </Link>
+        )}
+
         <UserProfileArea user={user} clearUser={clearUser} logout={logout} />
       </div>
 
@@ -222,12 +244,17 @@ export default function SideNav() {
         {user?.role !== "USER" && (
           <Link
             href="/payment"
-            className="flex items-center justify-between px-3 py-2 mb-2 rounded-[12px] bg-blue-50 border border-blue-100"
+            className="flex items-center justify-between px-3 py-2 mb-2 rounded-[12px] bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors"
           >
-            <span className="text-xs font-bold text-blue-600">
+            {/* 1. min-w-0을 주어 flex 내에서 텍스트가 줄어들 수 있게 함 */}
+            {/* 2. truncate를 사용하여 너무 길 경우 ...으로 표시 */}
+            <span className="text-[11px] font-bold text-blue-600 truncate mr-2">
               FREE 플랜 · 3명 제한
             </span>
-            <span className="text-xs text-blue-400">업그레이드 →</span>
+            {/* 3. shrink-0을 주어 업그레이드 버튼이 찌그러지지 않게 고정 */}
+            <span className="text-[11px] text-blue-400 font-medium shrink-0">
+              업그레이드 →
+            </span>
           </Link>
         )}
 

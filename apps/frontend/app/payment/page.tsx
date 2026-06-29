@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import PlanCard from "./_components/PlanCard";
 import SeatSelector from "./_components/SeatSelector";
 import PaymentSummary from "./_components/PaymentSummary";
@@ -54,6 +55,7 @@ const PLANS = [
 ];
 
 export default function PaymentPage() {
+  const router = useRouter();
   const { user } = useUserStore();
   const [selectedPlan, setSelectedPlan] = useState("Basic");
   const [seatCount, setSeatCount] = useState(10);
@@ -135,6 +137,25 @@ export default function PaymentPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-14">
+      <button
+        onClick={() => router.back()}
+        className="mb-8 flex items-center text-sm text-slate-400 hover:text-slate-600 transition"
+      >
+        <svg
+          className="w-4 h-4 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        돌아가기
+      </button>
       {/* 현재 구독 상태 배너 */}
       {currentPayment && currentPayment.plan !== "FREE" && (
         <div className="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between">

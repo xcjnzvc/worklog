@@ -17,7 +17,6 @@ export default function UserMain({
   user: User;
   initialAttendance: AttendanceData | null;
 }) {
-  console.log(user);
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-6 md:p-[40px]">
       <div className="max-w-[1600px] mx-auto">
