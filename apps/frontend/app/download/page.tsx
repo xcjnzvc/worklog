@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ShieldCheck,
   Settings,
-  Smartphone,
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +23,7 @@ export default function DownloadPage() {
             size={20}
             className="group-hover:-translate-x-1 transition-transform"
           />
-          <span className="text-[14px]">로그인 화면으로 돌아가기</span>
+          <span className="text-[14px]">돌아가기</span>
         </Link>
       </div>
 

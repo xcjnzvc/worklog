@@ -14,6 +14,7 @@ import { AxiosError } from "axios";
 import { ChevronRight, Smartphone } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import FloatingMenu from "@/components/FloatingMenu";
 
 type ServerStatus = "checking" | "ok" | "fail";
 
@@ -168,30 +169,8 @@ export default function Home() {
             </div>
           </div>
         </form>
-
-        {/*  앱 설치 안내 배너  */}
-        <Link
-          href="/download"
-          className="w-full flex items-center gap-3 bg-white px-5 py-4 rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_20px_rgba(0,41,192,0.1)] hover:border-[#0029C0]/20 transition-all duration-300 group mt-4"
-        >
-          <div className="w-8 h-8 bg-[#F0F4FF] rounded-lg flex items-center justify-center group-hover:bg-[#0029C0] transition-colors duration-300 shrink-0">
-            <Smartphone
-              size={16}
-              className="text-[#0029C0] group-hover:text-white transition-colors duration-300"
-            />
-          </div>
-          <div className="flex-1">
-            <p className="text-[13px] text-gray-500 font-medium leading-tight">
-              현장에서 더 편리하게 —{" "}
-              <span className="text-[#0029C0] font-bold">WorkLog 앱 설치</span>
-            </p>
-          </div>
-          <ChevronRight
-            size={16}
-            className="text-gray-300 group-hover:text-[#0029C0] group-hover:translate-x-0.5 transition-all duration-300"
-          />
-        </Link>
       </div>
+      <FloatingMenu />
     </div>
   );
 }

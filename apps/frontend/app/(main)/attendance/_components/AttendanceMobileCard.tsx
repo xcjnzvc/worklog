@@ -13,6 +13,8 @@ interface AttendanceMobileCardProps {
   attendanceTypeMap: Record<string, string>;
   formatDate: (dateStr: string) => string;
   formatTime: (dateStr: string | null, status: CombinedStatus) => string;
+  navigatingId: string | null;
+  onNavigate: (id: string) => void;
 }
 
 export const AttendanceMobileCard = ({
@@ -21,12 +23,14 @@ export const AttendanceMobileCard = ({
   attendanceTypeMap,
   formatDate,
   formatTime,
+  navigatingId, // ← 추가
+  onNavigate, // ← 추가
 }: AttendanceMobileCardProps) => {
   const router = useRouter();
 
-  // 버튼 비활성화 로직
   const isDisabled =
     item.isFix || item.apprStatus === "PENDING" || item.status === "NORMAL";
+  const isNavigating = navigatingId === item.id; // ← 추가
 
   // 시안 레이아웃 기준 요일 포맷 헬퍼 (예: 2026.05.14 (목))
   const getDayOfWeek = (dateStr: string) => {

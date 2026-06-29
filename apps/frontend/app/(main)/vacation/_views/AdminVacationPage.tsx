@@ -78,7 +78,7 @@ export default function AdminVacationPage() {
     );
   };
 
-  if (isLoading) return <div className="p-10">로딩 중...</div>;
+  if (isLoading) return <PageLoading />;
   if (isError || !data)
     return <div className="p-10 text-red-500">에러 발생</div>;
 

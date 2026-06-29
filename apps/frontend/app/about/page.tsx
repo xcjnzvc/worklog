@@ -2,6 +2,30 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 
+const features = [
+  {
+    badge: "출퇴근",
+    badgeColor: "bg-gray-100 text-gray-600",
+    title: "출퇴근 기록 & 정정 흐름",
+    desc: "사원이 직접 출퇴근을 기록하고 이력을 조회합니다. 잘못된 기록은 정정 신청으로 요청하며, 관리자 승인 전까지는 실제 근태에 반영되지 않습니다. 승인 대기·승인·반려·취소 상태를 구분해 관리합니다.",
+    images: ["/img/work.png", "/img/attendance.png"],
+  },
+  {
+    badge: "휴가",
+    badgeColor: "bg-green-50 text-green-700",
+    title: "휴가 신청 & 승인 흐름",
+    desc: "사원이 휴가를 신청하면 관리자가 승인·반려를 처리합니다. 승인 전까지는 휴가로 반영되지 않으며, 상태 전이는 정정 흐름과 동일한 구조로 관리됩니다.",
+    images: ["/img/vacation.png", "/img/vacation2.png"],
+  },
+  {
+    badge: "조직",
+    badgeColor: "bg-blue-50 text-blue-700",
+    title: "초대 URL 기반 합류 & 구독 결제",
+    desc: "대표 가입 시 회사가 생성되고, 초대 URL이 있어야만 구성원 가입이 가능합니다. 포트원 + 토스페이먼츠 기반 구독 결제와 취소까지 처리합니다.",
+    images: ["/img/invite.png", "/img/payment.png"],
+  },
+];
+
 export default function AboutPage() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-16 bg-white">
@@ -132,41 +156,23 @@ export default function AboutPage() {
         </p>
 
         <div className="flex flex-col gap-16">
-          {[
-            {
-              badge: "출퇴근",
-              badgeColor: "bg-gray-100 text-gray-600",
-              title: "출퇴근 기록 & 정정 흐름",
-              desc: "사원이 직접 출퇴근을 기록하고 이력을 조회합니다. 잘못된 기록은 정정 신청으로 요청하며, 관리자 승인 전까지는 실제 근태에 반영되지 않습니다. 승인 대기·승인·반려·취소 상태를 구분해 관리합니다.",
-            },
-            {
-              badge: "휴가",
-              badgeColor: "bg-green-50 text-green-700",
-              title: "휴가 신청 & 승인 흐름",
-              desc: "사원이 휴가를 신청하면 관리자가 승인·반려를 처리합니다. 승인 전까지는 휴가로 반영되지 않으며, 상태 전이는 정정 흐름과 동일한 구조로 관리됩니다.",
-            },
-            {
-              badge: "조직",
-              badgeColor: "bg-blue-50 text-blue-700",
-              title: "초대 URL 기반 합류 & 구독 결제",
-              desc: "대표 가입 시 회사가 생성되고, 초대 URL이 있어야만 구성원 가입이 가능합니다. 포트원 + 토스페이먼츠 기반 구독 결제와 취소까지 처리합니다.",
-            },
-          ].map((item) => (
+          {features.map((item) => (
             <div key={item.title} className="flex flex-col gap-4">
-              {/* 📸 캡처 2개 나란히 */}
               <div className="flex gap-4">
-                <div className="flex-1 aspect-video bg-gray-50 border border-dashed border-gray-200 rounded-xl flex items-center justify-center">
-                  <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
-                    스크린샷 1<br />
-                    <span className="text-gray-300">{item.title}</span>
-                  </p>
-                </div>
-                <div className="flex-1 aspect-video bg-gray-50 border border-dashed border-gray-200 rounded-xl flex items-center justify-center">
-                  <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
-                    스크린샷 2<br />
-                    <span className="text-gray-300">{item.title}</span>
-                  </p>
-                </div>
+                {item.images.map((src, idx) => (
+                  <div
+                    key={idx}
+                    className="flex-1 relative bg-gray-50 border border-dashed border-gray-200 rounded-xl overflow-hidden aspect-video"
+                  >
+                    <Image
+                      src={src}
+                      alt={`${item.title} 스크린샷 ${idx + 1}`}
+                      width={800}
+                      height={450}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
 
               {/* 설명 */}

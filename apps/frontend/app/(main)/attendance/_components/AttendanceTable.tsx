@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AttendanceMobileCard } from "./AttendanceMobileCard";
 import { ApprovalActionButtons } from "@/components/ApprovalActionButtons";
 import Button from "@/components/Button";
+import { useState } from "react";
 
 interface AttendanceTableProps {
   data: AttendanceWorkLog[];
@@ -23,6 +24,7 @@ export const AttendanceTable = ({
   onReject,
 }: AttendanceTableProps) => {
   const router = useRouter();
+  const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
   // ─── 스타일 헬퍼 ───────────────────────────────────────────
   const getStatusStyle = (status: CombinedStatus) => {
@@ -184,6 +186,8 @@ export const AttendanceTable = ({
                 attendanceTypeMap={attendanceTypeMap}
                 formatDate={formatDate}
                 formatTime={formatTime}
+                navigatingId={navigatingId}
+                onNavigate={setNavigatingId}
               />
             );
           })}
@@ -285,7 +289,9 @@ export const AttendanceTable = ({
                         ) : (
                           <Button
                             size="sm"
-                            disabled={isDisabled}
+                            disabled={isDisabled || navigatingId === item.id}
+                            isLoading={navigatingId === item.id}
+                            loadingText="이동 중..."
                             text={
                               item.isFix
                                 ? "정정 완료"
@@ -295,14 +301,15 @@ export const AttendanceTable = ({
                             }
                             onClick={(e) => {
                               e?.stopPropagation();
-                              if (!isDisabled) {
+                              if (!isDisabled && navigatingId !== item.id) {
+                                setNavigatingId(item.id);
                                 router.push(
                                   `/attendance/correction/create?id=${item.id}`,
                                 );
                               }
                             }}
                             className={
-                              isDisabled
+                              isDisabled || navigatingId === item.id
                                 ? "bg-[#E0E5F2] text-[#A3AED0]"
                                 : "bg-[#4318FF] hover:bg-[#3311CC]"
                             }
