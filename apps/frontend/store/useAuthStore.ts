@@ -10,6 +10,8 @@ interface AuthStore {
   token: string | null;
   login: (data: LoginForm) => Promise<void>;
   logout: () => void;
+  serverDown: boolean;
+  setServerDown: (value: boolean) => void;
 }
 
 export const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ export const useAuthStore = create<AuthStore>()(
         useUserStore.getState().clearUser();
         queryClient.clear();
       },
+      serverDown: false,
+      setServerDown: (value) => set({ serverDown: value }),
     }),
     { name: "auth-storage" },
   ),

@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 export const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 20000,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
@@ -15,17 +16,27 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 axiosInstance.interceptors.response.use(
-  (response) => response, // 성공 시에는 그냥 넘김
+  (response) => response,
   (error) => {
-    // 에러 발생 시 Sentry로 전송
     Sentry.captureException(error, {
       extra: {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
-        data: error.response?.data, // 서버에서 보내준 에러 메시지
+        data: error.response?.data,
       },
     });
-    return Promise.reject(error); // UI에서 에러 처리를 할 수 있게 다시 던짐
+
+    // 네트워크 에러 또는 타임아웃 = 서버 다운으로 간주
+    const isNetworkOrTimeout = error.code === "ECONNABORTED" || !error.response;
+
+    // /health 요청은 ServerWakeUpSlot이 직접 처리하니 제외 (무한루프 방지)
+    const isHealthCheck = error.config?.url?.includes("/health");
+
+    if (isNetworkOrTimeout && !isHealthCheck) {
+      useAuthStore.getState().setServerDown(true);
+    }
+
+    return Promise.reject(error);
   },
 );

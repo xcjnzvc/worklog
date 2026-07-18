@@ -18,6 +18,12 @@ const baseMenus = [
   { name: "일정", href: "/schedule", icon: "/calendar.svg" },
 ];
 
+// OWNER 전용 메뉴를 상단에 미리 정의
+const ownerMenus = [
+  { name: "팀원 관리", href: "/members", icon: "/setting.svg" },
+  { name: "직원 초대", href: "/invite", icon: "/plus.svg" },
+];
+
 // --- [공통 메뉴 리스트 컴포넌트] ---
 interface MenuListProps {
   pathname: string;
@@ -26,18 +32,14 @@ interface MenuListProps {
 }
 
 const MenuList = ({ pathname, userRole, onItemClick }: MenuListProps) => {
+  // OWNER라면 기본 메뉴 + 관리 메뉴를 합칩니다.
   const menus =
-    userRole === "OWNER"
-      ? [
-          ...baseMenus,
-          { name: "직원 초대", href: "/invite", icon: "/vacation.svg" },
-        ]
-      : baseMenus;
+    userRole === "OWNER" ? [...baseMenus, ...ownerMenus] : baseMenus;
 
   return (
     <ul className="flex flex-col gap-2 flex-1 overflow-y-auto mt-4">
       {menus.map((menu) => {
-        const isActive = pathname === menu.href;
+        const isActive = pathname.startsWith(menu.href); // 페이지 하위 경로까지 활성화 표시
         return (
           <li key={menu.href}>
             <Link
@@ -92,8 +94,14 @@ const UserProfileArea = ({ user, clearUser, logout }: UserProfileAreaProps) => {
   }, []);
 
   const handleLogout = () => {
+    localStorage.setItem(
+      "serverAwakeUntil",
+      String(Date.now() + 5 * 60 * 1000),
+    );
+
     logout();
     clearUser();
+
     router.push("/");
   };
 

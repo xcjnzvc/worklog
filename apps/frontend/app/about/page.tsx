@@ -274,6 +274,54 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* ─── 4-2. UX 설계 판단 ────────────────────────── */}
+      <section className="mb-20">
+        <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-8">
+          UX 설계 판단
+        </p>
+        <div className="border border-gray-100 rounded-xl px-5 py-5">
+          <p className="font-semibold text-gray-900 text-sm mb-4">
+            콜드스타트 대기 시간, 로딩 스피너 대신 미니게임
+          </p>
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-3 items-start">
+              <span className="text-[10px] font-semibold px-2 py-1 rounded-full shrink-0 bg-red-50 text-red-600">
+                배경
+              </span>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                무료 티어 서버는 일정 시간 요청이 없으면 슬립 상태로 전환되고,
+                재접속 시 콜드스타트로 15~30초가량의 대기 시간이 발생한다.
+              </p>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="text-[10px] font-semibold px-2 py-1 rounded-full shrink-0 bg-orange-50 text-orange-600">
+                고민
+              </span>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                주기적으로 헬스체크를 보내 서버가 슬립하지 않도록 유지하는
+                방법도 검토했지만, 이는 무료 티어의 취지(유휴 자원 회수)에
+                반하고 실질적인 사용 여부와 무관하게 자원을 소모시킨다고 판단해
+                배제했다.
+              </p>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="text-[10px] font-semibold px-2 py-1 rounded-full shrink-0 bg-green-50 text-green-700">
+                결정
+              </span>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                대기 시간을 없앨 수 없다면 사용자가 지루하지 않게 만드는
+                방향으로 전환했다. 로그인 시 슬롯머신 연출을 보여주고, 슬롯이
+                도는 동안 백그라운드에서 서버 헬스체크를 수행한다. 서버가
+                깨어나면 777 연출과 함께 자동으로 로그인 화면으로 전환되고, 실패
+                시 재시도 버튼을 노출한다. 로그아웃 시점에는 서버 생존 여부를
+                플래그로 저장해, 서버가 이미 켜져 있는 상태에서는 슬롯머신을
+                다시 보여주지 않도록 처리했다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <hr className="border-gray-100 mb-20" />
 
       {/* ─── 5. 트러블슈팅 ───────────────────────────── */}
@@ -377,7 +425,7 @@ export default function AboutPage() {
       {/* ─── 7. 링크 ──────────────────────────────────── */}
       <section className="flex gap-4">
         <a
-          href="#"
+          href="https://github.com/xcjnzvc/worklog"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm font-medium border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition"
