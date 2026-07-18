@@ -59,7 +59,31 @@ export default function AttendanceSummaryCard({ showStats = true }: Props) {
     });
   }, [data]);
 
-  if (isLoading || isError || !data) return null;
+  if (isLoading) {
+    return (
+      <div className="p-6 md:p-[30px] bg-white rounded-[32px] border border-gray-100 shadow-sm w-full flex flex-col gap-[30px] h-fit animate-pulse">
+        <div className="flex flex-col @lg:flex-row justify-between items-stretch @lg:items-start gap-8 @lg:gap-[40px]">
+          <div className="flex flex-col flex-shrink-0 gap-3">
+            <div className="h-5 bg-gray-200 rounded-full w-24" />
+            <div className="h-4 bg-gray-200 rounded-full w-32" />
+            <div className="h-4 bg-gray-200 rounded-full w-20" />
+            <div className="h-10 bg-gray-200 rounded-lg w-28 mt-2" />
+          </div>
+          <div className="flex-grow w-full h-[240px] bg-gray-100 rounded-[24px]" />
+        </div>
+        <div className="flex flex-wrap @lg:flex-nowrap gap-3 md:gap-4 justify-between w-full">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 min-w-[calc(50%-12px)] @lg:min-w-[80px] h-[80px] bg-gray-100 rounded-[20px]"
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !data) return null;
 
   return (
     <div className="@container p-6 md:p-[30px] bg-white rounded-[32px] border border-gray-100 shadow-sm w-full flex flex-col gap-[30px] h-fit ">
