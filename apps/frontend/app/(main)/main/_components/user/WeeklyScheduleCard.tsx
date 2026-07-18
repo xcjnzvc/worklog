@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import Button from "@/components/Button";
-
+import { useQuery } from "@tanstack/react-query";
+import { getWeeklyAttendanceAPI } from "@/api/attendance";
 // 날짜 라벨 포맷팅 헬퍼
 const getWeekLabel = (date: Date) => {
   const year = date.getFullYear();
@@ -20,9 +21,15 @@ export default function WeeklyScheduleCard() {
     currentDate.getDate(),
   );
 
+  const { data, isLoading } = useQuery({
+    queryKey: ["weeklySchedule", currentDate],
+    queryFn: () => getWeeklyAttendanceAPI(),
+  });
+
   // 💡 데이터 생성 로직
   const days = useMemo(() => {
     const result = [];
+
     const day = currentDate.getDay();
     const diff = currentDate.getDate() - day;
     const startOfWeek = new Date(currentDate);
@@ -97,6 +104,23 @@ export default function WeeklyScheduleCard() {
   };
 
   const selectedData = days.find((d) => d.date === selectedDate) || days[0];
+
+  if (isLoading) {
+    return (
+      <div className="w-full bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 animate-pulse flex flex-col gap-4">
+        <div className="h-5 bg-gray-200 rounded-full w-32" />
+        <div className="grid grid-cols-7 gap-3">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="h-[160px] bg-gray-200 rounded-[20px]" />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="h-[220px] bg-gray-200 rounded-[24px]" />
+          <div className="h-[220px] bg-gray-200 rounded-[24px]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-sm overflow-visible">
