@@ -29,22 +29,19 @@ export default function ServerWakeUpSlot({ onSuccess }: Props) {
       ]);
     }, 100);
 
-    // 3초 후 결과 결정 로직을 아래와 같이 수정
     try {
       await Promise.all([
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/health`, {
-          timeout: 15000,
+          timeout: 5000, // 서버 응답을 5초까지만 기다림
         }),
-        new Promise((resolve) => setTimeout(resolve, 3000)), // 최소 3초는 대기
+        new Promise((resolve) => setTimeout(resolve, 5000)),
       ]);
 
-      // 3. 성공 처리
       if (intervalRef.current) clearInterval(intervalRef.current);
       setSymbols(["7️⃣", "7️⃣", "7️⃣"]);
       setStatus("success");
       setTimeout(onSuccess, 1500);
     } catch (error) {
-      // 4. 실패 시: 꽝 처리
       if (intervalRef.current) clearInterval(intervalRef.current);
 
       let newSymbols;
