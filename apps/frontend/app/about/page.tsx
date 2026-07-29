@@ -7,21 +7,21 @@ const features = [
     badge: "출퇴근",
     badgeColor: "bg-gray-100 text-gray-600",
     title: "출퇴근 기록 & 정정 흐름",
-    desc: "사원이 직접 출퇴근을 기록하고 이력을 조회합니다. 잘못된 기록은 정정 신청으로 요청하며, 관리자 승인 전까지는 실제 근태에 반영되지 않습니다. 승인 대기·승인·반려·취소 상태를 구분해 관리합니다.",
+    desc: "출퇴근 기록과 이력 조회, 정정 신청부터 승인·반려까지의 전체 흐름을 구현했습니다.",
     images: ["/img/work.png", "/img/attendance.png"],
   },
   {
     badge: "휴가",
     badgeColor: "bg-green-50 text-green-700",
     title: "휴가 신청 & 승인 흐름",
-    desc: "사원이 휴가를 신청하면 관리자가 승인·반려를 처리합니다. 승인 전까지는 휴가로 반영되지 않으며, 상태 전이는 정정 흐름과 동일한 구조로 관리됩니다.",
+    desc: "연차·반차 신청부터 승인·반려, 잔여 연차 반영까지의 흐름을 구현했습니다.",
     images: ["/img/vacation.png", "/img/vacation2.png"],
   },
   {
     badge: "조직",
     badgeColor: "bg-blue-50 text-blue-700",
     title: "초대 URL 기반 합류 & 구독 결제",
-    desc: "대표 가입 시 회사가 생성되고, 초대 URL이 있어야만 구성원 가입이 가능합니다. 포트원 + 토스페이먼츠 기반 구독 결제와 취소까지 처리합니다.",
+    desc: "초대 URL 기반 구성원 합류와 PortOne + TossPayments 구독 결제·취소를 구현했습니다.",
     images: ["/img/invite.png", "/img/payment.png"],
   },
 ];
@@ -59,6 +59,40 @@ export default function AboutPage() {
 
       <hr className="border-gray-100 mb-20" />
 
+      {/* ─── 1-2. 프로젝트 정보 ──────────────────────── */}
+      <section className="mb-20">
+        <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-8">
+          프로젝트 정보
+        </p>
+        <div className="border border-gray-100 rounded-xl overflow-hidden">
+          {[
+            { label: "개발 기간", value: "2026.04 ~ 2026.06" },
+            { label: "개발 인원", value: "1명" },
+            {
+              label: "담당",
+              value: "기획 · UI/UX · Frontend · Backend · DB 설계 · 배포",
+            },
+            { label: "유형", value: "개인 B2B SaaS" },
+          ].map((item, i, arr) => (
+            <div
+              key={item.label}
+              className={`flex gap-6 px-5 py-4 ${
+                i < arr.length - 1 ? "border-b border-gray-100" : ""
+              }`}
+            >
+              <span className="text-xs font-semibold text-gray-400 min-w-[72px] shrink-0 pt-0.5">
+                {item.label}
+              </span>
+              <span className="text-sm text-gray-700 leading-relaxed">
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <hr className="border-gray-100 mb-20" />
+
       {/* ─── 2. 혼자 책임진 범위 ──────────────────────── */}
       <section className="mb-20">
         <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-8">
@@ -71,7 +105,7 @@ export default function AboutPage() {
               label: "프론트엔드",
               desc: "Next.js 기반 역할별 화면, 상태 관리, 결제 연동",
             },
-            { label: "백엔드", desc: "API 구현 및 프론트와 독립된 분리 배포" },
+            { label: "백엔드", desc: "NestJS API·DB 설계 및 프론트엔드와 독립된 배포 구성" },
             {
               label: "운영 대응",
               desc: "배포 환경 결제 오류 원인 추적 및 수정, Sentry + Slack 모니터링 구축",
@@ -145,6 +179,51 @@ export default function AboutPage() {
             </div>
           ))}
         </div>
+
+        {/* 상세 흐름 */}
+        <div className="mt-10 flex flex-col gap-6">
+          {[
+            {
+              title: "근태 정정",
+              steps: [
+                "사원이 출근·퇴근 기록의 정정을 신청",
+                "승인 대기 상태에서는 기존 근태 기록 유지",
+                "관리자 승인 시 실제 기록 반영 및 근무시간 재계산",
+                "반려 시 사유와 함께 결과 확인",
+              ],
+            },
+            {
+              title: "휴가 신청",
+              steps: [
+                "사원이 연차·반차를 신청하고 잔여 연차 확인",
+                "승인 전까지 휴가 신청을 대기 상태로 관리",
+                "관리자 승인 시 사용 연차 반영",
+                "반차는 근태 기록과 연동해 근무시간 계산",
+              ],
+            },
+          ].map((flow) => (
+            <div
+              key={flow.title}
+              className="border border-gray-100 rounded-xl px-5 py-5"
+            >
+              <p className="font-semibold text-gray-900 text-sm mb-3">
+                {flow.title}
+              </p>
+              <ol className="flex flex-col gap-2">
+                {flow.steps.map((step, i) => (
+                  <li key={step} className="flex gap-3 items-start">
+                    <span className="text-[10px] font-semibold text-gray-400 min-w-[18px] pt-0.5">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-sm text-gray-500 leading-relaxed">
+                      {step}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </div>
       </section>
 
       <hr className="border-gray-100 mb-20" />
@@ -158,7 +237,7 @@ export default function AboutPage() {
         <div className="flex flex-col gap-16">
           {features.map((item) => (
             <div key={item.title} className="flex flex-col gap-4">
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 {item.images.map((src, idx) => (
                   <div
                     key={idx}
@@ -202,8 +281,8 @@ export default function AboutPage() {
           기술 선택 이유
         </p>
         <p className="text-sm text-gray-400 mb-8">
-          Next.js 기반으로 프론트 중심 서비스를 구성했고, 근태 관리에 필요한
-          API와 DB, 배포는 서비스 완성을 위해 직접 연동했습니다.
+          역할 기반 화면과 서버 렌더링은 Next.js로 구성하고, 근태·휴가·권한·결제
+          도메인은 NestJS와 PostgreSQL 기반으로 설계·구현했습니다.
         </p>
         <div className="flex flex-col gap-3">
           {[
@@ -243,11 +322,11 @@ export default function AboutPage() {
                 "배포 환경 에러를 실시간으로 감지하고 Slack 알림으로 받기 위해 연동했다.",
             },
             {
-              tag: "백엔드",
+              tag: "Architecture",
               tagColor: "bg-orange-50 text-orange-700",
-              name: "백엔드 분리 배포",
+              name: "프론트엔드·백엔드 분리 구조",
               reason:
-                "프론트와 독립적으로 수정·배포할 수 있도록 분리 설계했다. 서비스를 끝까지 닫기 위해 필요한 범위만 직접 구현했다.",
+                "Next.js와 NestJS를 분리해 각 애플리케이션을 독립적으로 수정·배포할 수 있도록 구성했습니다. 근태·권한·승인·결제 도메인은 API와 데이터베이스까지 직접 구현해 서비스의 주요 흐름이 실제로 동작하도록 완성했습니다.",
             },
           ].map((item) => (
             <div
@@ -281,7 +360,7 @@ export default function AboutPage() {
         </p>
         <div className="border border-gray-100 rounded-xl px-5 py-5">
           <p className="font-semibold text-gray-900 text-sm mb-4">
-            콜드스타트 대기 시간, 로딩 스피너 대신 미니게임
+            제거할 수 없는 대기 시간을 인터랙션으로 전환
           </p>
           <div className="flex flex-col gap-3">
             <div className="flex gap-3 items-start">
@@ -298,10 +377,9 @@ export default function AboutPage() {
                 고민
               </span>
               <p className="text-sm text-gray-500 leading-relaxed">
-                주기적으로 헬스체크를 보내 서버가 슬립하지 않도록 유지하는
-                방법도 검토했지만, 이는 무료 티어의 취지(유휴 자원 회수)에
-                반하고 실질적인 사용 여부와 무관하게 자원을 소모시킨다고 판단해
-                배제했다.
+                주기적인 헬스체크로 서버 슬립을 막는 방법도 검토했지만, 실제
+                사용 여부와 관계없이 서버를 계속 활성 상태로 유지하는 방식은
+                채택하지 않았습니다.
               </p>
             </div>
             <div className="flex gap-3 items-start">
@@ -309,13 +387,10 @@ export default function AboutPage() {
                 결정
               </span>
               <p className="text-sm text-gray-500 leading-relaxed">
-                대기 시간을 없앨 수 없다면 사용자가 지루하지 않게 만드는
-                방향으로 전환했다. 로그인 시 슬롯머신 연출을 보여주고, 슬롯이
-                도는 동안 백그라운드에서 서버 헬스체크를 수행한다. 서버가
-                깨어나면 777 연출과 함께 자동으로 로그인 화면으로 전환되고, 실패
-                시 재시도 버튼을 노출한다. 로그아웃 시점에는 서버 생존 여부를
-                플래그로 저장해, 서버가 이미 켜져 있는 상태에서는 슬롯머신을
-                다시 보여주지 않도록 처리했다.
+                대신 로그인 시 슬롯머신 UI를 제공하고, 연출이 진행되는 동안
+                백그라운드에서 서버를 깨우도록 구성했습니다. 서버가 준비되면 777
+                연출과 함께 로그인 화면으로 전환하고, 실패 시 재시도할 수
+                있도록 설계했습니다.
               </p>
             </div>
           </div>
@@ -334,26 +409,34 @@ export default function AboutPage() {
             {
               label: "React Query 캐시 오염",
               problem:
-                "로그아웃 후 다른 계정으로 재로그인했을 때 이전 유저의 데이터가 잠깐 노출됐다. queryClient.clear()를 호출하고 있었는데도 해결되지 않았다.",
+                "로그아웃 후 다른 계정으로 재로그인했을 때 이전 유저 데이터가 잠깐 노출됐다.",
               cause:
-                "ReactQueryProvider와 useAuthStore가 각각 별도의 QueryClient 인스턴스를 생성하고 있었다. clear()는 아무도 쓰지 않는 인스턴스를 초기화하고 있었던 것.",
-              fix: "ReactQueryProvider와 useAuthStore에서 각각 QueryClient를 생성하던 구조를 단일화해, 로그아웃 시 실제 사용 중인 캐시가 초기화되도록 수정했다. 이후 재로그인 시 이전 사용자 데이터 노출이 발생하지 않도록 개선했다.",
+                "ReactQueryProvider와 useAuthStore가 각각 별도의 QueryClient를 생성하고 있었다.",
+              fix: "QueryClient를 단일 인스턴스로 관리하도록 구조를 변경했습니다. 로그아웃 시 실제 사용 중인 캐시가 초기화되도록 수정해 계정 전환 시 이전 데이터 노출을 제거했습니다.",
             },
             {
               label: "로그인 후 초기 렌더 지연 및 흰 화면 노출",
               problem:
-                "클라이언트에서 useUserStore로 유저 상태를 꺼내 역할 분기를 하던 구조에서, 상태 로드 전 타이밍에 흰 화면이 노출됐다.",
+                "클라이언트에서 useUserStore로 역할 분기를 하던 구조에서, 상태 로드 전 흰 화면이 노출됐다.",
               cause:
-                "서버 컴포넌트에서 auth/me를 직접 호출하거나 역할만 헤더로 넘기는 방식을 시도했지만, auth/me 중복 호출 또는 클라이언트 의존 문제가 남았다.",
-              fix: "미들웨어가 auth/me 응답을 x-user 헤더로 전달하고, 페이지는 헤더만 파싱해 역할 분기와 렌더를 서버에서 완료하도록 구조를 변경했다. dynamic import는 Suspense와 CardSkeleton으로 대체해 로딩 중에도 레이아웃이 유지되도록 개선했다.",
+                "auth/me 중복 호출 또는 클라이언트 상태 의존으로 첫 렌더 타이밍이 불안정했다.",
+              fix: "미들웨어가 auth/me 응답을 x-user 헤더로 전달하고, 페이지는 헤더만 파싱해 역할 분기와 렌더를 서버에서 완료하도록 변경했습니다. 로딩 구간은 Suspense와 Skeleton으로 레이아웃을 유지했습니다.",
             },
             {
               label: "배포 환경 결제 오류",
               problem:
                 "로컬에서는 정상 동작하던 결제 흐름이 배포 환경에서만 실패했다.",
               cause:
-                "배포 환경에 NEXT_PUBLIC_PORTONE_STORE_ID가 누락되어 포트원 SDK 초기화 시 storeId가 undefined로 전달됐다. 결제 모듈이 초기화되지 않아 이후 결제 흐름 전체가 실패했다.",
-              fix: "배포 환경의 환경변수 설정을 보완해 포트원 SDK 초기화가 정상 동작하도록 수정했고, 이후 결제 흐름이 안정적으로 동작하도록 복구했다. 재발 없이 운영 가능하도록 정리했다.",
+                "배포 환경에 NEXT_PUBLIC_PORTONE_STORE_ID가 누락되어 포트원 SDK 초기화가 실패했다.",
+              fix: "배포 환경의 환경변수를 보완해 포트원 SDK 초기화와 결제 흐름이 정상 동작하도록 복구했습니다.",
+            },
+            {
+              label: "승인 전 원본 데이터 유지",
+              problem:
+                "정정·휴가가 신청만으로 즉시 반영되면 근태·연차 데이터가 쉽게 꼬인다.",
+              cause:
+                "신청 데이터와 확정 데이터를 같은 필드에 쓰면 승인 전에도 원본이 덮어써진다.",
+              fix: "정정은 fix* 필드와 apprStatus로, 휴가는 LeaveRequest.status로 분리했습니다. 승인 시에만 clockIn/clockOut 또는 usedLeave가 갱신되도록 설계했습니다.",
             },
           ].map((item) => (
             <div
@@ -400,38 +483,53 @@ export default function AboutPage() {
 
       <hr className="border-gray-100 mb-20" />
 
-      {/* ─── 6. 결과 ──────────────────────────────────── */}
+      {/* ─── 6. 설계 결과 ──────────────────────────────── */}
       <section className="mb-20">
         <div className="flex flex-col gap-2">
           <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-4">
-            결과
+            설계 결과
           </p>
           {[
-            "백엔드를 독립 배포로 분리해 프론트 수정이 백엔드 재배포 없이 즉시 반영되도록 구성했다.",
-            "승인 흐름을 상태 전이로 분리해 정정·휴가가 승인 없이 반영되는 상태 꼬임을 없앴다.",
-            "미들웨어에서 유저를 주입하는 구조로 전환해 역할별 화면이 첫 렌더에 바로 뜨도록 개선했다.",
+            "조직 생성부터 초대, 역할별 근태 관리, 승인, 구독 결제까지 하나의 서비스 흐름을 구현했습니다.",
+            "정정·휴가 신청 데이터와 확정 데이터를 분리해 승인 전 원본 데이터가 변경되지 않도록 설계했습니다.",
+            "프론트엔드와 백엔드를 독립 배포하고 Sentry + Slack 모니터링을 구성해 배포 환경의 오류를 추적할 수 있도록 했습니다.",
+            "역할 정보를 서버 렌더링 단계에서 처리해 첫 화면에서 역할별 UI가 바로 렌더링되도록 개선했습니다.",
           ].map((text, i) => (
             <div key={i} className="flex gap-3 items-start">
               <span className="text-gray-300 text-sm shrink-0">—</span>
               <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
             </div>
           ))}
-          <p className="text-sm text-gray-400 mt-4 leading-relaxed">
-            이후 수정 반영 속도와 초기 진입 경험이 개선됐다.
-          </p>
         </div>
       </section>
 
       {/* ─── 7. 링크 ──────────────────────────────────── */}
-      <section className="flex gap-4">
-        <a
-          href="https://github.com/xcjnzvc/worklog"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm font-medium border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition"
-        >
-          GitHub →
-        </a>
+      <section className="flex flex-col gap-4">
+        <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          링크
+        </p>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          실행 방법·폴더 구조·아키텍처 요약은 GitHub README에서 확인할 수
+          있습니다.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="https://worklog.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-medium border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition"
+          >
+            서비스 →
+          </a>
+          <a
+            href="https://github.com/xcjnzvc/worklog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-medium border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition"
+          >
+            GitHub README →
+          </a>
+        </div>
       </section>
     </main>
   );
