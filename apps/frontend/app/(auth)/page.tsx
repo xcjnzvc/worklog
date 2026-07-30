@@ -181,7 +181,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
 import Input from "../../components/Input";
@@ -192,17 +192,18 @@ import ServerWakeUpSlot from "./_components/ServerWakeUpSlot"; // 분리한 컴�
 import FloatingMenu from "@/components/FloatingMenu";
 import { loginSchema, LoginForm } from "@/types/auth";
 import { useAuthStore } from "@/store/useAuthStore";
+import {
+  clearServerAwake,
+  isServerAwakeCached,
+  markServerAwake,
+} from "@/lib/serverAwake";
 
 export default function Home() {
   const router = useRouter();
   const { login } = useAuthStore();
   const [saveEmail, setSaveEmail] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isServerReady, setIsServerReady] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const until = Number(localStorage.getItem("serverAwakeUntil") || 0);
-    return Date.now() < until;
-  });
+  const [isServerReady, setIsServerReady] = useState(isServerAwakeCached);
 
   const {
     register,
@@ -223,12 +224,29 @@ export default function Home() {
     }
   }, [setValue]);
 
+  useEffect(() => {
+    const verifyServer = async () => {
+      try {
+        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/health`, {
+          timeout: 5000,
+        });
+        markServerAwake();
+        setIsServerReady(true);
+      } catch {
+        clearServerAwake();
+        setIsServerReady(false);
+      }
+    };
+
+    verifyServer();
+  }, []);
+
   // 서버가 안 깨어났으면 슬롯머신만 렌더링
   if (!isServerReady) {
     return (
       <ServerWakeUpSlot
         onSuccess={() => {
-          localStorage.setItem("isServerAwake", "true"); // 성공 시에도 플래그 저장
+          markServerAwake();
           setIsServerReady(true);
         }}
       />

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import SideNav from "@/components/SideNav";
 import { useAuthStore } from "@/store/useAuthStore";
+import { clearServerAwake } from "@/lib/serverAwake";
 
 export default function MainLayout({
   children,
@@ -19,7 +20,7 @@ export default function MainLayout({
     if (!serverDown) return;
 
     toast.error("서버와의 연결이 끊겼습니다. 다시 연결해주세요.");
-    localStorage.removeItem("isServerAwake");
+    clearServerAwake();
 
     setServerDown(false);
     router.push("/");

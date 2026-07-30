@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useUserStore, User } from "@/store/useUserStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { markServerAwake } from "@/lib/serverAwake";
 import UserProfileItem from "./UserProfileItem";
 import { Menu, X, Settings, HelpCircle, LogOut } from "lucide-react";
 import { UserRole } from "@/types/user";
@@ -94,10 +95,7 @@ const UserProfileArea = ({ user, clearUser, logout }: UserProfileAreaProps) => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.setItem(
-      "serverAwakeUntil",
-      String(Date.now() + 5 * 60 * 1000),
-    );
+    markServerAwake();
 
     logout();
     clearUser();
